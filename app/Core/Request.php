@@ -8,27 +8,32 @@ class Request
 
     public function getPath(): string
     {
-        // Ưu tiên lấy từ biến 'url' do .htaccess truyền vào (ví dụ: index.php?url=login)
         if (isset($_GET['url'])) {
-            $path = '/' . trim($_GET['url'], '/');
+            $path = '/' . trim((string) $_GET['url'], '/');
             return $path === '' ? '/' : $path;
         }
 
-        // Nếu không có, fallback về REQUEST_URI
         $path = $_SERVER['REQUEST_URI'] ?? '/';
-        
-        // Loại bỏ phần base path nếu chạy trong thư mục con của XAMPP
-        $path = str_replace('/web-dat-ve-xem-phim/public', '', $path);
-
-        // Loại bỏ query string (phần sau dấu ?)
         $position = strpos($path, '?');
         if ($position !== false) {
             $path = substr($path, 0, $position);
         }
 
-        // Loại bỏ slash dư thừa ở cuối
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $publicBase = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+        $publicBase = $publicBase === '.' ? '' : $publicBase;
+        $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
+
+        foreach ([$publicBase, $appBase] as $basePath) {
+            if ($basePath !== '' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) {
+                $path = substr($path, strlen($basePath));
+                break;
+            }
+        }
+
+        $path = '/' . ltrim($path, '/');
         $path = rtrim($path, '/');
-        
+
         return $path === '' ? '/' : $path;
     }
 
