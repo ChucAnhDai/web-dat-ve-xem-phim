@@ -4,7 +4,13 @@
 [2026-03-12T10:55:37+01:00] INFO: User login {"user_id":"1"}
 [2026-03-12T10:55:44+01:00] INFO: User logout {"user_id":"1"}
 [2026-03-12T10:55:58+01:00] INFO: User login {"user_id":"1"}
+<<<<<<< HEAD
 [2026-03-12T18:02:20+01:00] INFO: User registered {"user_id":1}
 [2026-03-12T18:02:49+01:00] INFO: User login {"user_id":1}
 [2026-03-12T18:02:55+01:00] INFO: User login {"user_id":1}
 [2026-03-12T18:02:57+01:00] INFO: User login {"user_id":1}
+=======
+[2026-03-12T18:14:53+01:00] INFO: User logout {"user_id":"1"}
+>>>>>>> f498c20d11aa4437b4cbbf90e7f2526be696ef2c
+[2026-03-12T18:22:31+01:00] INFO: User logout {"user_id":1}
+[2026-03-12T18:23:11+01:00] INFO: User registered {"user_id":2}
