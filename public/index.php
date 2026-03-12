@@ -17,6 +17,14 @@ $app = new Application();
 require_once __DIR__ . '/../config/routes.php';
 
 // Web routes
+$app->router->get('/', [WebController::class, 'showHomePage']);
+$app->router->get('/home', [WebController::class, 'showHomePage']);
+$app->router->get('/movies', [WebController::class, 'showMoviesPage']);
+$app->router->get('/showtimes', [WebController::class, 'showShowtimesPage']);
+$app->router->get('/shop', [WebController::class, 'showShopPage']);
+$app->router->get('/shop/product-detail', [WebController::class, 'showProductDetailPage']);
+$app->router->get('/cart', [WebController::class, 'showCartPage']);
+$app->router->get('/profile', [WebController::class, 'showProfilePage']);
 $app->router->get('/login', [WebController::class, 'showLoginForm']);
 $app->router->get('/register', [WebController::class, 'showRegisterForm']);
 
