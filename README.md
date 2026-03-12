@@ -64,3 +64,22 @@
 - Test coverage các module chính.
 - Kiểm tra OWASP top 10 (sanitize, CSRF, rate limit...).
 - Kiểm tra XSS/SQLi và hardening cấu hình.
+
+
+
+Yêu cầu:
+
+-- Khi bạn làm thì phải làm đúng yêu cầu;
+-- Phát triển theo quy trình rõ ràng;
+-- Thiết kế kiến trúc và cấu trúc hợp lý;
+-- Tuân thủ kiến trúc đã thiết kế;
+-- Chia nhỏ module và công việc;
+-- Viết clean code;
+-- Validate dữ liệu;
+-- Bảo mật FE/BE;
+-- Đảm bảo transaction và tính nhất quán dữ liệu và error handling;
+-- Có logging và test (unit/integration);
+-- Tối ưu hiệu năng hợp lý và đảm bảo observability;
+-- Đảm bảo hệ thống ổn định, dễ bảo trì và mở rộng.
+
+Hãy viết code cho từng file theo thứ tự đấy nhé

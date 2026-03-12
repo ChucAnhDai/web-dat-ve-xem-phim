@@ -4,21 +4,24 @@ namespace App\Core;
 
 class Request
 {
-    public function getPath()
+    private array $attributes = [];
+
+    public function getPath(): string
     {
         $path = $_SERVER['REQUEST_URI'] ?? '/';
         $path = str_replace('/web-dat-ve-xem-phim/public', '', $path);
-        
+
         $position = strpos($path, '?');
         if ($position === false) {
             return $path === '' ? '/' : $path;
         }
+
         return substr($path, 0, $position) === '' ? '/' : substr($path, 0, $position);
     }
 
-    public function method()
+    public function method(): string
     {
-        return strtolower($_SERVER['REQUEST_METHOD']);
+        return strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
     }
 
     public function getBody(): array
@@ -35,7 +38,6 @@ class Request
             }
         }
 
-        // Handling JSON Payloads
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         if (is_array($data)) {
@@ -57,5 +59,15 @@ class Request
         }
 
         return null;
+    }
+
+    public function setAttribute(string $key, $value): void
+    {
+        $this->attributes[$key] = $value;
+    }
+
+    public function getAttribute(string $key, $default = null)
+    {
+        return $this->attributes[$key] ?? $default;
     }
 }

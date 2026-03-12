@@ -10,9 +10,9 @@ class AuthController
 {
     private AuthService $service;
 
-    public function __construct()
+    public function __construct(?AuthService $service = null)
     {
-        $this->service = new AuthService();
+        $this->service = $service ?? new AuthService();
     }
 
     public function register(Request $request, Response $response)

@@ -1,39 +1,10 @@
 <?php
 
-namespace App\Repositories;
+use App\Controllers\Auth\AuthController;
+use App\Middlewares\AuthMiddleware;
 
-use App\Core\Database;
-use PDO;
+/** @var \App\Core\Application $app */
 
-class UserRepository
-{
-    private PDO $db;
-
-    public function __construct()
-    {
-        $this->db = Database::getInstance();
-    }
-
-    public function findByEmail(string $email): ?array
-    {
-        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
-        $stmt->execute(['email' => $email]);
-        $user = $stmt->fetch();
-
-        return $user ?: null;
-    }
-
-    public function create(array $data): int
-    {
-        $stmt = $this->db->prepare('INSERT INTO users (name, email, password, phone, role) VALUES (:name, :email, :password, :phone, :role)');
-        $stmt->execute([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => $data['password'],
-            'phone' => $data['phone'] ?? null,
-            'role' => $data['role'] ?? 'user',
-        ]);
-
-        return (int) $this->db->lastInsertId();
-    }
-}
+$app->router->post('/api/auth/register', [AuthController::class, 'register']);
+$app->router->post('/api/auth/login', [AuthController::class, 'login']);
+$app->router->get('/api/auth/profile', [AuthController::class, 'profile'], [AuthMiddleware::class]);

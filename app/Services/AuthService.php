@@ -14,11 +14,11 @@ class AuthService
     private Auth $auth;
     private Logger $logger;
 
-    public function __construct()
+    public function __construct(?UserRepository $users = null, ?Auth $auth = null, ?Logger $logger = null)
     {
-        $this->users = new UserRepository();
-        $this->auth = new Auth();
-        $this->logger = new Logger();
+        $this->users = $users ?? new UserRepository();
+        $this->auth = $auth ?? new Auth();
+        $this->logger = $logger ?? new Logger();
     }
 
     public function register(array $data): array
