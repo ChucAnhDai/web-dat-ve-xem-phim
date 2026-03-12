@@ -34,6 +34,14 @@ class Response
     }
     public function view(string $viewPath, array $params = []): void
     {
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $publicBase = rtrim(dirname($scriptName), '/');
+        $publicBase = $publicBase === '.' ? '' : $publicBase;
+        $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
+
+        $params['publicBase'] = $params['publicBase'] ?? $publicBase;
+        $params['appBase'] = $params['appBase'] ?? $appBase;
+
         extract($params);
 
         ob_start();

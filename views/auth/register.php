@@ -15,8 +15,8 @@ $title = 'Đăng ký - CinemaX';
         Cinema<span>X</span>
       </div>
       <div class="auth-toggle">
-        <button id="loginTabBtn" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
-        <button id="registerTabBtn" class="active" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
+        <button type="button" id="loginTabBtn" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
+        <button type="button" id="registerTabBtn" class="active" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
       </div>
 
       <div class="auth-form-meta">

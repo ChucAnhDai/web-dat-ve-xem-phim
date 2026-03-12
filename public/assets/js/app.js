@@ -19,6 +19,10 @@ function appUrl(path) {
   return `${APP_BASE_PATH}${normalizedPath}`;
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
 function navigateTo(page) {
   Object.values(pageMap).forEach(id => {
     const el = document.getElementById(id);
@@ -115,9 +119,27 @@ async function handleLogin(event) {
   event.preventDefault();
   clearAuthErrors('login');
   const form = event.target;
+  const email = form.email.value.trim();
+  const password = form.password.value;
+
+  if (!email) {
+    setAuthErrors('login', { email: ['Vui lòng nhập email.'] });
+    return;
+  }
+
+  if (!isValidEmail(email)) {
+    setAuthErrors('login', { email: ['Email không đúng định dạng.'] });
+    return;
+  }
+
+  if (!password) {
+    setAuthErrors('login', { password: ['Vui lòng nhập mật khẩu.'] });
+    return;
+  }
+
   const payload = {
-    email: form.email.value.trim(),
-    password: form.password.value
+    email,
+    password
   };
   try {
     const res = await fetch(appUrl('/api/auth/login'), {
@@ -167,6 +189,32 @@ async function handleRegister(event) {
     password: form.password.value,
     role: form.role.value
   };
+
+  if (!payload.name) {
+    setAuthErrors('register', { name: ['Vui lòng nhập họ tên.'] });
+    return;
+  }
+
+  if (!payload.email) {
+    setAuthErrors('register', { email: ['Vui lòng nhập email.'] });
+    return;
+  }
+
+  if (!isValidEmail(payload.email)) {
+    setAuthErrors('register', { email: ['Email không đúng định dạng.'] });
+    return;
+  }
+
+  if (!payload.password) {
+    setAuthErrors('register', { password: ['Vui lòng nhập mật khẩu.'] });
+    return;
+  }
+
+  if (payload.password.length < 8) {
+    setAuthErrors('register', { password: ['Mật khẩu phải có ít nhất 8 ký tự.'] });
+    return;
+  }
+
   try {
     const res = await fetch(appUrl('/api/auth/register'), {
       method: 'POST',

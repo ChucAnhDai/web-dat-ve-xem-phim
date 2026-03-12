@@ -15,11 +15,11 @@ $title = 'Đăng nhập - CinemaX';
         Cinema<span>X</span>
       </div>
       <div class="auth-toggle">
-        <button id="loginTabBtn" class="active" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
-        <button id="registerTabBtn" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
+        <button type="button" id="loginTabBtn" class="active" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
+        <button type="button" id="registerTabBtn" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
       </div>
 
-      <form id="loginForm" class="auth-form" action="<?php echo htmlspecialchars($appBase); ?>/login" method="POST">
+      <form id="loginForm" class="auth-form" action="<?php echo htmlspecialchars($appBase); ?>/login" method="POST" novalidate>
         <div class="form-group">
           <label>Email</label>
           <div class="auth-input-group">
