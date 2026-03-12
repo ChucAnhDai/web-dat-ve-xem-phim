@@ -31,4 +31,15 @@ class Validator
         }
         return mb_strlen($value) >= $min ? null : "Minimum length is {$min}.";
     }
+
+    public static function phone(?string $value): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        return preg_match('/^[0-9+\s().-]{9,20}$/', $value)
+            ? null
+            : 'Invalid phone number.';
+    }
 }

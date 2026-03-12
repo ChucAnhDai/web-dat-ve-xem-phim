@@ -51,18 +51,12 @@ let cartItems = [
   { id: 3, name: 'CinemaX T-Shirt', cat: 'merch', price: 24.99, qty: 1, img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=200&q=80' }
 ];
 
-const orders = [
-  { id: '#CX-2024-001', items: 3, date: 'Mar 11, 2026', total: '$36.97', status: 'confirmed', imgs: ['https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&q=80'] },
-  { id: '#CX-2024-002', items: 2, date: 'Mar 8, 2026', total: '$14.98', status: 'pending', imgs: ['https://images.unsplash.com/photo-1580031359745-f8ab35a1f9b5?w=100&q=80'] },
-  { id: '#CX-2024-003', items: 1, date: 'Mar 2, 2026', total: '$24.99', status: 'confirmed', imgs: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100&q=80'] },
-  { id: '#CX-2024-004', items: 4, date: 'Feb 28, 2026', total: '$52.96', status: 'cancelled', imgs: ['https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=100&q=80'] }
-];
-
 let cartCount = cartItems.length;
 let productQty = 1;
 let hamburgerBtn;
 let sidebar;
 let sidebarOverlay;
+let currentProfile = null;
 
 function appUrl(path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -71,6 +65,136 @@ function appUrl(path) {
 
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPhone(phone) {
+  return /^[0-9+\s().-]{9,20}$/.test(String(phone || '').trim());
+}
+
+function isProfilePage() {
+  return Boolean(document.getElementById('profileAvatar'));
+}
+
+function redirectProfileToLogin() {
+  if (isProfilePage()) {
+    window.location.href = appUrl('/login');
+  }
+}
+
+function formatCurrency(amount) {
+  const value = Number(amount || 0);
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD'
+  }).format(Number.isFinite(value) ? value : 0);
+}
+
+function formatDateLabel(value) {
+  if (!value) return 'N/A';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).format(date);
+}
+
+function getInitials(name) {
+  return String(name || '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0])
+    .join('')
+    .toUpperCase();
+}
+
+function splitName(name) {
+  const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || '',
+    lastName: parts.slice(1).join(' ')
+  };
+}
+
+function titleCase(value) {
+  const text = String(value || '').trim();
+  return text ? text.charAt(0).toUpperCase() + text.slice(1) : '';
+}
+
+function formatProfileStatus(status) {
+  const value = String(status || '').toLowerCase();
+  const labels = {
+    paid: 'Paid',
+    pending: 'Pending',
+    cancelled: 'Cancelled',
+    shipping: 'Shipping',
+    completed: 'Completed'
+  };
+
+  return labels[value] || titleCase(value) || 'Unknown';
+}
+
+function profileStatusClass(status) {
+  const value = String(status || '').toLowerCase();
+  if (value === 'paid' || value === 'completed') return 'success';
+  if (value === 'shipping') return 'info';
+  if (value === 'cancelled') return 'danger';
+  return 'pending';
+}
+
+function renderProfileDetails(profile) {
+  currentProfile = profile || null;
+
+  const profileData = currentProfile || {};
+  const name = profileData.name || 'Account';
+  const email = profileData.email || 'No email available';
+  const phone = profileData.phone || '';
+  const role = titleCase(profileData.role || 'user');
+  const memberSince = formatDateLabel(profileData.created_at);
+  const initials = getInitials(name) || 'NA';
+  const nameParts = splitName(name);
+  const stats = profileData.stats || {};
+
+  const avatar = document.getElementById('authAvatarInitials');
+  if (avatar) avatar.textContent = initials;
+
+  const profileName = document.getElementById('profileDisplayName') || document.querySelector('.profile-name');
+  const profileEmail = document.getElementById('profileDisplayEmail') || document.querySelector('.profile-email');
+  if (profileName) profileName.textContent = name;
+  if (profileEmail) profileEmail.textContent = email;
+
+  const profileAvatar = document.getElementById('profileAvatar');
+  if (profileAvatar) profileAvatar.textContent = initials;
+
+  const firstNameInput = document.getElementById('profileFirstName');
+  const lastNameInput = document.getElementById('profileLastName');
+  const emailInput = document.getElementById('profileEmailInput');
+  const phoneInput = document.getElementById('profilePhoneInput');
+  const roleInput = document.getElementById('profileRoleInput');
+  const joinedAtInput = document.getElementById('profileJoinedAtInput');
+
+  if (firstNameInput) firstNameInput.value = nameParts.firstName;
+  if (lastNameInput) lastNameInput.value = nameParts.lastName;
+  if (emailInput) emailInput.value = profileData.email || '';
+  if (phoneInput) phoneInput.value = phone;
+  if (roleInput) roleInput.value = role;
+  if (joinedAtInput) joinedAtInput.value = memberSince;
+
+  const ticketsCount = document.getElementById('profileTicketsCount');
+  const ordersCount = document.getElementById('profileOrdersCount');
+  const spentAmount = document.getElementById('profileSpentAmount');
+  if (ticketsCount) ticketsCount.textContent = String(stats.tickets || 0);
+  if (ordersCount) ordersCount.textContent = String(stats.orders || 0);
+  if (spentAmount) spentAmount.textContent = formatCurrency(stats.spent || 0);
+
+  renderProfileOrders('profileOrdersBody', profileData.orders || []);
 }
 
 function navigateTo(page) {
@@ -171,7 +295,10 @@ function updateAuthUI(isLoggedIn) {
 async function hydrateProfile() {
   const token = getAuthToken();
   if (!token) {
+    currentProfile = null;
     updateAuthUI(false);
+    renderProfileOrders('profileOrdersBody', []);
+    redirectProfileToLogin();
     return;
   }
 
@@ -180,34 +307,22 @@ async function hydrateProfile() {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) {
+      currentProfile = null;
+      clearAuthToken();
       updateAuthUI(false);
+      renderProfileOrders('profileOrdersBody', []);
+      redirectProfileToLogin();
       return;
     }
 
     const data = await res.json();
-    const name = data.data?.name || 'User';
-    const email = data.data?.email || 'user@example.com';
-    const initials = name.split(' ').map(part => part[0]).slice(0, 2).join('').toUpperCase();
-    const avatar = document.getElementById('authAvatarInitials');
-    if (avatar) avatar.textContent = initials || 'US';
-
-    const profileName = document.querySelector('.profile-name');
-    const profileEmail = document.querySelector('.profile-email');
-    if (profileName) profileName.textContent = name;
-    if (profileEmail) profileEmail.textContent = email;
-    const profileAvatar = document.getElementById('profileAvatar');
-    if (profileAvatar) profileAvatar.textContent = initials || 'US';
-    const firstNameInput = document.getElementById('profileFirstName');
-    const lastNameInput = document.getElementById('profileLastName');
-    const emailInput = document.getElementById('profileEmailInput');
-    const nameParts = name.split(' ');
-    if (firstNameInput) firstNameInput.value = nameParts[0] || '';
-    if (lastNameInput) lastNameInput.value = nameParts.slice(1).join(' ') || '';
-    if (emailInput) emailInput.value = email;
-
+    renderProfileDetails(data.data || null);
     updateAuthUI(true);
   } catch (error) {
+    currentProfile = null;
     updateAuthUI(false);
+    renderProfileOrders('profileOrdersBody', []);
+    redirectProfileToLogin();
   }
 }
 
@@ -272,12 +387,19 @@ async function handleRegister(event) {
     name: form.name.value.trim(),
     phone: form.phone.value.trim(),
     email: form.email.value.trim(),
-    password: form.password.value,
-    role: form.role.value
+    password: form.password.value
   };
   const confirmPassword = form.confirm_password?.value || '';
   const acceptedTerms = Boolean(form.terms?.checked);
 
+  if (!payload.phone) {
+    setAuthErrors('register', { phone: ['Vui lòng nhập số điện thoại.'] });
+    return;
+  }
+  if (!isValidPhone(payload.phone)) {
+    setAuthErrors('register', { phone: ['Số điện thoại không hợp lệ.'] });
+    return;
+  }
   if (!payload.name) {
     setAuthErrors('register', { name: ['Vui lòng nhập họ tên.'] });
     return;
@@ -461,6 +583,39 @@ function renderOrders(containerId) {
   `).join('');
 }
 
+function renderProfileOrders(containerId, ordersData = currentProfile?.orders || []) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const profileOrders = Array.isArray(ordersData) ? ordersData : [];
+  if (!profileOrders.length) {
+    container.innerHTML = '<div class="table-empty">No order history found for this account yet.</div>';
+    return;
+  }
+
+  container.innerHTML = profileOrders.map(order => {
+    const itemCount = Number(order.items_count || 0);
+    const orderType = order.order_type === 'ticket' ? 'Ticket order' : 'Shop order';
+    const itemLabel = `${itemCount} ${itemCount === 1 ? 'item' : 'items'}`;
+    const statusClass = profileStatusClass(order.status);
+    const statusLabel = formatProfileStatus(order.status);
+
+    return `
+      <div class="table-row">
+        <span class="order-id">${order.order_code}</span>
+        <div class="order-items-preview">
+          <span class="order-type-badge">${orderType}</span>
+          <span class="order-items-text">${itemLabel}</span>
+        </div>
+        <span style="font-size:12px;color:var(--text2)">${formatDateLabel(order.order_date)}</span>
+        <span style="font-weight:600">${formatCurrency(order.total_amount)}</span>
+        <span class="ticket-status status-${statusClass}">${statusLabel}</span>
+        <button class="btn btn-secondary btn-sm" onclick="showToast('ℹ️','Order details','Detailed order view has not been connected yet.')">View</button>
+      </div>
+    `;
+  }).join('');
+}
+
 function switchTab(el, section) {
   document.querySelectorAll('.profile-tab').forEach(tab => tab.classList.remove('active'));
   el.classList.add('active');
@@ -471,7 +626,7 @@ function switchTab(el, section) {
   });
 
   if (section === 'profile-history') {
-    renderOrders('profileOrdersBody');
+    renderProfileOrders('profileOrdersBody');
   }
 }
 
@@ -599,7 +754,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   populateGrids();
   renderShowtimes();
-  renderOrders('profileOrdersBody');
   renderCartItems();
   updateCartBadges();
 });

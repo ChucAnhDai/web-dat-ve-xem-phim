@@ -19,6 +19,7 @@ class AuthServiceTest extends TestCase
 
         $this->assertArrayHasKey('errors', $result);
         $this->assertArrayHasKey('name', $result['errors']);
+        $this->assertArrayHasKey('phone', $result['errors']);
         $this->assertArrayHasKey('email', $result['errors']);
         $this->assertArrayHasKey('password', $result['errors']);
     }
@@ -29,8 +30,9 @@ class AuthServiceTest extends TestCase
 
         $result = $service->register([
             'name' => 'Test',
+            'phone' => '0987654321',
             'email' => 'invalid-email',
-            'password' => '123456',
+            'password' => '12345678',
         ]);
 
         $this->assertArrayHasKey('errors', $result);
@@ -43,6 +45,7 @@ class AuthServiceTest extends TestCase
 
         $result = $service->register([
             'name' => 'Test',
+            'phone' => '0987654321',
             'email' => 'test@example.com',
             'password' => '1234567',
         ]);
@@ -59,8 +62,9 @@ class AuthServiceTest extends TestCase
 
         $result = $service->register([
             'name' => 'Test',
+            'phone' => '0987654321',
             'email' => 'exists@example.com',
-            'password' => '123456',
+            'password' => '12345678',
         ]);
 
         $this->assertArrayHasKey('errors', $result);
@@ -75,15 +79,33 @@ class AuthServiceTest extends TestCase
 
         $result = $service->register([
             'name' => '  Test User ',
+            'phone' => '0901234567',
             'email' => 'TEST@EXAMPLE.COM',
             'password' => '12345678',
+            'role' => 'admin',
         ]);
 
         $this->assertArrayHasKey('data', $result);
         $this->assertSame(123, $result['data']['id']);
         $this->assertSame('fake-token', $result['data']['token']);
         $this->assertSame('test@example.com', $repo->createdData['email']);
+        $this->assertSame('0901234567', $repo->createdData['phone']);
         $this->assertSame('user', $repo->createdData['role']);
+    }
+
+    public function testRegisterRejectsInvalidPhone(): void
+    {
+        $service = new AuthService(new FakeUserRepository(), new FakeAuth(), new FakeLogger());
+
+        $result = $service->register([
+            'name' => 'Test',
+            'phone' => 'abc',
+            'email' => 'test@example.com',
+            'password' => '12345678',
+        ]);
+
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertArrayHasKey('phone', $result['errors']);
     }
 
     public function testLoginRejectsMissingFields(): void
@@ -150,6 +172,17 @@ class AuthServiceTest extends TestCase
             'email' => 'test@example.com',
             'password' => 'secret',
         ];
+        $repo->profileStats = ['tickets' => 2, 'orders' => 1, 'spent' => 99.5];
+        $repo->recentOrders = [
+            [
+                'order_code' => 'T-1',
+                'order_type' => 'ticket',
+                'items_count' => 2,
+                'order_date' => '2026-03-13 10:00:00',
+                'total_amount' => 99.5,
+                'status' => 'paid',
+            ],
+        ];
         $auth = new FakeAuth();
         $auth->payload = ['user_id' => 1];
 
@@ -159,6 +192,8 @@ class AuthServiceTest extends TestCase
 
         $this->assertArrayHasKey('data', $result);
         $this->assertArrayNotHasKey('password', $result['data']);
+        $this->assertSame($repo->profileStats, $result['data']['stats']);
+        $this->assertSame($repo->recentOrders, $result['data']['orders']);
     }
 
     public function testProfileReturnsErrorWhenUserNotFound(): void
@@ -218,6 +253,8 @@ class FakeUserRepository extends UserRepository
     public ?array $user = null;
     public ?array $userById = null;
     public array $createdData = [];
+    public array $profileStats = ['tickets' => 0, 'orders' => 0, 'spent' => 0.0];
+    public array $recentOrders = [];
 
     public function __construct()
     {
@@ -242,6 +279,16 @@ class FakeUserRepository extends UserRepository
         $this->createdData = $data;
 
         return 123;
+    }
+
+    public function getProfileStats(int $userId): array
+    {
+        return $this->profileStats;
+    }
+
+    public function getRecentOrders(int $userId, int $limit = 10): array
+    {
+        return $this->recentOrders;
     }
 }
 

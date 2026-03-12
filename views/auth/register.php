@@ -33,17 +33,17 @@ $title = 'Đăng ký - CinemaX';
               <input class="form-control" type="text" name="name" placeholder="Trần Văn A" required>
             </div>
             <div class="auth-error" id="registerNameError">
-               <?php if (isset($errors['name'])) echo htmlspecialchars($errors['name']); ?>
+              <?php if (isset($errors['name'])) echo htmlspecialchars($errors['name']); ?>
             </div>
           </div>
           <div class="form-group">
             <label>Số điện thoại</label>
             <div class="auth-input-group">
               <span class="auth-input-icon">📱</span>
-              <input class="form-control" type="tel" name="phone" placeholder="09xxxxxxxx" required>
+              <input class="form-control" type="tel" name="phone" placeholder="09xxxxxxxx" inputmode="tel" required>
             </div>
             <div class="auth-error" id="registerPhoneError">
-               <?php if (isset($errors['phone'])) echo htmlspecialchars($errors['phone']); ?>
+              <?php if (isset($errors['phone'])) echo htmlspecialchars($errors['phone']); ?>
             </div>
           </div>
         </div>
@@ -55,7 +55,7 @@ $title = 'Đăng ký - CinemaX';
             <input class="form-control" type="email" name="email" placeholder="you@email.com" required>
           </div>
           <div class="auth-error" id="registerEmailError">
-             <?php if (isset($errors['email'])) echo htmlspecialchars($errors['email']); ?>
+            <?php if (isset($errors['email'])) echo htmlspecialchars($errors['email']); ?>
           </div>
         </div>
 
@@ -67,7 +67,7 @@ $title = 'Đăng ký - CinemaX';
             <span class="auth-password-toggle" onclick="togglePassword(this)">Hiện</span>
           </div>
           <div class="auth-error" id="registerPasswordError">
-             <?php if (isset($errors['password'])) echo htmlspecialchars($errors['password']); ?>
+            <?php if (isset($errors['password'])) echo htmlspecialchars($errors['password']); ?>
           </div>
         </div>
 
@@ -87,14 +87,6 @@ $title = 'Đăng ký - CinemaX';
           <span>Thông tin chính xác để khôi phục tài khoản</span>
         </div>
 
-        <div class="form-group">
-          <label>Vai trò</label>
-          <select class="form-control" name="role">
-            <option value="user" selected>Người dùng</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
-
         <label class="auth-terms">
           <input type="checkbox" name="terms" required>
           <span>Tôi đồng ý với Điều khoản sử dụng và Chính sách bảo mật của CinemaX.</span>
@@ -102,7 +94,7 @@ $title = 'Đăng ký - CinemaX';
         <div class="auth-error" id="registerTermsError"></div>
 
         <div class="auth-note">Tài khoản sau khi tạo sẽ được đăng nhập ngay trên trình duyệt hiện tại.</div>
-        
+
         <button class="btn btn-primary btn-full btn-lg" type="submit" style="margin-top:16px">Tạo tài khoản</button>
         <p class="auth-helper" style="margin-top:12px">Đã có tài khoản? <a href="<?php echo htmlspecialchars($appBase); ?>/login">Đăng nhập</a></p>
       </form>

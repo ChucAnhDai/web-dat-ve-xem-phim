@@ -23,15 +23,23 @@ class AuthService
 
     public function register(array $data): array
     {
-        $errors = Validator::required($data, ['name', 'email', 'password']);
+        $errors = Validator::required($data, ['name', 'phone', 'email', 'password']);
         $email = strtolower(trim((string) ($data['email'] ?? '')));
         $name = trim((string) ($data['name'] ?? ''));
+        $phone = trim((string) ($data['phone'] ?? ''));
         $password = (string) ($data['password'] ?? '');
+        $role = 'user';
 
         $emailError = Validator::email($email);
         if ($emailError) {
             $errors['email'][] = $emailError;
         }
+
+        $phoneError = Validator::phone($phone);
+        if ($phoneError) {
+            $errors['phone'][] = $phoneError;
+        }
+
         $passwordError = Validator::minLength($password, 8);
         if ($passwordError) {
             $errors['password'][] = $passwordError;
@@ -47,14 +55,13 @@ class AuthService
         }
 
         $hashed = password_hash($password, PASSWORD_BCRYPT);
-        $role = $this->sanitizeRole($data['role'] ?? null);
 
         try {
             $id = $this->users->createWithTransaction([
                 'name' => $name,
                 'email' => $email,
                 'password' => $hashed,
-                'phone' => $data['phone'] ?? null,
+                'phone' => $phone,
                 'role' => $role,
             ]);
         } catch (Exception $exception) {
@@ -104,28 +111,20 @@ class AuthService
             return ['errors' => ['token' => [$exception->getMessage()]]];
         }
     }
-
-    private function sanitizeRole(?string $role): string
-    {
-        $role = strtolower(trim((string) $role));
-        $allowed = ['user', 'admin'];
-        if ($role === '' || !in_array($role, $allowed, true)) {
-            return 'user';
-        }
-
-        return $role;
-    }
-
     public function profile(string $token): array
     {
         try {
             $payload = $this->auth->verifyToken($token);
-            $user = $this->users->findById((int) $payload['user_id']);
+            $userId = (int) ($payload['user_id'] ?? 0);
+            $user = $this->users->findById($userId);
             if (!$user) {
                 return ['errors' => ['user' => ['User not found.']]];
             }
 
             unset($user['password']);
+            $user['stats'] = $this->users->getProfileStats($userId);
+            $user['orders'] = $this->users->getRecentOrders($userId);
+
             return ['data' => $user];
         } catch (Exception $e) {
             return ['errors' => ['token' => [$e->getMessage()]]];

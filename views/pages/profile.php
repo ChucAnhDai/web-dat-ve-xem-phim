@@ -4,26 +4,26 @@
 </div>
 
 <div class="profile-header">
-  <div class="profile-avatar" id="profileAvatar">JD</div>
+  <div class="profile-avatar" id="profileAvatar">--</div>
   <div style="flex:1">
-    <div class="profile-name">John Doe</div>
-    <div class="profile-email">john.doe@email.com</div>
+    <div class="profile-name" id="profileDisplayName">Account</div>
+    <div class="profile-email" id="profileDisplayEmail">Loading profile data...</div>
     <div class="profile-stats">
       <div class="stat-item">
-        <div class="stat-val">24</div>
+        <div class="stat-val" id="profileTicketsCount">0</div>
         <div class="stat-label">Tickets</div>
       </div>
       <div class="stat-item">
-        <div class="stat-val">12</div>
+        <div class="stat-val" id="profileOrdersCount">0</div>
         <div class="stat-label">Orders</div>
       </div>
       <div class="stat-item">
-        <div class="stat-val">$280</div>
+        <div class="stat-val" id="profileSpentAmount">$0.00</div>
         <div class="stat-label">Spent</div>
       </div>
     </div>
   </div>
-  <button class="btn btn-secondary" type="button">📷 Change Photo</button>
+  <button class="btn btn-secondary" type="button" onclick="showToast('ℹ️','Avatar feature pending','Profile photo updates are not available yet.')">📷 Change Photo</button>
 </div>
 
 <div class="profile-tabs">
@@ -38,28 +38,34 @@
     <div class="form-row">
       <div class="form-group">
         <label>First Name</label>
-        <input class="form-control" id="profileFirstName" value="John">
+        <input class="form-control" id="profileFirstName" value="" placeholder="First name">
       </div>
       <div class="form-group">
         <label>Last Name</label>
-        <input class="form-control" id="profileLastName" value="Doe">
+        <input class="form-control" id="profileLastName" value="" placeholder="Last name">
       </div>
     </div>
     <div class="form-group">
       <label>Email</label>
-      <input class="form-control" id="profileEmailInput" value="john.doe@email.com">
+      <input class="form-control" id="profileEmailInput" value="" readonly>
     </div>
     <div class="form-group">
       <label>Phone</label>
-      <input class="form-control" value="+1 555 123 4567">
+      <input class="form-control" id="profilePhoneInput" value="" placeholder="No phone number">
     </div>
-    <div class="form-group">
-      <label>Date of Birth</label>
-      <input class="form-control" type="date" value="1992-05-15">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Role</label>
+        <input class="form-control" id="profileRoleInput" value="" readonly>
+      </div>
+      <div class="form-group">
+        <label>Member Since</label>
+        <input class="form-control" id="profileJoinedAtInput" value="" readonly>
+      </div>
     </div>
     <div style="margin-top:8px">
-      <button class="btn btn-primary" type="button" onclick="showToast('✅','Profile Updated','Your changes have been saved.')">Save Changes</button>
-      <button class="btn btn-ghost" type="button" style="margin-left:8px">Cancel</button>
+      <button class="btn btn-primary" type="button" onclick="showToast('ℹ️','Update not available','Profile updates have not been connected yet.')">Save Changes</button>
+      <button class="btn btn-ghost" type="button" style="margin-left:8px" onclick="hydrateProfile()">Reload</button>
     </div>
   </div>
 </div>
@@ -69,17 +75,17 @@
     <div class="form-section-title" style="font-size:18px">Change Password</div>
     <div class="form-group">
       <label>Current Password</label>
-      <input class="form-control" type="password" placeholder="••••••••">
+      <input class="form-control" type="password" placeholder="********">
     </div>
     <div class="form-group">
       <label>New Password</label>
-      <input class="form-control" type="password" placeholder="••••••••">
+      <input class="form-control" type="password" placeholder="********">
     </div>
     <div class="form-group">
       <label>Confirm New Password</label>
-      <input class="form-control" type="password" placeholder="••••••••">
+      <input class="form-control" type="password" placeholder="********">
     </div>
-    <button class="btn btn-primary" type="button" onclick="showToast('🔒','Password Updated','Your password has been changed.')">Update Password</button>
+    <button class="btn btn-primary" type="button" onclick="showToast('ℹ️','Update not available','Password updates have not been connected yet.')">Update Password</button>
   </div>
 </div>
 
