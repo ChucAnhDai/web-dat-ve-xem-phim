@@ -20,10 +20,10 @@
   <div class="sidebar-section">
     <div class="sidebar-label">Account</div>
     <div id="sidebarGuestActions">
-      <div class="nav-item" onclick="navigateTo('auth');switchAuthTab('login')">
+      <div class="nav-item" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">
         <span class="nav-icon">🔐</span> Đăng nhập
       </div>
-      <div class="nav-item" onclick="navigateTo('auth');switchAuthTab('register')">
+      <div class="nav-item" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">
         <span class="nav-icon">🧾</span> Đăng ký
       </div>
     </div>

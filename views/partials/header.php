@@ -26,8 +26,8 @@
       <span class="badge">0</span>
     </button>
     <div id="authGuestActions" class="header-auth-actions">
-      <button class="btn btn-secondary btn-sm" onclick="navigateTo('auth');switchAuthTab('login')">Đăng nhập</button>
-      <button class="btn btn-primary btn-sm" onclick="navigateTo('auth');switchAuthTab('register')">Đăng ký</button>
+      <button class="btn btn-secondary btn-sm" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
+      <button class="btn btn-primary btn-sm" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
     </div>
     <div class="avatar-btn" id="authUserMenu" tabindex="0">
       <span id="authAvatarInitials">JD</span>

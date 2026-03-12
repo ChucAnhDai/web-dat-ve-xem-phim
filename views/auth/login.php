@@ -15,11 +15,11 @@ $title = 'Đăng nhập - CinemaX';
         Cinema<span>X</span>
       </div>
       <div class="auth-toggle">
-        <button id="loginTabBtn" class="active" onclick="window.location.href='/login'">Đăng nhập</button>
-        <button id="registerTabBtn" onclick="window.location.href='/register'">Đăng ký</button>
+        <button id="loginTabBtn" class="active" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
+        <button id="registerTabBtn" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
       </div>
 
-      <form id="loginForm" class="auth-form" action="/login" method="POST">
+      <form id="loginForm" class="auth-form" action="<?php echo htmlspecialchars($appBase); ?>/login" method="POST">
         <div class="form-group">
           <label>Email</label>
           <div class="auth-input-group">
@@ -51,7 +51,7 @@ $title = 'Đăng nhập - CinemaX';
         </div>
         
         <button class="btn btn-primary btn-full btn-lg" type="submit">Đăng nhập</button>
-        <p class="auth-helper" style="margin-top:12px">Chưa có tài khoản? <a href="/register">Đăng ký</a></p>
+        <p class="auth-helper" style="margin-top:12px">Chưa có tài khoản? <a href="<?php echo htmlspecialchars($appBase); ?>/register">Đăng ký</a></p>
       </form>
     </div>
 
@@ -66,17 +66,3 @@ $title = 'Đăng nhập - CinemaX';
     </div>
   </div>
 </div>
-
-<script>
-// Password toggle helper script
-function togglePassword(btn) {
-    const input = btn.previousElementSibling;
-    if (input.type === 'password') {
-        input.type = 'text';
-        btn.textContent = 'Ẩn';
-    } else {
-        input.type = 'password';
-        btn.textContent = 'Hiện';
-    }
-}
-</script>

@@ -10,6 +10,15 @@ const pageMap = {
   'my-orders': 'page-my-orders'
 };
 
+const APP_BASE_PATH = typeof window.APP_BASE_PATH === 'string'
+  ? window.APP_BASE_PATH
+  : '';
+
+function appUrl(path) {
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  return `${APP_BASE_PATH}${normalizedPath}`;
+}
+
 function navigateTo(page) {
   Object.values(pageMap).forEach(id => {
     const el = document.getElementById(id);
@@ -111,7 +120,7 @@ async function handleLogin(event) {
     password: form.password.value
   };
   try {
-    const res = await fetch('/api/auth/login', {
+    const res = await fetch(appUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -159,7 +168,7 @@ async function handleRegister(event) {
     role: form.role.value
   };
   try {
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch(appUrl('/api/auth/register'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -187,7 +196,7 @@ async function handleLogout() {
     return;
   }
   try {
-    await fetch('/api/auth/logout', {
+    await fetch(appUrl('/api/auth/logout'), {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}` }
     });
@@ -230,7 +239,7 @@ async function hydrateProfile() {
     return;
   }
   try {
-    const res = await fetch('/api/auth/profile', {
+    const res = await fetch(appUrl('/api/auth/profile'), {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) {

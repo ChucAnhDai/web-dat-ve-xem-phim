@@ -1,0 +1,3 @@
+[2026-03-12T10:50:06+01:00] INFO: User registered {"user_id":1}
+[2026-03-12T10:50:33+01:00] INFO: User login {"user_id":"1"}
+[2026-03-12T10:50:51+01:00] INFO: User logout {"user_id":"1"}

@@ -15,8 +15,8 @@ $title = 'Đăng ký - CinemaX';
         Cinema<span>X</span>
       </div>
       <div class="auth-toggle">
-        <button id="loginTabBtn" onclick="window.location.href='/login'">Đăng nhập</button>
-        <button id="registerTabBtn" class="active" onclick="window.location.href='/register'">Đăng ký</button>
+        <button id="loginTabBtn" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/login'">Đăng nhập</button>
+        <button id="registerTabBtn" class="active" onclick="window.location.href='<?php echo htmlspecialchars($appBase); ?>/register'">Đăng ký</button>
       </div>
 
       <div class="auth-form-meta">
@@ -24,7 +24,7 @@ $title = 'Đăng ký - CinemaX';
         <p>Hoàn tất vài bước ngắn để bắt đầu trải nghiệm rạp phim, combo bắp nước và hồ sơ thành viên của bạn trên cùng một nơi.</p>
       </div>
 
-      <form id="registerForm" class="auth-form" action="/register" method="POST" novalidate>
+      <form id="registerForm" class="auth-form" action="<?php echo htmlspecialchars($appBase); ?>/register" method="POST" novalidate>
         <div class="form-row">
           <div class="form-group">
             <label>Họ tên</label>
@@ -104,7 +104,7 @@ $title = 'Đăng ký - CinemaX';
         <div class="auth-note">Tài khoản sau khi tạo sẽ được đăng nhập ngay trên trình duyệt hiện tại.</div>
         
         <button class="btn btn-primary btn-full btn-lg" type="submit" style="margin-top:16px">Tạo tài khoản</button>
-        <p class="auth-helper" style="margin-top:12px">Đã có tài khoản? <a href="/login">Đăng nhập</a></p>
+        <p class="auth-helper" style="margin-top:12px">Đã có tài khoản? <a href="<?php echo htmlspecialchars($appBase); ?>/login">Đăng nhập</a></p>
       </form>
     </div>
 
