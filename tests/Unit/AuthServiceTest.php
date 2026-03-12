@@ -44,7 +44,7 @@ class AuthServiceTest extends TestCase
         $result = $service->register([
             'name' => 'Test',
             'email' => 'test@example.com',
-            'password' => '123',
+            'password' => '1234567',
         ]);
 
         $this->assertArrayHasKey('errors', $result);
@@ -76,13 +76,14 @@ class AuthServiceTest extends TestCase
         $result = $service->register([
             'name' => '  Test User ',
             'email' => 'TEST@EXAMPLE.COM',
-            'password' => '123456',
+            'password' => '12345678',
         ]);
 
         $this->assertArrayHasKey('data', $result);
         $this->assertSame(123, $result['data']['id']);
         $this->assertSame('fake-token', $result['data']['token']);
         $this->assertSame('test@example.com', $repo->createdData['email']);
+        $this->assertSame('user', $repo->createdData['role']);
     }
 
     public function testLoginRejectsMissingFields(): void
@@ -131,7 +132,7 @@ class AuthServiceTest extends TestCase
         $service = new AuthService($repo, $auth, new FakeLogger());
 
         $result = $service->login([
-            'email' => 'user@example.com',
+            'email' => 'USER@EXAMPLE.COM',
             'password' => 'correct',
         ]);
 
@@ -186,6 +187,28 @@ class AuthServiceTest extends TestCase
 
         $this->assertArrayHasKey('errors', $result);
         $this->assertArrayHasKey('token', $result['errors']);
+    }
+
+    public function testLogoutReturnsErrorForMissingToken(): void
+    {
+        $service = new AuthService(new FakeUserRepository(), new FakeAuth(), new FakeLogger());
+
+        $result = $service->logout('');
+
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertArrayHasKey('token', $result['errors']);
+    }
+
+    public function testLogoutReturnsSuccess(): void
+    {
+        $auth = new FakeAuth();
+        $auth->payload = ['user_id' => 5, 'role' => 'user'];
+        $service = new AuthService(new FakeUserRepository(), $auth, new FakeLogger());
+
+        $result = $service->logout('token');
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame('Logged out', $result['data']['message']);
     }
 }
 

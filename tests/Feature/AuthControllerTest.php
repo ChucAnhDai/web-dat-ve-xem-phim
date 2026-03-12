@@ -122,6 +122,34 @@ class AuthControllerTest extends TestCase
         $this->assertSame(['data' => ['id' => 1, 'email' => 'test@example.com']], $response->payload);
     }
 
+    public function testLogoutReturnsUnauthorizedOnFailure(): void
+    {
+        $service = new FakeAuthService(['errors' => ['token' => ['Invalid token.']]]);
+        $controller = new TestableAuthController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer invalid';
+
+        $response = $controller->logout(new Request(), new CapturingResponse());
+
+        $this->assertSame(401, $response->statusCode);
+        $this->assertSame(['errors' => ['token' => ['Invalid token.']]], $response->payload);
+    }
+
+    public function testLogoutReturnsSuccess(): void
+    {
+        $service = new FakeAuthService(['data' => ['message' => 'Logged out']]);
+        $controller = new TestableAuthController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['HTTP_AUTHORIZATION'] = 'Bearer valid-token';
+
+        $response = $controller->logout(new Request(), new CapturingResponse());
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame(['message' => 'Logout successful'], $response->payload);
+    }
+
     private function clearOutputBuffer(): void
     {
         while (ob_get_level() > 0) {

@@ -1,4 +1,3 @@
-<!-- ═══════════ HEADER ═══════════ -->
 <header class="header">
   <button class="hamburger" id="hamburgerBtn" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -10,7 +9,7 @@
   <nav class="header-nav">
     <a href="#" class="active" onclick="navigateTo('home');return false">Home</a>
     <a href="#" onclick="navigateTo('movies');return false">Movies</a>
-    <a href="#" onclick="navigateTo('showtimes-home');return false">Showtimes</a>
+    <a href="#" onclick="navigateTo('showtimes');return false">Showtimes</a>
     <a href="#" onclick="navigateTo('shop');return false">Shop</a>
   </nav>
   <div class="header-search">
@@ -20,17 +19,17 @@
   <div class="header-actions">
     <button class="icon-btn" onclick="navigateTo('shop')">
       🛒
-      <span class="badge" id="cartBadge">3</span>
+      <span class="badge" id="cartBadge">0</span>
     </button>
     <button class="icon-btn">
       🔔
-      <span class="badge">2</span>
+      <span class="badge">0</span>
     </button>
-    <div id="authGuestActions" style="display:none;gap:8px;align-items:center">
+    <div id="authGuestActions" class="header-auth-actions">
       <button class="btn btn-secondary btn-sm" onclick="navigateTo('auth');switchAuthTab('login')">Đăng nhập</button>
       <button class="btn btn-primary btn-sm" onclick="navigateTo('auth');switchAuthTab('register')">Đăng ký</button>
     </div>
-    <div class="avatar-btn" id="authUserMenu" tabindex="0" style="display:none">
+    <div class="avatar-btn" id="authUserMenu" tabindex="0">
       <span id="authAvatarInitials">JD</span>
       <div class="dropdown">
         <a href="#" onclick="navigateTo('profile');return false">👤 My Profile</a>

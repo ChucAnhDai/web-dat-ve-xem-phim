@@ -8,15 +8,28 @@ class Request
 
     public function getPath(): string
     {
-        $path = $_SERVER['REQUEST_URI'] ?? '/';
-        $path = str_replace('/web-dat-ve-xem-phim/public', '', $path);
-
-        $position = strpos($path, '?');
-        if ($position === false) {
+        // Ưu tiên lấy từ biến 'url' do .htaccess truyền vào (ví dụ: index.php?url=login)
+        if (isset($_GET['url'])) {
+            $path = '/' . trim($_GET['url'], '/');
             return $path === '' ? '/' : $path;
         }
 
-        return substr($path, 0, $position) === '' ? '/' : substr($path, 0, $position);
+        // Nếu không có, fallback về REQUEST_URI
+        $path = $_SERVER['REQUEST_URI'] ?? '/';
+        
+        // Loại bỏ phần base path nếu chạy trong thư mục con của XAMPP
+        $path = str_replace('/web-dat-ve-xem-phim/public', '', $path);
+
+        // Loại bỏ query string (phần sau dấu ?)
+        $position = strpos($path, '?');
+        if ($position !== false) {
+            $path = substr($path, 0, $position);
+        }
+
+        // Loại bỏ slash dư thừa ở cuối
+        $path = rtrim($path, '/');
+        
+        return $path === '' ? '/' : $path;
     }
 
     public function method(): string

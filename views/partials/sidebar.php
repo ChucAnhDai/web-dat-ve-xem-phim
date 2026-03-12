@@ -1,4 +1,3 @@
-<!-- ═══════════ SIDEBAR ═══════════ -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <aside class="sidebar" id="sidebar">
   <div class="nav-item active" onclick="navigateTo('home')">
@@ -7,7 +6,7 @@
   <div class="nav-item" onclick="navigateTo('movies')">
     <span class="nav-icon">🎬</span> Movies
   </div>
-  <div class="nav-item" onclick="navigateTo('showtimes-home')">
+  <div class="nav-item" onclick="navigateTo('showtimes')">
     <span class="nav-icon">🕐</span> Showtimes
   </div>
   <div class="nav-item" onclick="navigateTo('shop')">
@@ -15,12 +14,12 @@
   </div>
   <div class="nav-item" onclick="navigateTo('cart')">
     <span class="nav-icon">🛒</span> Cart
-    <span class="nav-badge" id="cartNavBadge">3</span>
+    <span class="nav-badge" id="cartNavBadge">0</span>
   </div>
 
   <div class="sidebar-section">
     <div class="sidebar-label">Account</div>
-    <div id="sidebarGuestActions" style="display:none">
+    <div id="sidebarGuestActions">
       <div class="nav-item" onclick="navigateTo('auth');switchAuthTab('login')">
         <span class="nav-icon">🔐</span> Đăng nhập
       </div>
@@ -28,7 +27,7 @@
         <span class="nav-icon">🧾</span> Đăng ký
       </div>
     </div>
-    <div id="sidebarUserActions" style="display:none">
+    <div id="sidebarUserActions">
       <div class="nav-item" onclick="navigateTo('my-tickets')">
         <span class="nav-icon">🎫</span> My Tickets
       </div>

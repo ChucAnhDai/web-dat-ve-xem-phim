@@ -49,4 +49,15 @@ class AuthController
 
         return $response->json(['data' => $result['data']]);
     }
+
+    public function logout(Request $request, Response $response)
+    {
+        $token = $request->bearerToken();
+        $result = $this->service->logout($token ?? '');
+        if (isset($result['errors'])) {
+            return $response->json(['errors' => $result['errors']], 401);
+        }
+
+        return $response->json(['message' => 'Logout successful'], 200);
+    }
 }

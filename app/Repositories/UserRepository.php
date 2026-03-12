@@ -9,9 +9,9 @@ class UserRepository
 {
     private PDO $db;
 
-    public function __construct()
+    public function __construct(?PDO $db = null)
     {
-        $this->db = Database::getInstance();
+        $this->db = $db ?? Database::getInstance();
     }
 
     public function findByEmail(string $email): ?array
@@ -44,5 +44,18 @@ class UserRepository
         ]);
 
         return (int) $this->db->lastInsertId();
+    }
+
+    public function createWithTransaction(array $data): int
+    {
+        $this->db->beginTransaction();
+        try {
+            $id = $this->create($data);
+            $this->db->commit();
+            return $id;
+        } catch (\Throwable $exception) {
+            $this->db->rollBack();
+            throw $exception;
+        }
     }
 }

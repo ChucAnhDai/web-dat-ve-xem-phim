@@ -32,4 +32,15 @@ class Response
             'errors' => $errors,
         ], $statusCode);
     }
+    public function view(string $viewPath, array $params = []): void
+    {
+        extract($params);
+
+        ob_start();
+        require_once __DIR__ . '/../../views/' . ltrim($viewPath, '/') . '.php';
+        $content = ob_get_clean();
+
+        require_once __DIR__ . '/../../views/layouts/main.php';
+        exit;
+    }
 }

@@ -37,4 +37,16 @@ class AuthMiddleware
             return false;
         }
     }
+
+    public function requireRole(array $roles, Request $request, Response $response): bool
+    {
+        $auth = $request->getAttribute('auth');
+        $role = $auth['role'] ?? null;
+        if (!$role || !in_array($role, $roles, true)) {
+            $response->error('Forbidden', ['role' => ['Insufficient permissions.']], 403);
+            return false;
+        }
+
+        return true;
+    }
 }
