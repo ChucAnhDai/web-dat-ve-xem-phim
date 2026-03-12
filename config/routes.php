@@ -1,0 +1,39 @@
+<?php
+
+namespace App\Repositories;
+
+use App\Core\Database;
+use PDO;
+
+class UserRepository
+{
+    private PDO $db;
+
+    public function __construct()
+    {
+        $this->db = Database::getInstance();
+    }
+
+    public function findByEmail(string $email): ?array
+    {
+        $stmt = $this->db->prepare('SELECT * FROM users WHERE email = :email LIMIT 1');
+        $stmt->execute(['email' => $email]);
+        $user = $stmt->fetch();
+
+        return $user ?: null;
+    }
+
+    public function create(array $data): int
+    {
+        $stmt = $this->db->prepare('INSERT INTO users (name, email, password, phone, role) VALUES (:name, :email, :password, :phone, :role)');
+        $stmt->execute([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'phone' => $data['phone'] ?? null,
+            'role' => $data['role'] ?? 'user',
+        ]);
+
+        return (int) $this->db->lastInsertId();
+    }
+}

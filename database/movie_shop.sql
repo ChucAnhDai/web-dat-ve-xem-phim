@@ -1,0 +1,251 @@
+
+-- ========================
+-- USERS
+-- ========================
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    email VARCHAR(150) UNIQUE,
+    password VARCHAR(255),
+    phone VARCHAR(20),
+    role ENUM('admin','user') DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE addresses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    address TEXT,
+    city VARCHAR(100),
+    district VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE user_roles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    role_name VARCHAR(50)
+);
+
+-- ========================
+-- MOVIE SYSTEM
+-- ========================
+
+CREATE TABLE movie_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    description TEXT
+);
+
+CREATE TABLE movies (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT,
+    title VARCHAR(255),
+    description TEXT,
+    duration INT,
+    release_date DATE,
+    poster VARCHAR(255),
+    trailer VARCHAR(255),
+    rating DECIMAL(2,1),
+    status ENUM('coming','showing'),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES movie_categories(id)
+);
+
+CREATE TABLE movie_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    movie_id INT,
+    image VARCHAR(255),
+    FOREIGN KEY (movie_id) REFERENCES movies(id)
+);
+
+CREATE TABLE cinemas (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255),
+    address VARCHAR(255)
+);
+
+CREATE TABLE rooms (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cinema_id INT,
+    room_name VARCHAR(50),
+    total_seats INT,
+    FOREIGN KEY (cinema_id) REFERENCES cinemas(id)
+);
+
+CREATE TABLE seats (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id INT,
+    seat_row VARCHAR(5),
+    seat_number INT,
+    seat_type ENUM('normal','vip','couple') DEFAULT 'normal',
+    FOREIGN KEY (room_id) REFERENCES rooms(id)
+);
+
+CREATE TABLE showtimes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    movie_id INT,
+    room_id INT,
+    show_date DATE,
+    start_time TIME,
+    price DECIMAL(10,2),
+    FOREIGN KEY (movie_id) REFERENCES movies(id),
+    FOREIGN KEY (room_id) REFERENCES rooms(id)
+);
+
+CREATE TABLE ticket_orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    total_price DECIMAL(10,2),
+    status ENUM('pending','paid','cancelled'),
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE ticket_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    showtime_id INT,
+    seat_id INT,
+    price DECIMAL(10,2),
+    FOREIGN KEY (order_id) REFERENCES ticket_orders(id),
+    FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
+    FOREIGN KEY (seat_id) REFERENCES seats(id)
+);
+
+CREATE TABLE movie_reviews (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    movie_id INT,
+    user_id INT,
+    rating INT,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (movie_id) REFERENCES movies(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+-- ========================
+-- SHOP SYSTEM
+-- ========================
+
+CREATE TABLE product_categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    description TEXT
+);
+
+CREATE TABLE products (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    category_id INT,
+    name VARCHAR(255),
+    description TEXT,
+    price DECIMAL(10,2),
+    stock INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES product_categories(id)
+);
+
+CREATE TABLE product_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    image VARCHAR(255),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE TABLE product_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    brand VARCHAR(100),
+    weight VARCHAR(50),
+    origin VARCHAR(100),
+    description TEXT,
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE TABLE carts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE cart_items (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    cart_id INT,
+    product_id INT,
+    quantity INT,
+    price DECIMAL(10,2),
+    FOREIGN KEY (cart_id) REFERENCES carts(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+CREATE TABLE shop_orders (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    address_id INT,
+    total_price DECIMAL(10,2),
+    status ENUM('pending','shipping','completed','cancelled'),
+    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (address_id) REFERENCES addresses(id)
+);
+
+CREATE TABLE order_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT,
+    product_id INT,
+    quantity INT,
+    price DECIMAL(10,2),
+    FOREIGN KEY (order_id) REFERENCES shop_orders(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- ========================
+-- PAYMENT
+-- ========================
+
+CREATE TABLE payments (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    ticket_order_id INT NULL,
+    shop_order_id INT NULL,
+    payment_method ENUM('momo','vnpay','paypal','cash'),
+    payment_status ENUM('pending','success','failed'),
+    transaction_code VARCHAR(255),
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========================
+-- EXTRA SYSTEM TABLES
+-- ========================
+
+CREATE TABLE banners (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    image VARCHAR(255),
+    description TEXT
+);
+
+CREATE TABLE promotions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    discount_percent INT,
+    start_date DATE,
+    end_date DATE
+);
+
+CREATE TABLE product_promotions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    product_id INT,
+    promotion_id INT,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (promotion_id) REFERENCES promotions(id)
+);
+
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    message TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
