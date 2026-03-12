@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Design — Hệ Thống Quản Lý Rạp Phim</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --blue: #3B82F6; --blue-dark: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE;
+  --green: #10B981; --green-light: #D1FAE5;
+  --red: #EF4444; --red-light: #FEE2E2;
+  --amber: #F59E0B; --amber-light: #FEF3C7;
+  --purple: #8B5CF6; --purple-light: #EDE9FE;
+  --cyan: #06B6D4; --cyan-light: #CFFAFE;
+  --pink: #EC4899; --pink-light: #FCE7F3;
+  --orange: #F97316; --orange-light: #FFF7ED;
+  --bg: #F8FAFC; --surface: #fff;
+  --border: #E2E8F0; --border-light: #F1F5F9;
+  --text: #0F172A; --text2: #64748B; --text3: #94A3B8;
+  --sidebar: #0F172A;
+  --radius: 12px; --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,.07),0 10px 32px -4px rgba(0,0,0,.06);
+}
+html { font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); }
+body { background: var(--bg); display: flex; min-height: 100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px; background: var(--sidebar); position: fixed;
+  top: 0; left: 0; height: 100vh; overflow-y: auto;
+  display: flex; flex-direction: column; z-index: 100;
+  padding-bottom: 24px;
+}
+.sidebar::-webkit-scrollbar { width: 4px; }
+.sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
+.logo { padding: 20px 20px 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.logo-icon {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: linear-gradient(135deg,var(--blue),#6366F1);
+  display: flex; align-items: center; justify-content: center; margin-bottom: 8px;
+}
+.logo-icon svg { width: 18px; height: 18px; color: #fff; }
+.logo-title { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.3; }
+.logo-sub { font-size: 10.5px; color: rgba(255,255,255,.35); margin-top: 2px; }
+
+.nav-section { padding: 14px 10px 4px; }
+.nav-label { font-size: 10px; font-weight: 600; letter-spacing: .08em; color: rgba(255,255,255,.3); text-transform: uppercase; padding: 0 10px; margin-bottom: 4px; }
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  color: rgba(255,255,255,.5); font-size: 13px; font-weight: 400;
+  transition: all .15s; position: relative;
+}
+.nav-item:hover { background: rgba(255,255,255,.07); color: rgba(255,255,255,.85); }
+.nav-item.active { background: rgba(59,130,246,.18); color: #fff; font-weight: 500; }
+.nav-item.active::before {
+  content: ''; position: absolute; left: 0; top: 50%; transform: translateY(-50%);
+  width: 3px; height: 18px; background: var(--blue); border-radius: 0 3px 3px 0;
+}
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; }
+.nav-count {
+  margin-left: auto; background: rgba(255,255,255,.1);
+  color: rgba(255,255,255,.5); font-size: 10px; font-weight: 600;
+  border-radius: 10px; padding: 1px 7px;
+}
+.nav-item.active .nav-count { background: rgba(59,130,246,.3); color: var(--blue); }
+
+/* MAIN */
+.main { margin-left: 260px; flex: 1; display: flex; flex-direction: column; }
+.topbar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 28px; height: 60px; display: flex; align-items: center;
+  position: sticky; top: 0; z-index: 50; gap: 12px;
+}
+.topbar-title { font-size: 15px; font-weight: 600; }
+.topbar-sub { font-size: 12px; color: var(--text2); margin-left: 8px; }
+.topbar-right { margin-left: auto; display: flex; gap: 8px; }
+.tab-btn {
+  padding: 6px 14px; border-radius: 7px; font-size: 12.5px; font-weight: 500;
+  cursor: pointer; border: 1px solid var(--border); background: var(--bg);
+  font-family: inherit; color: var(--text2); transition: all .15s;
+}
+.tab-btn.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+.tab-btn:hover:not(.active) { border-color: var(--blue-mid); color: var(--blue); }
+
+.content { padding: 28px; }
+.page { display: none; }
+.page.active { display: block; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+/* OVERVIEW */
+.overview-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px;
+}
+.ov-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px 20px;
+  box-shadow: var(--shadow);
+}
+.ov-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 10px;
+}
+.ov-icon svg { width: 18px; height: 18px; }
+.ov-val { font-size: 26px; font-weight: 700; letter-spacing: -.5px; }
+.ov-label { font-size: 12px; color: var(--text2); margin-top: 3px; }
+
+/* MODULE CARDS */
+.modules-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+.module-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  box-shadow: var(--shadow); cursor: pointer;
+  transition: all .18s;
+}
+.module-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.module-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.module-icon {
+  width: 42px; height: 42px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.module-icon svg { width: 22px; height: 22px; }
+.module-name { font-size: 14px; font-weight: 600; }
+.module-tables { font-size: 11.5px; color: var(--text2); margin-top: 2px; }
+.module-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.module-tag {
+  font-size: 11px; padding: 3px 8px; border-radius: 20px;
+  font-weight: 500;
+}
+
+/* TABLE SCHEMA */
+.schema-section { margin-bottom: 32px; }
+.schema-group-title {
+  font-size: 13px; font-weight: 700; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--text2);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+}
+.schema-group-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+.tables-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.table-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+.table-header {
+  padding: 12px 16px; display: flex; align-items: center;
+  justify-content: space-between; border-bottom: 1px solid var(--border);
+}
+.table-name { font-size: 13.5px; font-weight: 700; font-family: 'DM Mono', monospace; display: flex; align-items: center; gap: 8px; }
+.table-name-icon {
+  width: 22px; height: 22px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+}
+.table-name-icon svg { width: 11px; height: 11px; }
+.table-desc { font-size: 11px; color: var(--text3); }
+.table-body { }
+.col-row {
+  display: grid; grid-template-columns: 18px 160px 120px 1fr;
+  align-items: center; gap: 8px;
+  padding: 8px 14px; border-bottom: 1px solid var(--border-light);
+  font-size: 12.5px; transition: background .1s;
+}
+.col-row:hover { background: var(--bg); }
+.col-row:last-child { border-bottom: none; }
+.col-key svg { width: 11px; height: 11px; }
+.col-name { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 12px; }
+.col-type { font-family: 'DM Mono', monospace; font-size: 11px; padding: 2px 7px; border-radius: 4px; display: inline-block; }
+.col-desc { font-size: 11.5px; color: var(--text2); }
+.pk { color: #F59E0B; }
+.fk { color: var(--blue); }
+.uk { color: var(--green); }
+
+/* SQL VIEW */
+.sql-block {
+  background: #0F172A; border-radius: var(--radius);
+  padding: 20px; font-family: 'DM Mono', monospace; font-size: 12px;
+  line-height: 1.7; color: #CBD5E1; overflow-x: auto;
+  margin-bottom: 16px; border: 1px solid #1E293B;
+  position: relative;
+}
+.sql-block .kw { color: #7DD3FC; font-weight: 600; }
+.sql-block .fn { color: #86EFAC; }
+.sql-block .str { color: #FCA5A5; }
+.sql-block .cm { color: #475569; font-style: italic; }
+.sql-block .pk-col { color: #FCD34D; }
+.sql-block .fk-col { color: #A5B4FC; }
+.sql-block .type { color: #6EE7B7; }
+.copy-btn {
+  position: absolute; top: 12px; right: 12px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1);
+  color: rgba(255,255,255,.5); font-family: 'DM Sans', sans-serif;
+  font-size: 11px; padding: 4px 10px; border-radius: 5px;
+  cursor: pointer; transition: all .15s;
+}
+.copy-btn:hover { background: rgba(255,255,255,.15); color: #fff; }
+
+/* ERD */
+.erd-container {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+}
+.erd-controls {
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.erd-btn {
+  padding: 6px 14px; border-radius: 6px; font-size: 12.5px;
+  border: 1px solid var(--border); background: var(--bg);
+  font-family: inherit; cursor: pointer; color: var(--text2);
+  transition: all .15s;
+}
+.erd-btn:hover { border-color: var(--blue); color: var(--blue); }
+.erd-canvas { width: 100%; min-height: 600px; position: relative; background: #FAFBFC; overflow: auto; }
+.erd-canvas svg { display: block; }
+
+/* ERD NODE */
+.erd-node {
+  position: absolute; background: var(--surface);
+  border: 2px solid var(--border); border-radius: 10px;
+  box-shadow: var(--shadow); min-width: 170px;
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  cursor: grab; user-select: none; transition: box-shadow .15s;
+}
+.erd-node:hover { box-shadow: var(--shadow-md); }
+.erd-node-header {
+  padding: 8px 12px; border-radius: 8px 8px 0 0;
+  font-size: 12px; font-weight: 700; color: #fff;
+  display: flex; align-items: center; gap: 6px;
+}
+.erd-node-header svg { width: 12px; height: 12px; opacity: .8; }
+.erd-col { padding: 4px 12px; border-bottom: 1px solid var(--border-light); display: flex; gap: 6px; align-items: center; }
+.erd-col:last-child { border-bottom: none; padding-bottom: 6px; }
+.erd-col-icon { width: 12px; height: 12px; flex-shrink: 0; }
+
+/* RELATIONSHIP */
+.rel-table {
+  width: 100%; border-collapse: collapse;
+  background: var(--surface); border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+}
+.rel-table th {
+  background: var(--bg); padding: 10px 16px;
+  font-size: 11px; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text2);
+  border-bottom: 1px solid var(--border); text-align: left;
+}
+.rel-table td { padding: 11px 16px; font-size: 12.5px; border-bottom: 1px solid var(--border-light); }
+.rel-table tr:last-child td { border-bottom: none; }
+.rel-table tr:hover td { background: var(--bg); }
+.rel-type {
+  padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  font-family: 'DM Mono', monospace;
+}
+.rel-1n { background: var(--blue-light); color: var(--blue); }
+.rel-nn { background: var(--purple-light); color: var(--purple); }
+.rel-11 { background: var(--green-light); color: var(--green); }
+code { font-family: 'DM Mono', monospace; font-size: 11.5px; background: var(--border-light); padding: 1px 6px; border-radius: 4px; }
+
+/* LEGEND */
+.legend { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+
+/* INFO BOX */
+.info-box {
+  background: var(--blue-light); border: 1px solid var(--blue-mid);
+  border-radius: var(--radius-sm); padding: 12px 16px;
+  font-size: 13px; color: var(--blue-dark); margin-bottom: 20px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.info-box svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+
+@media(max-width:1024px) {
+  .sidebar { display: none; } .main { margin-left: 0; }
+  .overview-stats { grid-template-columns: repeat(2,1fr); }
+  .modules-grid { grid-template-columns: repeat(2,1fr); }
+  .tables-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 7h5M17 17h5"/></svg>
+    </div>
+    <div class="logo-title">Cinema DB Design</div>
+    <div class="logo-sub">Hệ thống quản lý rạp phim</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Tổng quan</div>
+    <div class="nav-item active" onclick="navigate('overview',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Tổng quan DB
+    </div>
+    <div class="nav-item" onclick="navigate('erd',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="2"/><circle cx="19" cy="5" r="2"/><circle cx="19" cy="19" r="2"/><path d="M7 12h10M17 7l-10 8"/></svg>
+      Sơ đồ ERD
+    </div>
+    <div class="nav-item" onclick="navigate('relations',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+      Quan hệ bảng
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Modules</div>
+    <div class="nav-item" onclick="navigate('module-cinema',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 2v20M17 2v20M2 12h20M2 7h5M2 17h5M17 7h5M17 17h5"/></svg>
+      Quản lý Rạp phim <span class="nav-count">5</span>
+    </div>
+    <div class="nav-item" onclick="navigate('module-movie',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Quản lý Phim <span class="nav-count">4</span>
+    </div>
+    <div class="nav-item" onclick="navigate('module-ticket',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6M4 9v6M8 9v6M12 9v6M16 9v6M20 9v6"/></svg>
+      Đặt vé & Suất chiếu <span class="nav-count">5</span>
+    </div>
+    <div class="nav-item" onclick="navigate('module-user',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      Người dùng & Thành viên <span class="nav-count">4</span>
+    </div>
+    <div class="nav-item" onclick="navigate('module-shop',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      Mua sắm trực tuyến <span class="nav-count">6</span>
+    </div>
+    <div class="nav-item" onclick="navigate('module-payment',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+      Thanh toán & Khuyến mãi <span class="nav-count">4</span>
+    </div>
+    <div class="nav-item" onclick="navigate('module-report',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Báo cáo & Thống kê <span class="nav-count">3</span>
+    </div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Scripts</div>
+    <div class="nav-item" onclick="navigate('sql',this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16,18 22,12 16,6"/><polyline points="8,6 2,12 8,18"/></svg>
+      SQL Scripts
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div>
+      <span class="topbar-title">Xây dựng hệ thống quản lý rạp phim & tích hợp mua sắm trực tuyến</span>
+      <span class="topbar-sub">— Database Design v1.0</span>
+    </div>
+    <div class="topbar-right">
+      <span style="font-size:12px;color:var(--text2);background:var(--green-light);color:var(--green);padding:4px 12px;border-radius:20px;font-weight:600">31 bảng · 7 modules</span>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══ OVERVIEW ══════════════════════════ -->
+    <div class="page active" id="page-overview">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Database được thiết kế theo mô hình <strong>Relational Database (SQL)</strong>, tổ chức thành 7 module độc lập, đảm bảo tính toàn vẹn dữ liệu, dễ mở rộng và tối ưu truy vấn với 31 bảng chính.
+      </div>
+
+      <div class="overview-stats">
+        <div class="ov-card">
+          <div class="ov-icon" style="background:var(--blue-light)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" width="18" height="18"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 3v18"/></svg></div>
+          <div class="ov-val">31</div>
+          <div class="ov-label">Tổng số bảng (Tables)</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-icon" style="background:var(--purple-light)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2" width="18" height="18"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg></div>
+          <div class="ov-val">7</div>
+          <div class="ov-label">Modules chức năng</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-icon" style="background:var(--amber-light)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2" width="18" height="18"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+          <div class="ov-val">40+</div>
+          <div class="ov-label">Quan hệ (Relationships)</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-icon" style="background:var(--green-light)"><svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" width="18" height="18"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+          <div class="ov-val">15+</div>
+          <div class="ov-label">Indexes tối ưu</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px;font-size:15px;font-weight:600">Các Module chính</div>
+      <div class="modules-grid">
+        <div class="module-card" onclick="navigate('module-cinema',document.querySelector('[onclick*=module-cinema]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--blue-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="3"/><path d="M7 2v20M17 2v20M2 12h20"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Quản lý Rạp phim</div>
+              <div class="module-tables">5 bảng · Cinemas, Halls, Seats</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--blue-light);color:var(--blue)">cinemas</span>
+            <span class="module-tag" style="background:var(--blue-light);color:var(--blue)">halls</span>
+            <span class="module-tag" style="background:var(--blue-light);color:var(--blue)">seats</span>
+            <span class="module-tag" style="background:var(--blue-light);color:var(--blue)">seat_types</span>
+            <span class="module-tag" style="background:var(--blue-light);color:var(--blue)">amenities</span>
+          </div>
+        </div>
+        <div class="module-card" onclick="navigate('module-movie',document.querySelector('[onclick*=module-movie]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--purple-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Quản lý Phim</div>
+              <div class="module-tables">4 bảng · Movies, Genres, Casts</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--purple-light);color:var(--purple)">movies</span>
+            <span class="module-tag" style="background:var(--purple-light);color:var(--purple)">genres</span>
+            <span class="module-tag" style="background:var(--purple-light);color:var(--purple)">movie_genres</span>
+            <span class="module-tag" style="background:var(--purple-light);color:var(--purple)">movie_casts</span>
+          </div>
+        </div>
+        <div class="module-card" onclick="navigate('module-ticket',document.querySelector('[onclick*=module-ticket]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--amber-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M2 9a3 3 0 010-6h20a3 3 0 010 6M2 15a3 3 0 000 6h20a3 3 0 000-6"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Đặt vé & Suất chiếu</div>
+              <div class="module-tables">5 bảng · Showtimes, Bookings, Tickets</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--amber-light);color:var(--amber)">showtimes</span>
+            <span class="module-tag" style="background:var(--amber-light);color:var(--amber)">bookings</span>
+            <span class="module-tag" style="background:var(--amber-light);color:var(--amber)">tickets</span>
+            <span class="module-tag" style="background:var(--amber-light);color:var(--amber)">showtime_seats</span>
+            <span class="module-tag" style="background:var(--amber-light);color:var(--amber)">price_rules</span>
+          </div>
+        </div>
+        <div class="module-card" onclick="navigate('module-user',document.querySelector('[onclick*=module-user]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--cyan-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Người dùng & Thành viên</div>
+              <div class="module-tables">4 bảng · Users, Members, Reviews</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--cyan-light);color:var(--cyan)">users</span>
+            <span class="module-tag" style="background:var(--cyan-light);color:var(--cyan)">membership_tiers</span>
+            <span class="module-tag" style="background:var(--cyan-light);color:var(--cyan)">loyalty_points</span>
+            <span class="module-tag" style="background:var(--cyan-light);color:var(--cyan)">reviews</span>
+          </div>
+        </div>
+        <div class="module-card" onclick="navigate('module-shop',document.querySelector('[onclick*=module-shop]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--green-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Mua sắm trực tuyến</div>
+              <div class="module-tables">6 bảng · Products, Orders, Cart</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--green-light);color:var(--green)">products</span>
+            <span class="module-tag" style="background:var(--green-light);color:var(--green)">product_categories</span>
+            <span class="module-tag" style="background:var(--green-light);color:var(--green)">orders</span>
+            <span class="module-tag" style="background:var(--green-light);color:var(--green)">order_items</span>
+            <span class="module-tag" style="background:var(--green-light);color:var(--green)">carts</span>
+            <span class="module-tag" style="background:var(--green-light);color:var(--green)">cart_items</span>
+          </div>
+        </div>
+        <div class="module-card" onclick="navigate('module-payment',document.querySelector('[onclick*=module-payment]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--pink-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--pink)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Thanh toán & Khuyến mãi</div>
+              <div class="module-tables">4 bảng · Payments, Coupons</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--pink-light);color:var(--pink)">payments</span>
+            <span class="module-tag" style="background:var(--pink-light);color:var(--pink)">payment_methods</span>
+            <span class="module-tag" style="background:var(--pink-light);color:var(--pink)">coupons</span>
+            <span class="module-tag" style="background:var(--pink-light);color:var(--pink)">coupon_usages</span>
+          </div>
+        </div>
+        <div class="module-card" onclick="navigate('module-report',document.querySelector('[onclick*=module-report]'))">
+          <div class="module-header">
+            <div class="module-icon" style="background:var(--orange-light)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <div>
+              <div class="module-name">Báo cáo & Thống kê</div>
+              <div class="module-tables">3 bảng · Revenue, Audit Logs</div>
+            </div>
+          </div>
+          <div class="module-tags">
+            <span class="module-tag" style="background:var(--orange-light);color:var(--orange)">daily_revenue</span>
+            <span class="module-tag" style="background:var(--orange-light);color:var(--orange)">audit_logs</span>
+            <span class="module-tag" style="background:var(--orange-light);color:var(--orange)">notifications</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ ERD ════════════════════════════════ -->
+    <div class="page" id="page-erd">
+      <div class="info-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Sơ đồ ERD trực quan hiển thị cấu trúc và mối quan hệ giữa các bảng. Mỗi màu đại diện cho một module. Các đường kết nối thể hiện khóa ngoại (Foreign Key).
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#3B82F6"></div> Rạp phim</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#8B5CF6"></div> Phim</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F59E0B"></div> Vé & Suất chiếu</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#06B6D4"></div> Người dùng</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#10B981"></div> Mua sắm</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EC4899"></div> Thanh toán</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F97316"></div> Báo cáo</div>
+      </div>
+      <div class="erd-container">
+        <div class="erd-controls">
+          <span style="font-size:13px;font-weight:600">Entity Relationship Diagram (ERD)</span>
+          <span style="font-size:12px;color:var(--text3);margin-left:8px">31 bảng · Phóng to bằng cách cuộn</span>
+        </div>
+        <div class="erd-canvas" id="erdCanvas" style="height:700px">
+          <svg id="erdSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0">
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L8,3 z" fill="#CBD5E1"/></marker>
+            </defs>
+          </svg>
+          <!-- Nodes will be rendered by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ RELATIONS ════════════════════════ -->
+    <div class="page" id="page-relations">
+      <div style="margin-bottom:20px;font-size:15px;font-weight:600">Quan hệ giữa các bảng</div>
+      <table class="rel-table">
+        <thead><tr><th>Bảng A (Parent)</th><th>Quan hệ</th><th>Bảng B (Child)</th><th>Khóa kết nối</th><th>Mô tả</th></tr></thead>
+        <tbody id="relTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- ═══ MODULE CINEMA ════════════════════ -->
+    <div class="page" id="page-module-cinema">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">🏢 Module: Quản lý Rạp phim</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Quản lý hệ thống rạp, phòng chiếu, ghế ngồi và tiện ích</div>
+      <div class="tables-grid" id="schema-cinema"></div>
+    </div>
+
+    <!-- ═══ MODULE MOVIE ════════════════════ -->
+    <div class="page" id="page-module-movie">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">🎬 Module: Quản lý Phim</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Quản lý thông tin phim, thể loại, diễn viên và đạo diễn</div>
+      <div class="tables-grid" id="schema-movie"></div>
+    </div>
+
+    <!-- ═══ MODULE TICKET ════════════════════ -->
+    <div class="page" id="page-module-ticket">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">🎟️ Module: Đặt vé & Suất chiếu</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Quản lý lịch chiếu, đặt vé, ghế và quy tắc giá</div>
+      <div class="tables-grid" id="schema-ticket"></div>
+    </div>
+
+    <!-- ═══ MODULE USER ════════════════════ -->
+    <div class="page" id="page-module-user">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">👤 Module: Người dùng & Thành viên</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Quản lý tài khoản, hạng thành viên, điểm thưởng và đánh giá</div>
+      <div class="tables-grid" id="schema-user"></div>
+    </div>
+
+    <!-- ═══ MODULE SHOP ════════════════════ -->
+    <div class="page" id="page-module-shop">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">🛒 Module: Mua sắm trực tuyến</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Quản lý sản phẩm, danh mục, giỏ hàng và đơn hàng</div>
+      <div class="tables-grid" id="schema-shop"></div>
+    </div>
+
+    <!-- ═══ MODULE PAYMENT ════════════════ -->
+    <div class="page" id="page-module-payment">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">💳 Module: Thanh toán & Khuyến mãi</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Quản lý giao dịch, phương thức thanh toán và mã giảm giá</div>
+      <div class="tables-grid" id="schema-payment"></div>
+    </div>
+
+    <!-- ═══ MODULE REPORT ════════════════ -->
+    <div class="page" id="page-module-report">
+      <div style="margin-bottom:6px;font-size:18px;font-weight:700">📊 Module: Báo cáo & Thống kê</div>
+      <div style="color:var(--text2);font-size:13px;margin-bottom:24px">Lưu trữ doanh thu, nhật ký hệ thống và thông báo</div>
+      <div class="tables-grid" id="schema-report"></div>
+    </div>
+
+    <!-- ═══ SQL ════════════════════════════ -->
+    <div class="page" id="page-sql">
+      <div style="margin-bottom:20px">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px">SQL Create Scripts</div>
+        <div style="font-size:13px;color:var(--text2)">MySQL / PostgreSQL compatible · UTF-8 encoding</div>
+      </div>
+      <div id="sqlContainer"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ─── DATA ─────────────────────────────────────────────────────────
+const COLORS = {
+  cinema:'#3B82F6', movie:'#8B5CF6', ticket:'#F59E0B',
+  user:'#06B6D4', shop:'#10B981', payment:'#EC4899',
+  report:'#F97316'
+};
+
+const DB = {
+  cinema: [
+    {
+      name:'cinemas', desc:'Thông tin rạp chiếu phim', color:COLORS.cinema,
+      cols:[
+        {key:'pk',name:'cinema_id',type:'INT PK',desc:'Khóa chính tự tăng'},
+        {key:'',name:'name',type:'VARCHAR(100)',desc:'Tên rạp'},
+        {key:'',name:'address',type:'TEXT',desc:'Địa chỉ đầy đủ'},
+        {key:'',name:'city',type:'VARCHAR(50)',desc:'Thành phố'},
+        {key:'',name:'phone',type:'VARCHAR(20)',desc:'Số điện thoại'},
+        {key:'',name:'email',type:'VARCHAR(100)',desc:'Email liên hệ'},
+        {key:'',name:'total_halls',type:'INT',desc:'Tổng số phòng'},
+        {key:'',name:'status',type:"ENUM('active','inactive')",desc:'Trạng thái hoạt động'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Ngày tạo'},
+      ]
+    },
+    {
+      name:'halls', desc:'Phòng chiếu trong rạp', color:COLORS.cinema,
+      cols:[
+        {key:'pk',name:'hall_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'cinema_id',type:'INT FK',desc:'→ cinemas'},
+        {key:'',name:'hall_name',type:'VARCHAR(50)',desc:'Tên phòng (VD: Hall A)'},
+        {key:'',name:'hall_type',type:"ENUM('2D','3D','4DX','IMAX')",desc:'Loại phòng'},
+        {key:'',name:'total_seats',type:'INT',desc:'Tổng số ghế'},
+        {key:'',name:'status',type:"ENUM('active','maintenance')",desc:'Trạng thái'},
+      ]
+    },
+    {
+      name:'seat_types', desc:'Loại ghế và giá cơ bản', color:COLORS.cinema,
+      cols:[
+        {key:'pk',name:'seat_type_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'',name:'type_name',type:'VARCHAR(30)',desc:'Tên loại (Standard, VIP, Couple)'},
+        {key:'',name:'price_multiplier',type:'DECIMAL(4,2)',desc:'Hệ số nhân giá'},
+        {key:'',name:'description',type:'TEXT',desc:'Mô tả loại ghế'},
+      ]
+    },
+    {
+      name:'seats', desc:'Sơ đồ ghế ngồi trong phòng', color:COLORS.cinema,
+      cols:[
+        {key:'pk',name:'seat_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'hall_id',type:'INT FK',desc:'→ halls'},
+        {key:'fk',name:'seat_type_id',type:'INT FK',desc:'→ seat_types'},
+        {key:'',name:'row_label',type:'CHAR(2)',desc:'Hàng ghế (A, B, C...)'},
+        {key:'',name:'seat_number',type:'INT',desc:'Số ghế'},
+        {key:'',name:'is_active',type:'BOOLEAN',desc:'Ghế còn sử dụng hay không'},
+      ]
+    },
+    {
+      name:'amenities', desc:'Tiện ích, dịch vụ của rạp', color:COLORS.cinema,
+      cols:[
+        {key:'pk',name:'amenity_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'cinema_id',type:'INT FK',desc:'→ cinemas'},
+        {key:'',name:'amenity_name',type:'VARCHAR(50)',desc:'Tên tiện ích (Bãi đỗ, Cafe...)'},
+        {key:'',name:'description',type:'TEXT',desc:'Mô tả'},
+      ]
+    },
+  ],
+  movie: [
+    {
+      name:'movies', desc:'Thông tin phim', color:COLORS.movie,
+      cols:[
+        {key:'pk',name:'movie_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'',name:'title',type:'VARCHAR(200)',desc:'Tên phim'},
+        {key:'',name:'original_title',type:'VARCHAR(200)',desc:'Tên gốc'},
+        {key:'',name:'description',type:'TEXT',desc:'Nội dung phim'},
+        {key:'',name:'duration_min',type:'INT',desc:'Thời lượng (phút)'},
+        {key:'',name:'release_date',type:'DATE',desc:'Ngày khởi chiếu'},
+        {key:'',name:'end_date',type:'DATE',desc:'Ngày kết thúc chiếu'},
+        {key:'',name:'language',type:'VARCHAR(20)',desc:'Ngôn ngữ gốc'},
+        {key:'',name:'subtitle',type:'VARCHAR(20)',desc:'Phụ đề'},
+        {key:'',name:'rated',type:"ENUM('P','C13','C16','C18')",desc:'Giới hạn độ tuổi'},
+        {key:'',name:'poster_url',type:'VARCHAR(255)',desc:'Đường dẫn poster'},
+        {key:'',name:'trailer_url',type:'VARCHAR(255)',desc:'Link trailer'},
+        {key:'',name:'imdb_rating',type:'DECIMAL(3,1)',desc:'Điểm IMDB'},
+        {key:'',name:'status',type:"ENUM('coming_soon','now_showing','ended')",desc:'Trạng thái'},
+      ]
+    },
+    {
+      name:'genres', desc:'Thể loại phim', color:COLORS.movie,
+      cols:[
+        {key:'pk',name:'genre_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'',name:'genre_name',type:'VARCHAR(50)',desc:'Tên thể loại'},
+        {key:'',name:'description',type:'TEXT',desc:'Mô tả'},
+      ]
+    },
+    {
+      name:'movie_genres', desc:'Phim thuộc nhiều thể loại (N-N)', color:COLORS.movie,
+      cols:[
+        {key:'fk',name:'movie_id',type:'INT FK',desc:'→ movies'},
+        {key:'fk',name:'genre_id',type:'INT FK',desc:'→ genres'},
+      ]
+    },
+    {
+      name:'movie_casts', desc:'Diễn viên và vai diễn', color:COLORS.movie,
+      cols:[
+        {key:'pk',name:'cast_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'movie_id',type:'INT FK',desc:'→ movies'},
+        {key:'',name:'person_name',type:'VARCHAR(100)',desc:'Tên diễn viên/đạo diễn'},
+        {key:'',name:'role_type',type:"ENUM('actor','director','producer')",desc:'Vai trò'},
+        {key:'',name:'character_name',type:'VARCHAR(100)',desc:'Tên nhân vật'},
+        {key:'',name:'avatar_url',type:'VARCHAR(255)',desc:'Ảnh đại diện'},
+      ]
+    },
+  ],
+  ticket: [
+    {
+      name:'showtimes', desc:'Lịch chiếu phim', color:COLORS.ticket,
+      cols:[
+        {key:'pk',name:'showtime_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'movie_id',type:'INT FK',desc:'→ movies'},
+        {key:'fk',name:'hall_id',type:'INT FK',desc:'→ halls'},
+        {key:'',name:'start_time',type:'DATETIME',desc:'Giờ bắt đầu chiếu'},
+        {key:'',name:'end_time',type:'DATETIME',desc:'Giờ kết thúc chiếu'},
+        {key:'',name:'base_price',type:'DECIMAL(10,2)',desc:'Giá vé cơ bản'},
+        {key:'',name:'available_seats',type:'INT',desc:'Số ghế còn lại'},
+        {key:'',name:'status',type:"ENUM('scheduled','ongoing','ended','cancelled')",desc:'Trạng thái'},
+      ]
+    },
+    {
+      name:'showtime_seats', desc:'Trạng thái ghế theo từng suất', color:COLORS.ticket,
+      cols:[
+        {key:'pk',name:'ss_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'showtime_id',type:'INT FK',desc:'→ showtimes'},
+        {key:'fk',name:'seat_id',type:'INT FK',desc:'→ seats'},
+        {key:'',name:'status',type:"ENUM('available','booked','reserved','broken')",desc:'Trạng thái ghế'},
+        {key:'',name:'actual_price',type:'DECIMAL(10,2)',desc:'Giá thực tế'},
+      ]
+    },
+    {
+      name:'bookings', desc:'Đơn đặt vé của khách hàng', color:COLORS.ticket,
+      cols:[
+        {key:'pk',name:'booking_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users'},
+        {key:'fk',name:'showtime_id',type:'INT FK',desc:'→ showtimes'},
+        {key:'fk',name:'coupon_id',type:'INT FK',desc:'→ coupons (nullable)'},
+        {key:'',name:'booking_code',type:'VARCHAR(20) UQ',desc:'Mã đặt vé duy nhất'},
+        {key:'',name:'total_amount',type:'DECIMAL(10,2)',desc:'Tổng tiền vé'},
+        {key:'',name:'discount_amount',type:'DECIMAL(10,2)',desc:'Tiền giảm giá'},
+        {key:'',name:'final_amount',type:'DECIMAL(10,2)',desc:'Tiền thanh toán thực tế'},
+        {key:'',name:'booking_status',type:"ENUM('pending','confirmed','cancelled','used')",desc:'Trạng thái'},
+        {key:'',name:'booked_at',type:'DATETIME',desc:'Thời gian đặt vé'},
+        {key:'',name:'expires_at',type:'DATETIME',desc:'Thời hạn thanh toán'},
+      ]
+    },
+    {
+      name:'tickets', desc:'Chi tiết từng vé trong đơn', color:COLORS.ticket,
+      cols:[
+        {key:'pk',name:'ticket_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'booking_id',type:'INT FK',desc:'→ bookings'},
+        {key:'fk',name:'ss_id',type:'INT FK',desc:'→ showtime_seats'},
+        {key:'',name:'ticket_code',type:'VARCHAR(30) UQ',desc:'Mã vé QR'},
+        {key:'',name:'price',type:'DECIMAL(10,2)',desc:'Giá vé'},
+        {key:'',name:'is_used',type:'BOOLEAN',desc:'Đã soát vé chưa'},
+        {key:'',name:'used_at',type:'DATETIME',desc:'Thời điểm soát vé'},
+      ]
+    },
+    {
+      name:'price_rules', desc:'Quy tắc giá theo ngày/giờ', color:COLORS.ticket,
+      cols:[
+        {key:'pk',name:'rule_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'cinema_id',type:'INT FK',desc:'→ cinemas'},
+        {key:'',name:'rule_name',type:'VARCHAR(100)',desc:'Tên quy tắc'},
+        {key:'',name:'day_of_week',type:'VARCHAR(20)',desc:'Thứ áp dụng (Mon,Tue...)'},
+        {key:'',name:'time_from',type:'TIME',desc:'Giờ bắt đầu áp dụng'},
+        {key:'',name:'time_to',type:'TIME',desc:'Giờ kết thúc'},
+        {key:'',name:'price_adjustment',type:'DECIMAL(5,2)',desc:'% điều chỉnh giá'},
+      ]
+    },
+  ],
+  user: [
+    {
+      name:'users', desc:'Tài khoản người dùng hệ thống', color:COLORS.user,
+      cols:[
+        {key:'pk',name:'user_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'tier_id',type:'INT FK',desc:'→ membership_tiers'},
+        {key:'',name:'full_name',type:'VARCHAR(100)',desc:'Họ và tên'},
+        {key:'uk',name:'email',type:'VARCHAR(100) UQ',desc:'Email (unique)'},
+        {key:'',name:'phone',type:'VARCHAR(20)',desc:'Số điện thoại'},
+        {key:'',name:'password_hash',type:'VARCHAR(255)',desc:'Mật khẩu đã mã hóa'},
+        {key:'',name:'avatar_url',type:'VARCHAR(255)',desc:'Ảnh đại diện'},
+        {key:'',name:'date_of_birth',type:'DATE',desc:'Ngày sinh'},
+        {key:'',name:'gender',type:"ENUM('male','female','other')",desc:'Giới tính'},
+        {key:'',name:'total_points',type:'INT DEFAULT 0',desc:'Tổng điểm tích lũy'},
+        {key:'',name:'role',type:"ENUM('customer','staff','admin')",desc:'Vai trò'},
+        {key:'',name:'is_active',type:'BOOLEAN',desc:'Tài khoản hoạt động'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Ngày đăng ký'},
+        {key:'',name:'last_login',type:'DATETIME',desc:'Lần đăng nhập cuối'},
+      ]
+    },
+    {
+      name:'membership_tiers', desc:'Hạng thành viên (Bronze/Silver/Gold)', color:COLORS.user,
+      cols:[
+        {key:'pk',name:'tier_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'',name:'tier_name',type:'VARCHAR(30)',desc:'Tên hạng (Bronze, Silver, Gold)'},
+        {key:'',name:'min_points',type:'INT',desc:'Điểm tối thiểu để đạt hạng'},
+        {key:'',name:'discount_percent',type:'DECIMAL(4,2)',desc:'Phần trăm ưu đãi'},
+        {key:'',name:'benefits',type:'TEXT',desc:'Mô tả quyền lợi'},
+        {key:'',name:'color_code',type:'VARCHAR(7)',desc:'Màu hiển thị badge'},
+      ]
+    },
+    {
+      name:'loyalty_points', desc:'Lịch sử tích lũy và đổi điểm', color:COLORS.user,
+      cols:[
+        {key:'pk',name:'point_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users'},
+        {key:'',name:'points_change',type:'INT',desc:'Số điểm thay đổi (+/-)'},
+        {key:'',name:'reason',type:"ENUM('booking','shopping','redeem','bonus')",desc:'Lý do thay đổi'},
+        {key:'',name:'ref_id',type:'INT',desc:'ID đơn hàng/vé liên quan'},
+        {key:'',name:'ref_type',type:"ENUM('booking','order')",desc:'Loại tham chiếu'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Thời điểm ghi nhận'},
+      ]
+    },
+    {
+      name:'reviews', desc:'Đánh giá phim của người dùng', color:COLORS.user,
+      cols:[
+        {key:'pk',name:'review_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users'},
+        {key:'fk',name:'movie_id',type:'INT FK',desc:'→ movies'},
+        {key:'',name:'rating',type:'TINYINT (1-5)',desc:'Số sao đánh giá'},
+        {key:'',name:'comment',type:'TEXT',desc:'Nội dung nhận xét'},
+        {key:'',name:'is_approved',type:'BOOLEAN',desc:'Đã duyệt hay chưa'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Ngày viết'},
+      ]
+    },
+  ],
+  shop: [
+    {
+      name:'product_categories', desc:'Danh mục sản phẩm bán online', color:COLORS.shop,
+      cols:[
+        {key:'pk',name:'category_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'parent_id',type:'INT FK',desc:'→ product_categories (self-ref)'},
+        {key:'',name:'category_name',type:'VARCHAR(80)',desc:'Tên danh mục'},
+        {key:'',name:'slug',type:'VARCHAR(100) UQ',desc:'URL thân thiện'},
+        {key:'',name:'icon_url',type:'VARCHAR(255)',desc:'Biểu tượng danh mục'},
+      ]
+    },
+    {
+      name:'products', desc:'Sản phẩm mua sắm trực tuyến', color:COLORS.shop,
+      cols:[
+        {key:'pk',name:'product_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'category_id',type:'INT FK',desc:'→ product_categories'},
+        {key:'fk',name:'cinema_id',type:'INT FK',desc:'→ cinemas (hàng độc quyền)'},
+        {key:'',name:'product_name',type:'VARCHAR(150)',desc:'Tên sản phẩm'},
+        {key:'',name:'description',type:'TEXT',desc:'Mô tả sản phẩm'},
+        {key:'',name:'price',type:'DECIMAL(10,2)',desc:'Giá bán'},
+        {key:'',name:'stock_quantity',type:'INT',desc:'Số lượng tồn kho'},
+        {key:'',name:'image_url',type:'VARCHAR(255)',desc:'Ảnh sản phẩm'},
+        {key:'',name:'is_active',type:'BOOLEAN',desc:'Đang bán'},
+        {key:'',name:'product_type',type:"ENUM('food','drink','merchandise','combo')",desc:'Loại sản phẩm'},
+      ]
+    },
+    {
+      name:'carts', desc:'Giỏ hàng của người dùng', color:COLORS.shop,
+      cols:[
+        {key:'pk',name:'cart_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK UQ',desc:'→ users (1 user = 1 cart)'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Ngày tạo giỏ hàng'},
+        {key:'',name:'updated_at',type:'DATETIME',desc:'Cập nhật lần cuối'},
+      ]
+    },
+    {
+      name:'cart_items', desc:'Sản phẩm trong giỏ hàng', color:COLORS.shop,
+      cols:[
+        {key:'pk',name:'cart_item_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'cart_id',type:'INT FK',desc:'→ carts'},
+        {key:'fk',name:'product_id',type:'INT FK',desc:'→ products'},
+        {key:'',name:'quantity',type:'INT',desc:'Số lượng'},
+        {key:'',name:'added_at',type:'DATETIME',desc:'Thời gian thêm vào giỏ'},
+      ]
+    },
+    {
+      name:'orders', desc:'Đơn hàng mua sắm trực tuyến', color:COLORS.shop,
+      cols:[
+        {key:'pk',name:'order_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users'},
+        {key:'fk',name:'coupon_id',type:'INT FK',desc:'→ coupons (nullable)'},
+        {key:'',name:'order_code',type:'VARCHAR(20) UQ',desc:'Mã đơn hàng'},
+        {key:'',name:'subtotal',type:'DECIMAL(10,2)',desc:'Tổng tiền hàng'},
+        {key:'',name:'discount_amount',type:'DECIMAL(10,2)',desc:'Tiền giảm giá'},
+        {key:'',name:'shipping_fee',type:'DECIMAL(10,2)',desc:'Phí vận chuyển'},
+        {key:'',name:'total_amount',type:'DECIMAL(10,2)',desc:'Tổng thanh toán'},
+        {key:'',name:'shipping_address',type:'TEXT',desc:'Địa chỉ giao hàng'},
+        {key:'',name:'order_status',type:"ENUM('pending','confirmed','shipped','delivered','cancelled')",desc:'Trạng thái đơn'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Ngày tạo đơn'},
+      ]
+    },
+    {
+      name:'order_items', desc:'Chi tiết sản phẩm trong đơn hàng', color:COLORS.shop,
+      cols:[
+        {key:'pk',name:'item_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'order_id',type:'INT FK',desc:'→ orders'},
+        {key:'fk',name:'product_id',type:'INT FK',desc:'→ products'},
+        {key:'',name:'quantity',type:'INT',desc:'Số lượng đặt'},
+        {key:'',name:'unit_price',type:'DECIMAL(10,2)',desc:'Giá tại thời điểm mua'},
+        {key:'',name:'subtotal',type:'DECIMAL(10,2)',desc:'Thành tiền'},
+      ]
+    },
+  ],
+  payment: [
+    {
+      name:'payment_methods', desc:'Phương thức thanh toán hỗ trợ', color:COLORS.payment,
+      cols:[
+        {key:'pk',name:'method_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'',name:'method_name',type:'VARCHAR(50)',desc:'Tên phương thức'},
+        {key:'',name:'method_code',type:'VARCHAR(20) UQ',desc:'Mã (vnpay, momo, cash...)'},
+        {key:'',name:'is_active',type:'BOOLEAN',desc:'Đang hỗ trợ'},
+        {key:'',name:'icon_url',type:'VARCHAR(255)',desc:'Logo phương thức'},
+      ]
+    },
+    {
+      name:'payments', desc:'Giao dịch thanh toán', color:COLORS.payment,
+      cols:[
+        {key:'pk',name:'payment_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'method_id',type:'INT FK',desc:'→ payment_methods'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users'},
+        {key:'',name:'ref_id',type:'INT',desc:'ID booking hoặc order'},
+        {key:'',name:'ref_type',type:"ENUM('booking','order')",desc:'Loại đối tượng thanh toán'},
+        {key:'',name:'amount',type:'DECIMAL(10,2)',desc:'Số tiền giao dịch'},
+        {key:'',name:'transaction_code',type:'VARCHAR(50) UQ',desc:'Mã giao dịch từ cổng'},
+        {key:'',name:'status',type:"ENUM('pending','success','failed','refunded')",desc:'Kết quả'},
+        {key:'',name:'paid_at',type:'DATETIME',desc:'Thời điểm thanh toán'},
+        {key:'',name:'note',type:'TEXT',desc:'Ghi chú'},
+      ]
+    },
+    {
+      name:'coupons', desc:'Mã khuyến mãi và giảm giá', color:COLORS.payment,
+      cols:[
+        {key:'pk',name:'coupon_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'',name:'code',type:'VARCHAR(20) UQ',desc:'Mã coupon (CINEMA20)'},
+        {key:'',name:'discount_type',type:"ENUM('percent','fixed')",desc:'Loại giảm giá'},
+        {key:'',name:'discount_value',type:'DECIMAL(10,2)',desc:'Giá trị giảm'},
+        {key:'',name:'min_order_value',type:'DECIMAL(10,2)',desc:'Đơn tối thiểu áp dụng'},
+        {key:'',name:'max_discount',type:'DECIMAL(10,2)',desc:'Giảm tối đa'},
+        {key:'',name:'usage_limit',type:'INT',desc:'Giới hạn lượt dùng tổng'},
+        {key:'',name:'used_count',type:'INT DEFAULT 0',desc:'Đã dùng bao nhiêu lần'},
+        {key:'',name:'applicable_to',type:"ENUM('booking','order','both')",desc:'Áp dụng cho'},
+        {key:'',name:'valid_from',type:'DATE',desc:'Hiệu lực từ ngày'},
+        {key:'',name:'valid_until',type:'DATE',desc:'Hiệu lực đến ngày'},
+        {key:'',name:'is_active',type:'BOOLEAN',desc:'Đang kích hoạt'},
+      ]
+    },
+    {
+      name:'coupon_usages', desc:'Lịch sử sử dụng coupon', color:COLORS.payment,
+      cols:[
+        {key:'pk',name:'usage_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'coupon_id',type:'INT FK',desc:'→ coupons'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users'},
+        {key:'',name:'ref_id',type:'INT',desc:'ID đơn áp dụng'},
+        {key:'',name:'ref_type',type:"ENUM('booking','order')",desc:'Loại đơn'},
+        {key:'',name:'used_at',type:'DATETIME',desc:'Thời điểm sử dụng'},
+      ]
+    },
+  ],
+  report: [
+    {
+      name:'daily_revenue', desc:'Doanh thu tổng hợp theo ngày', color:COLORS.report,
+      cols:[
+        {key:'pk',name:'revenue_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'cinema_id',type:'INT FK',desc:'→ cinemas'},
+        {key:'',name:'report_date',type:'DATE',desc:'Ngày báo cáo'},
+        {key:'',name:'ticket_revenue',type:'DECIMAL(12,2)',desc:'Doanh thu bán vé'},
+        {key:'',name:'shop_revenue',type:'DECIMAL(12,2)',desc:'Doanh thu mua sắm'},
+        {key:'',name:'total_tickets_sold',type:'INT',desc:'Số vé bán được'},
+        {key:'',name:'total_orders',type:'INT',desc:'Số đơn hàng'},
+        {key:'',name:'total_customers',type:'INT',desc:'Số khách hàng'},
+      ]
+    },
+    {
+      name:'audit_logs', desc:'Nhật ký hành động hệ thống', color:COLORS.report,
+      cols:[
+        {key:'pk',name:'log_id',type:'BIGINT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users (nullable)'},
+        {key:'',name:'action',type:'VARCHAR(100)',desc:'Hành động (CREATE, UPDATE, DELETE)'},
+        {key:'',name:'table_name',type:'VARCHAR(50)',desc:'Bảng bị tác động'},
+        {key:'',name:'record_id',type:'INT',desc:'ID bản ghi bị tác động'},
+        {key:'',name:'old_value',type:'JSON',desc:'Giá trị cũ'},
+        {key:'',name:'new_value',type:'JSON',desc:'Giá trị mới'},
+        {key:'',name:'ip_address',type:'VARCHAR(45)',desc:'IP thực hiện'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Thời điểm'},
+      ]
+    },
+    {
+      name:'notifications', desc:'Thông báo gửi đến người dùng', color:COLORS.report,
+      cols:[
+        {key:'pk',name:'notif_id',type:'INT PK',desc:'Khóa chính'},
+        {key:'fk',name:'user_id',type:'INT FK',desc:'→ users (null = gửi tất cả)'},
+        {key:'',name:'title',type:'VARCHAR(150)',desc:'Tiêu đề thông báo'},
+        {key:'',name:'content',type:'TEXT',desc:'Nội dung'},
+        {key:'',name:'notif_type',type:"ENUM('booking','promotion','system','reminder')",desc:'Loại thông báo'},
+        {key:'',name:'is_read',type:'BOOLEAN DEFAULT 0',desc:'Đã đọc chưa'},
+        {key:'',name:'created_at',type:'DATETIME',desc:'Ngày gửi'},
+      ]
+    },
+  ]
+};
+
+const RELATIONS = [
+  {a:'cinemas',b:'halls',type:'1-N',key:'cinema_id',desc:'Rạp chứa nhiều phòng chiếu'},
+  {a:'cinemas',b:'amenities',type:'1-N',key:'cinema_id',desc:'Rạp có nhiều tiện ích'},
+  {a:'cinemas',b:'price_rules',type:'1-N',key:'cinema_id',desc:'Rạp có nhiều quy tắc giá'},
+  {a:'cinemas',b:'daily_revenue',type:'1-N',key:'cinema_id',desc:'Doanh thu theo từng rạp'},
+  {a:'cinemas',b:'products',type:'1-N',key:'cinema_id',desc:'Sản phẩm độc quyền của rạp'},
+  {a:'halls',b:'seats',type:'1-N',key:'hall_id',desc:'Phòng chiếu có nhiều ghế'},
+  {a:'halls',b:'showtimes',type:'1-N',key:'hall_id',desc:'Phòng chiếu nhiều suất'},
+  {a:'seat_types',b:'seats',type:'1-N',key:'seat_type_id',desc:'Loại ghế có nhiều ghế cụ thể'},
+  {a:'movies',b:'movie_genres',type:'1-N',key:'movie_id',desc:'Phim thuộc nhiều thể loại'},
+  {a:'genres',b:'movie_genres',type:'1-N',key:'genre_id',desc:'Thể loại có nhiều phim'},
+  {a:'movies',b:'movie_casts',type:'1-N',key:'movie_id',desc:'Phim có nhiều diễn viên'},
+  {a:'movies',b:'showtimes',type:'1-N',key:'movie_id',desc:'Phim có nhiều suất chiếu'},
+  {a:'movies',b:'reviews',type:'1-N',key:'movie_id',desc:'Phim nhận nhiều đánh giá'},
+  {a:'showtimes',b:'showtime_seats',type:'1-N',key:'showtime_id',desc:'Suất chiếu có nhiều trạng thái ghế'},
+  {a:'seats',b:'showtime_seats',type:'1-N',key:'seat_id',desc:'Ghế xuất hiện trong nhiều suất'},
+  {a:'showtimes',b:'bookings',type:'1-N',key:'showtime_id',desc:'Suất chiếu có nhiều đơn đặt vé'},
+  {a:'bookings',b:'tickets',type:'1-N',key:'booking_id',desc:'Đơn đặt vé có nhiều vé'},
+  {a:'showtime_seats',b:'tickets',type:'1-1',key:'ss_id',desc:'Mỗi ghế-suất tương ứng 1 vé'},
+  {a:'membership_tiers',b:'users',type:'1-N',key:'tier_id',desc:'Hạng thành viên có nhiều user'},
+  {a:'users',b:'bookings',type:'1-N',key:'user_id',desc:'User đặt nhiều vé'},
+  {a:'users',b:'orders',type:'1-N',key:'user_id',desc:'User tạo nhiều đơn hàng'},
+  {a:'users',b:'reviews',type:'1-N',key:'user_id',desc:'User viết nhiều đánh giá'},
+  {a:'users',b:'loyalty_points',type:'1-N',key:'user_id',desc:'User có nhiều lịch sử điểm'},
+  {a:'users',b:'carts',type:'1-1',key:'user_id',desc:'Mỗi user có 1 giỏ hàng'},
+  {a:'users',b:'payments',type:'1-N',key:'user_id',desc:'User có nhiều giao dịch'},
+  {a:'product_categories',b:'products',type:'1-N',key:'category_id',desc:'Danh mục có nhiều sản phẩm'},
+  {a:'product_categories',b:'product_categories',type:'1-N',key:'parent_id',desc:'Danh mục cha - con (self-ref)'},
+  {a:'carts',b:'cart_items',type:'1-N',key:'cart_id',desc:'Giỏ hàng có nhiều sản phẩm'},
+  {a:'products',b:'cart_items',type:'1-N',key:'product_id',desc:'Sản phẩm trong nhiều giỏ hàng'},
+  {a:'orders',b:'order_items',type:'1-N',key:'order_id',desc:'Đơn hàng có nhiều chi tiết'},
+  {a:'products',b:'order_items',type:'1-N',key:'product_id',desc:'Sản phẩm trong nhiều đơn'},
+  {a:'coupons',b:'bookings',type:'1-N',key:'coupon_id',desc:'Coupon áp dụng cho nhiều booking'},
+  {a:'coupons',b:'orders',type:'1-N',key:'coupon_id',desc:'Coupon áp dụng cho nhiều đơn'},
+  {a:'coupons',b:'coupon_usages',type:'1-N',key:'coupon_id',desc:'Lịch sử sử dụng coupon'},
+  {a:'users',b:'coupon_usages',type:'1-N',key:'user_id',desc:'User sử dụng nhiều coupon'},
+  {a:'payment_methods',b:'payments',type:'1-N',key:'method_id',desc:'Phương thức có nhiều giao dịch'},
+  {a:'users',b:'audit_logs',type:'1-N',key:'user_id',desc:'Log hành động theo user'},
+  {a:'users',b:'notifications',type:'1-N',key:'user_id',desc:'User nhận nhiều thông báo'},
+];
+
+// ─── RENDER TABLE CARD ────────────────────────────────────────────
+function renderTableCard(tbl) {
+  const typeColors = {
+    'INT PK':'#FCD34D','INT FK':'#93C5FD','VARCHAR':'#86EFAC',
+    'DECIMAL':'#F9A8D4','DATETIME':'#C4B5FD','BOOLEAN':'#6EE7B7',
+    'TEXT':'#FCA5A5','ENUM':'#FDE68A','DATE':'#D8B4FE',
+    'TINYINT':'#A7F3D0','BIGINT':'#FCD34D','CHAR':'#86EFAC',
+    'JSON':'#F9A8D4','TIME':'#C4B5FD'
+  };
+  function getTypeColor(t) {
+    for (const [k,v] of Object.entries(typeColors)) if(t.startsWith(k)) return v;
+    return '#CBD5E1';
+  }
+  const cols = tbl.cols.map(c => {
+    let keyHtml = '';
+    if(c.key==='pk') keyHtml = `<svg class="col-key pk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>`;
+    else if(c.key==='fk') keyHtml = `<svg class="col-key fk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/></svg>`;
+    else if(c.key==='uk') keyHtml = `<svg class="col-key uk" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><circle cx="12" cy="8" r="7"/><polyline points="8.21,13.89 7,23 12,20 17,23 15.79,13.88"/></svg>`;
+    else keyHtml = '<span style="display:inline-block;width:11px"></span>';
+    return `<div class="col-row">
+      <span>${keyHtml}</span>
+      <span class="col-name">${c.name}</span>
+      <span class="col-type" style="background:${getTypeColor(c.type)}22;color:${getTypeColor(c.type)}">${c.type.split(' ')[0]}</span>
+      <span class="col-desc">${c.desc}</span>
+    </div>`;
+  }).join('');
+  return `<div class="table-card">
+    <div class="table-header" style="background:${tbl.color}08;border-bottom:2px solid ${tbl.color}30">
+      <div class="table-name">
+        <div class="table-name-icon" style="background:${tbl.color}22">
+          <svg viewBox="0 0 24 24" fill="none" stroke="${tbl.color}" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 3v18"/></svg>
+        </div>
+        <span style="color:${tbl.color}">${tbl.name}</span>
+      </div>
+      <span class="table-desc">${tbl.desc}</span>
+    </div>
+    <div class="table-body">${cols}</div>
+  </div>`;
+}
+
+// ─── POPULATE MODULES ─────────────────────────────────────────────
+Object.entries(DB).forEach(([mod, tables]) => {
+  const el = document.getElementById('schema-' + mod);
+  if(el) el.innerHTML = tables.map(renderTableCard).join('');
+});
+
+// ─── RELATIONS TABLE ──────────────────────────────────────────────
+const relBody = document.getElementById('relTableBody');
+relBody.innerHTML = RELATIONS.map(r => {
+  const cls = r.type==='1-N'?'rel-1n':r.type==='N-N'?'rel-nn':'rel-11';
+  return `<tr>
+    <td><code>${r.a}</code></td>
+    <td><span class="rel-type ${cls}">${r.type}</span></td>
+    <td><code>${r.b}</code></td>
+    <td><code>${r.key}</code></td>
+    <td style="color:var(--text2);font-size:12.5px">${r.desc}</td>
+  </tr>`;
+}).join('');
+
+// ─── ERD RENDER ───────────────────────────────────────────────────
+const ERD_NODES = [
+  {id:'cinemas',label:'cinemas',color:COLORS.cinema,x:20,y:20,cols:['cinema_id PK','name','city','status']},
+  {id:'halls',label:'halls',color:COLORS.cinema,x:280,y:20,cols:['hall_id PK','cinema_id FK','hall_name','hall_type','total_seats']},
+  {id:'seats',label:'seats',color:COLORS.cinema,x:540,y:20,cols:['seat_id PK','hall_id FK','seat_type_id FK','row_label','seat_number']},
+  {id:'seat_types',label:'seat_types',color:COLORS.cinema,x:800,y:20,cols:['seat_type_id PK','type_name','price_multiplier']},
+  {id:'movies',label:'movies',color:COLORS.movie,x:20,y:220,cols:['movie_id PK','title','duration_min','rated','status']},
+  {id:'genres',label:'genres',color:COLORS.movie,x:280,y:220,cols:['genre_id PK','genre_name']},
+  {id:'movie_genres',label:'movie_genres',color:COLORS.movie,x:540,y:220,cols:['movie_id FK','genre_id FK']},
+  {id:'movie_casts',label:'movie_casts',color:COLORS.movie,x:800,y:220,cols:['cast_id PK','movie_id FK','person_name','role_type']},
+  {id:'showtimes',label:'showtimes',color:COLORS.ticket,x:20,y:420,cols:['showtime_id PK','movie_id FK','hall_id FK','start_time','base_price']},
+  {id:'showtime_seats',label:'showtime_seats',color:COLORS.ticket,x:280,y:420,cols:['ss_id PK','showtime_id FK','seat_id FK','status','actual_price']},
+  {id:'bookings',label:'bookings',color:COLORS.ticket,x:540,y:420,cols:['booking_id PK','user_id FK','showtime_id FK','booking_code','final_amount']},
+  {id:'tickets',label:'tickets',color:COLORS.ticket,x:800,y:420,cols:['ticket_id PK','booking_id FK','ss_id FK','ticket_code']},
+  {id:'users',label:'users',color:COLORS.user,x:20,y:620,cols:['user_id PK','tier_id FK','email UQ','full_name','role','total_points']},
+  {id:'membership_tiers',label:'membership_tiers',color:COLORS.user,x:280,y:620,cols:['tier_id PK','tier_name','min_points','discount_percent']},
+  {id:'reviews',label:'reviews',color:COLORS.user,x:540,y:620,cols:['review_id PK','user_id FK','movie_id FK','rating']},
+  {id:'loyalty_points',label:'loyalty_points',color:COLORS.user,x:800,y:620,cols:['point_id PK','user_id FK','points_change','reason']},
+  {id:'products',label:'products',color:COLORS.shop,x:20,y:820,cols:['product_id PK','category_id FK','product_name','price','stock_quantity']},
+  {id:'product_categories',label:'product_categories',color:COLORS.shop,x:280,y:820,cols:['category_id PK','parent_id FK','category_name']},
+  {id:'carts',label:'carts',color:COLORS.shop,x:540,y:820,cols:['cart_id PK','user_id FK UQ']},
+  {id:'cart_items',label:'cart_items',color:COLORS.shop,x:800,y:820,cols:['cart_item_id PK','cart_id FK','product_id FK','quantity']},
+  {id:'orders',label:'orders',color:COLORS.shop,x:20,y:1010,cols:['order_id PK','user_id FK','order_code UQ','total_amount','order_status']},
+  {id:'order_items',label:'order_items',color:COLORS.shop,x:280,y:1010,cols:['item_id PK','order_id FK','product_id FK','quantity','unit_price']},
+  {id:'payments',label:'payments',color:COLORS.payment,x:540,y:1010,cols:['payment_id PK','method_id FK','user_id FK','ref_id','amount','status']},
+  {id:'payment_methods',label:'payment_methods',color:COLORS.payment,x:800,y:1010,cols:['method_id PK','method_name','method_code']},
+  {id:'coupons',label:'coupons',color:COLORS.payment,x:20,y:1200,cols:['coupon_id PK','code UQ','discount_type','discount_value']},
+  {id:'coupon_usages',label:'coupon_usages',color:COLORS.payment,x:280,y:1200,cols:['usage_id PK','coupon_id FK','user_id FK']},
+  {id:'daily_revenue',label:'daily_revenue',color:COLORS.report,x:540,y:1200,cols:['revenue_id PK','cinema_id FK','report_date','total_tickets_sold']},
+  {id:'audit_logs',label:'audit_logs',color:COLORS.report,x:800,y:1200,cols:['log_id PK','user_id FK','action','table_name']},
+  {id:'notifications',label:'notifications',color:COLORS.report,x:20,y:1390,cols:['notif_id PK','user_id FK','title','notif_type']},
+  {id:'amenities',label:'amenities',color:COLORS.cinema,x:280,y:1390,cols:['amenity_id PK','cinema_id FK','amenity_name']},
+  {id:'price_rules',label:'price_rules',color:COLORS.cinema,x:540,y:1390,cols:['rule_id PK','cinema_id FK','rule_name','price_adjustment']},
+];
+
+const ERD_EDGES = [
+  ['cinemas','halls'],['halls','seats'],['seat_types','seats'],
+  ['movies','movie_genres'],['genres','movie_genres'],['movies','movie_casts'],
+  ['movies','showtimes'],['halls','showtimes'],
+  ['showtimes','showtime_seats'],['seats','showtime_seats'],
+  ['showtimes','bookings'],['bookings','tickets'],['showtime_seats','tickets'],
+  ['users','bookings'],['users','reviews'],['movies','reviews'],
+  ['membership_tiers','users'],['users','loyalty_points'],
+  ['product_categories','products'],['users','carts'],['carts','cart_items'],
+  ['products','cart_items'],['users','orders'],['orders','order_items'],['products','order_items'],
+  ['payment_methods','payments'],['users','payments'],
+  ['coupons','bookings'],['coupons','orders'],['coupons','coupon_usages'],['users','coupon_usages'],
+  ['cinemas','daily_revenue'],['users','audit_logs'],['users','notifications'],
+  ['cinemas','amenities'],['cinemas','price_rules'],
+];
+
+function renderERD() {
+  const canvas = document.getElementById('erdCanvas');
+  if(!canvas) return;
+  // Calculate needed height
+  const maxY = Math.max(...ERD_NODES.map(n=>n.y)) + 200;
+  canvas.style.height = (maxY+40)+'px';
+
+  // Create node elements
+  ERD_NODES.forEach(n => {
+    const div = document.createElement('div');
+    div.className = 'erd-node';
+    div.id = 'erd-'+n.id;
+    div.style.left = n.x+'px';
+    div.style.top = n.y+'px';
+    div.innerHTML = `
+      <div class="erd-node-header" style="background:${n.color}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18M9 3v18"/></svg>
+        ${n.label}
+      </div>
+      ${n.cols.map(c=>`<div class="erd-col">
+        <svg class="erd-col-icon" viewBox="0 0 24 24" fill="none" stroke="${c.includes('PK')?'#F59E0B':c.includes('FK')?'#3B82F6':'#94A3B8'}" stroke-width="2" width="11" height="11"><rect x="2" y="6" width="20" height="12" rx="2"/></svg>
+        <span style="font-size:10.5px;color:${c.includes('PK')?'#F59E0B':c.includes('FK')?'#3B82F6':'#475569'}">${c}</span>
+      </div>`).join('')}
+    `;
+    canvas.appendChild(div);
+  });
+
+  // Draw edges
+  setTimeout(() => {
+    const svg = document.getElementById('erdSvg');
+    svg.style.height = canvas.scrollHeight+'px';
+    svg.style.width = canvas.scrollWidth+'px';
+    ERD_EDGES.forEach(([aId,bId]) => {
+      const aEl = document.getElementById('erd-'+aId);
+      const bEl = document.getElementById('erd-'+bId);
+      if(!aEl||!bEl) return;
+      const aR = {x:parseInt(aEl.style.left),y:parseInt(aEl.style.top),w:aEl.offsetWidth,h:aEl.offsetHeight};
+      const bR = {x:parseInt(bEl.style.left),y:parseInt(bEl.style.top),w:bEl.offsetWidth,h:bEl.offsetHeight};
+      const x1=aR.x+aR.w/2, y1=aR.y+aR.h/2, x2=bR.x+bR.w/2, y2=bR.y+bR.h/2;
+      const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+      const dx=(x2-x1)*0.5;
+      path.setAttribute('d',`M${x1},${y1} C${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`);
+      path.setAttribute('stroke','#CBD5E1');
+      path.setAttribute('stroke-width','1.5');
+      path.setAttribute('fill','none');
+      path.setAttribute('marker-end','url(#arrow)');
+      svg.appendChild(path);
+    });
+  }, 100);
+}
+
+// ─── SQL SCRIPTS ──────────────────────────────────────────────────
+const SQL_SCRIPTS = [
+  {label:'🏢 Module: Rạp phim & Phòng chiếu', sql:`<span class="cm">-- ================================================</span>
+<span class="cm">-- MODULE 1: QUẢN LÝ RẠP PHIM</span>
+<span class="cm">-- ================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="fn">cinemas</span> (
+  <span class="pk-col">cinema_id</span>    <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  name          <span class="type">VARCHAR</span>(100) <span class="kw">NOT NULL</span>,
+  address       <span class="type">TEXT</span>,
+  city          <span class="type">VARCHAR</span>(50),
+  phone         <span class="type">VARCHAR</span>(20),
+  email         <span class="type">VARCHAR</span>(100),
+  total_halls   <span class="type">INT</span> <span class="kw">DEFAULT</span> 0,
+  status        <span class="type">ENUM</span>(<span class="str">'active'</span>,<span class="str">'inactive'</span>) <span class="kw">DEFAULT</span> <span class="str">'active'</span>,
+  created_at    <span class="type">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">halls</span> (
+  <span class="pk-col">hall_id</span>      <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">cinema_id</span>    <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  hall_name     <span class="type">VARCHAR</span>(50) <span class="kw">NOT NULL</span>,
+  hall_type     <span class="type">ENUM</span>(<span class="str">'2D'</span>,<span class="str">'3D'</span>,<span class="str">'4DX'</span>,<span class="str">'IMAX'</span>) <span class="kw">DEFAULT</span> <span class="str">'2D'</span>,
+  total_seats   <span class="type">INT</span>,
+  status        <span class="type">ENUM</span>(<span class="str">'active'</span>,<span class="str">'maintenance'</span>) <span class="kw">DEFAULT</span> <span class="str">'active'</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">cinema_id</span>) <span class="kw">REFERENCES</span> cinemas(<span class="pk-col">cinema_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">seat_types</span> (
+  <span class="pk-col">seat_type_id</span>    <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  type_name       <span class="type">VARCHAR</span>(30) <span class="kw">NOT NULL</span>,
+  price_multiplier <span class="type">DECIMAL</span>(4,2) <span class="kw">DEFAULT</span> 1.00,
+  description     <span class="type">TEXT</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">seats</span> (
+  <span class="pk-col">seat_id</span>       <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">hall_id</span>       <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">seat_type_id</span>  <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  row_label     <span class="type">CHAR</span>(2),
+  seat_number   <span class="type">INT</span>,
+  is_active     <span class="type">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="fn">TRUE</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">hall_id</span>) <span class="kw">REFERENCES</span> halls(<span class="pk-col">hall_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">seat_type_id</span>) <span class="kw">REFERENCES</span> seat_types(<span class="pk-col">seat_type_id</span>)
+);`},
+  {label:'🎬 Module: Phim & Thể loại', sql:`<span class="cm">-- ================================================</span>
+<span class="cm">-- MODULE 2: QUẢN LÝ PHIM</span>
+<span class="cm">-- ================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="fn">movies</span> (
+  <span class="pk-col">movie_id</span>      <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  title         <span class="type">VARCHAR</span>(200) <span class="kw">NOT NULL</span>,
+  original_title <span class="type">VARCHAR</span>(200),
+  description   <span class="type">TEXT</span>,
+  duration_min  <span class="type">INT</span>,
+  release_date  <span class="type">DATE</span>,
+  end_date      <span class="type">DATE</span>,
+  language      <span class="type">VARCHAR</span>(20),
+  subtitle      <span class="type">VARCHAR</span>(20),
+  rated         <span class="type">ENUM</span>(<span class="str">'P'</span>,<span class="str">'C13'</span>,<span class="str">'C16'</span>,<span class="str">'C18'</span>) <span class="kw">DEFAULT</span> <span class="str">'P'</span>,
+  poster_url    <span class="type">VARCHAR</span>(255),
+  trailer_url   <span class="type">VARCHAR</span>(255),
+  imdb_rating   <span class="type">DECIMAL</span>(3,1),
+  status        <span class="type">ENUM</span>(<span class="str">'coming_soon'</span>,<span class="str">'now_showing'</span>,<span class="str">'ended'</span>) <span class="kw">DEFAULT</span> <span class="str">'coming_soon'</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">genres</span> (
+  <span class="pk-col">genre_id</span>    <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  genre_name  <span class="type">VARCHAR</span>(50) <span class="kw">NOT NULL UNIQUE</span>,
+  description <span class="type">TEXT</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">movie_genres</span> (
+  <span class="fk-col">movie_id</span>  <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">genre_id</span>  <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="kw">PRIMARY KEY</span> (<span class="fk-col">movie_id</span>, <span class="fk-col">genre_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">movie_id</span>) <span class="kw">REFERENCES</span> movies(<span class="pk-col">movie_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">genre_id</span>) <span class="kw">REFERENCES</span> genres(<span class="pk-col">genre_id</span>)
+);`},
+  {label:'🎟️ Module: Suất chiếu & Đặt vé', sql:`<span class="cm">-- ================================================</span>
+<span class="cm">-- MODULE 3: ĐẶT VÉ & SUẤT CHIẾU</span>
+<span class="cm">-- ================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="fn">showtimes</span> (
+  <span class="pk-col">showtime_id</span>     <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">movie_id</span>        <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">hall_id</span>         <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  start_time      <span class="type">DATETIME</span> <span class="kw">NOT NULL</span>,
+  end_time        <span class="type">DATETIME</span>,
+  base_price      <span class="type">DECIMAL</span>(10,2) <span class="kw">NOT NULL</span>,
+  available_seats <span class="type">INT</span>,
+  status          <span class="type">ENUM</span>(<span class="str">'scheduled'</span>,<span class="str">'ongoing'</span>,<span class="str">'ended'</span>,<span class="str">'cancelled'</span>) <span class="kw">DEFAULT</span> <span class="str">'scheduled'</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">movie_id</span>) <span class="kw">REFERENCES</span> movies(<span class="pk-col">movie_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">hall_id</span>) <span class="kw">REFERENCES</span> halls(<span class="pk-col">hall_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">showtime_seats</span> (
+  <span class="pk-col">ss_id</span>        <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">showtime_id</span>  <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">seat_id</span>      <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  status       <span class="type">ENUM</span>(<span class="str">'available'</span>,<span class="str">'booked'</span>,<span class="str">'reserved'</span>,<span class="str">'broken'</span>) <span class="kw">DEFAULT</span> <span class="str">'available'</span>,
+  actual_price <span class="type">DECIMAL</span>(10,2),
+  <span class="kw">UNIQUE KEY</span> uq_showtime_seat (<span class="fk-col">showtime_id</span>, <span class="fk-col">seat_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">showtime_id</span>) <span class="kw">REFERENCES</span> showtimes(<span class="pk-col">showtime_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">seat_id</span>) <span class="kw">REFERENCES</span> seats(<span class="pk-col">seat_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">bookings</span> (
+  <span class="pk-col">booking_id</span>     <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">user_id</span>        <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">showtime_id</span>    <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">coupon_id</span>      <span class="type">INT</span> <span class="kw">DEFAULT NULL</span>,
+  booking_code   <span class="type">VARCHAR</span>(20) <span class="kw">UNIQUE NOT NULL</span>,
+  total_amount   <span class="type">DECIMAL</span>(10,2),
+  discount_amount <span class="type">DECIMAL</span>(10,2) <span class="kw">DEFAULT</span> 0,
+  final_amount   <span class="type">DECIMAL</span>(10,2),
+  booking_status <span class="type">ENUM</span>(<span class="str">'pending'</span>,<span class="str">'confirmed'</span>,<span class="str">'cancelled'</span>,<span class="str">'used'</span>) <span class="kw">DEFAULT</span> <span class="str">'pending'</span>,
+  booked_at      <span class="type">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
+  expires_at     <span class="type">DATETIME</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">user_id</span>) <span class="kw">REFERENCES</span> users(<span class="pk-col">user_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">showtime_id</span>) <span class="kw">REFERENCES</span> showtimes(<span class="pk-col">showtime_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">coupon_id</span>) <span class="kw">REFERENCES</span> coupons(<span class="pk-col">coupon_id</span>)
+);`},
+  {label:'👤 Module: Users & Membership', sql:`<span class="cm">-- ================================================</span>
+<span class="cm">-- MODULE 4: NGƯỜI DÙNG & THÀNH VIÊN</span>
+<span class="cm">-- ================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="fn">membership_tiers</span> (
+  <span class="pk-col">tier_id</span>          <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  tier_name         <span class="type">VARCHAR</span>(30) <span class="kw">NOT NULL</span>,
+  min_points        <span class="type">INT</span> <span class="kw">DEFAULT</span> 0,
+  discount_percent  <span class="type">DECIMAL</span>(4,2) <span class="kw">DEFAULT</span> 0,
+  benefits          <span class="type">TEXT</span>,
+  color_code        <span class="type">VARCHAR</span>(7)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">users</span> (
+  <span class="pk-col">user_id</span>       <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">tier_id</span>       <span class="type">INT</span> <span class="kw">DEFAULT</span> 1,
+  full_name     <span class="type">VARCHAR</span>(100) <span class="kw">NOT NULL</span>,
+  email         <span class="type">VARCHAR</span>(100) <span class="kw">UNIQUE NOT NULL</span>,
+  phone         <span class="type">VARCHAR</span>(20),
+  password_hash <span class="type">VARCHAR</span>(255) <span class="kw">NOT NULL</span>,
+  avatar_url    <span class="type">VARCHAR</span>(255),
+  date_of_birth <span class="type">DATE</span>,
+  gender        <span class="type">ENUM</span>(<span class="str">'male'</span>,<span class="str">'female'</span>,<span class="str">'other'</span>),
+  total_points  <span class="type">INT</span> <span class="kw">DEFAULT</span> 0,
+  role          <span class="type">ENUM</span>(<span class="str">'customer'</span>,<span class="str">'staff'</span>,<span class="str">'admin'</span>) <span class="kw">DEFAULT</span> <span class="str">'customer'</span>,
+  is_active     <span class="type">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="fn">TRUE</span>,
+  created_at    <span class="type">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
+  last_login    <span class="type">DATETIME</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">tier_id</span>) <span class="kw">REFERENCES</span> membership_tiers(<span class="pk-col">tier_id</span>)
+);
+
+<span class="cm">-- Index tối ưu tìm kiếm</span>
+<span class="kw">CREATE INDEX</span> idx_users_email <span class="kw">ON</span> users(email);
+<span class="kw">CREATE INDEX</span> idx_users_phone <span class="kw">ON</span> users(phone);`},
+  {label:'🛒 Module: Mua sắm trực tuyến', sql:`<span class="cm">-- ================================================</span>
+<span class="cm">-- MODULE 5: MUA SẮM TRỰC TUYẾN</span>
+<span class="cm">-- ================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="fn">product_categories</span> (
+  <span class="pk-col">category_id</span>   <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">parent_id</span>     <span class="type">INT</span> <span class="kw">DEFAULT NULL</span>,
+  category_name <span class="type">VARCHAR</span>(80) <span class="kw">NOT NULL</span>,
+  slug          <span class="type">VARCHAR</span>(100) <span class="kw">UNIQUE</span>,
+  icon_url      <span class="type">VARCHAR</span>(255),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">parent_id</span>) <span class="kw">REFERENCES</span> product_categories(<span class="pk-col">category_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">products</span> (
+  <span class="pk-col">product_id</span>   <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">category_id</span>  <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">cinema_id</span>    <span class="type">INT</span> <span class="kw">DEFAULT NULL</span>,
+  product_name <span class="type">VARCHAR</span>(150) <span class="kw">NOT NULL</span>,
+  description  <span class="type">TEXT</span>,
+  price        <span class="type">DECIMAL</span>(10,2) <span class="kw">NOT NULL</span>,
+  stock_quantity <span class="type">INT</span> <span class="kw">DEFAULT</span> 0,
+  image_url    <span class="type">VARCHAR</span>(255),
+  is_active    <span class="type">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="fn">TRUE</span>,
+  product_type <span class="type">ENUM</span>(<span class="str">'food'</span>,<span class="str">'drink'</span>,<span class="str">'merchandise'</span>,<span class="str">'combo'</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">category_id</span>) <span class="kw">REFERENCES</span> product_categories(<span class="pk-col">category_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">cinema_id</span>) <span class="kw">REFERENCES</span> cinemas(<span class="pk-col">cinema_id</span>)
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">orders</span> (
+  <span class="pk-col">order_id</span>         <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">user_id</span>          <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">coupon_id</span>        <span class="type">INT</span> <span class="kw">DEFAULT NULL</span>,
+  order_code       <span class="type">VARCHAR</span>(20) <span class="kw">UNIQUE NOT NULL</span>,
+  subtotal         <span class="type">DECIMAL</span>(10,2),
+  discount_amount  <span class="type">DECIMAL</span>(10,2) <span class="kw">DEFAULT</span> 0,
+  shipping_fee     <span class="type">DECIMAL</span>(10,2) <span class="kw">DEFAULT</span> 0,
+  total_amount     <span class="type">DECIMAL</span>(10,2),
+  shipping_address <span class="type">TEXT</span>,
+  order_status     <span class="type">ENUM</span>(<span class="str">'pending'</span>,<span class="str">'confirmed'</span>,<span class="str">'shipped'</span>,<span class="str">'delivered'</span>,<span class="str">'cancelled'</span>) <span class="kw">DEFAULT</span> <span class="str">'pending'</span>,
+  created_at       <span class="type">DATETIME</span> <span class="kw">DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">user_id</span>) <span class="kw">REFERENCES</span> users(<span class="pk-col">user_id</span>)
+);`},
+  {label:'💳 Module: Thanh toán & Indexes', sql:`<span class="cm">-- ================================================</span>
+<span class="cm">-- MODULE 6: THANH TOÁN & KHUYẾN MÃI</span>
+<span class="cm">-- ================================================</span>
+
+<span class="kw">CREATE TABLE</span> <span class="fn">coupons</span> (
+  <span class="pk-col">coupon_id</span>       <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  code            <span class="type">VARCHAR</span>(20) <span class="kw">UNIQUE NOT NULL</span>,
+  discount_type   <span class="type">ENUM</span>(<span class="str">'percent'</span>,<span class="str">'fixed'</span>) <span class="kw">NOT NULL</span>,
+  discount_value  <span class="type">DECIMAL</span>(10,2) <span class="kw">NOT NULL</span>,
+  min_order_value <span class="type">DECIMAL</span>(10,2) <span class="kw">DEFAULT</span> 0,
+  max_discount    <span class="type">DECIMAL</span>(10,2),
+  usage_limit     <span class="type">INT</span>,
+  used_count      <span class="type">INT</span> <span class="kw">DEFAULT</span> 0,
+  applicable_to   <span class="type">ENUM</span>(<span class="str">'booking'</span>,<span class="str">'order'</span>,<span class="str">'both'</span>) <span class="kw">DEFAULT</span> <span class="str">'both'</span>,
+  valid_from      <span class="type">DATE</span>,
+  valid_until     <span class="type">DATE</span>,
+  is_active       <span class="type">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="fn">TRUE</span>
+);
+
+<span class="kw">CREATE TABLE</span> <span class="fn">payments</span> (
+  <span class="pk-col">payment_id</span>       <span class="type">INT</span> <span class="kw">PRIMARY KEY AUTO_INCREMENT</span>,
+  <span class="fk-col">method_id</span>        <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  <span class="fk-col">user_id</span>          <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  ref_id           <span class="type">INT</span> <span class="kw">NOT NULL</span>,
+  ref_type         <span class="type">ENUM</span>(<span class="str">'booking'</span>,<span class="str">'order'</span>) <span class="kw">NOT NULL</span>,
+  amount           <span class="type">DECIMAL</span>(10,2) <span class="kw">NOT NULL</span>,
+  transaction_code <span class="type">VARCHAR</span>(50) <span class="kw">UNIQUE</span>,
+  status           <span class="type">ENUM</span>(<span class="str">'pending'</span>,<span class="str">'success'</span>,<span class="str">'failed'</span>,<span class="str">'refunded'</span>) <span class="kw">DEFAULT</span> <span class="str">'pending'</span>,
+  paid_at          <span class="type">DATETIME</span>,
+  note             <span class="type">TEXT</span>,
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">method_id</span>) <span class="kw">REFERENCES</span> payment_methods(<span class="pk-col">method_id</span>),
+  <span class="kw">FOREIGN KEY</span> (<span class="fk-col">user_id</span>) <span class="kw">REFERENCES</span> users(<span class="pk-col">user_id</span>)
+);
+
+<span class="cm">-- ================================================</span>
+<span class="cm">-- INDEXES TỐI ƯU HIỆU NĂNG</span>
+<span class="cm">-- ================================================</span>
+<span class="kw">CREATE INDEX</span> idx_showtimes_datetime <span class="kw">ON</span> showtimes(start_time, status);
+<span class="kw">CREATE INDEX</span> idx_showtimes_movie <span class="kw">ON</span> showtimes(movie_id);
+<span class="kw">CREATE INDEX</span> idx_bookings_user <span class="kw">ON</span> bookings(user_id);
+<span class="kw">CREATE INDEX</span> idx_orders_user <span class="kw">ON</span> orders(user_id);
+<span class="kw">CREATE INDEX</span> idx_payments_ref <span class="kw">ON</span> payments(ref_id, ref_type);
+<span class="kw">CREATE INDEX</span> idx_products_category <span class="kw">ON</span> products(category_id);
+<span class="kw">CREATE INDEX</span> idx_showtime_seats_status <span class="kw">ON</span> showtime_seats(showtime_id, status);`},
+];
+
+function renderSQL() {
+  const el = document.getElementById('sqlContainer');
+  if(!el) return;
+  el.innerHTML = SQL_SCRIPTS.map((s,i) => `
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;color:var(--text)">${s.label}</div>
+      <div class="sql-block">
+        <button class="copy-btn" onclick="copySQL(${i})">Copy</button>
+        ${s.sql}
+      </div>
+    </div>
+  `).join('');
+}
+
+function copySQL(i) {
+  const tmp = document.createElement('textarea');
+  tmp.value = SQL_SCRIPTS[i].sql.replace(/<[^>]+>/g,'');
+  document.body.appendChild(tmp);
+  tmp.select();
+  document.execCommand('copy');
+  document.body.removeChild(tmp);
+  event.target.textContent = 'Copied!';
+  setTimeout(()=>event.target.textContent='Copy', 1500);
+}
+
+// ─── NAVIGATION ───────────────────────────────────────────────────
+function navigate(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const pg = document.getElementById('page-'+id);
+  if(pg) pg.classList.add('active');
+  if(el) el.classList.add('active');
+  if(id==='erd') { setTimeout(renderERD,50); }
+  if(id==='sql') renderSQL();
+}
+
+// Init
+renderSQL();
+</script>
+</body>
+</html>
