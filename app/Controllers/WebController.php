@@ -63,6 +63,22 @@ class WebController
         ]);
     }
 
+    public function showMyOrdersPage(Request $request, Response $response)
+    {
+        return $response->view('pages/my-orders', [
+            'title' => 'Đơn hàng của tôi - CinemaX',
+            'activePage' => 'my-orders',
+        ]);
+    }
+
+    public function showMyTicketsPage(Request $request, Response $response)
+    {
+        return $response->view('pages/my-tickets', [
+            'title' => 'Vé của tôi - CinemaX',
+            'activePage' => 'my-tickets',
+        ]);
+    }
+
     public function showLoginForm(Request $request, Response $response)
     {
         return $response->view('auth/login', [

@@ -10,3 +10,4 @@ $app->router->post('/api/auth/login', [AuthController::class, 'login']);
 $app->router->get('/api/auth/profile', [AuthController::class, 'profile'], [AuthMiddleware::class]);
 $app->router->post('/api/auth/logout', [AuthController::class, 'logout'], [AuthMiddleware::class]);
 $app->router->post('/api/auth/logout', [AuthController::class, 'logout'], [AuthMiddleware::class]);
+$app->router->post('/api/auth/update-password', [AuthController::class, 'updatePassword'], [AuthMiddleware::class]);

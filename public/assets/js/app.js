@@ -17,8 +17,8 @@ const routeMap = {
   'movie-detail': '/movies',
   'seat-selection': '/showtimes',
   checkout: '/cart',
-  'my-tickets': '/profile',
-  'my-orders': '/profile'
+  'my-tickets': '/my-tickets',
+  'my-orders': '/my-orders'
 };
 
 const movies = [
@@ -193,6 +193,13 @@ function renderProfileDetails(profile) {
   if (ticketsCount) ticketsCount.textContent = String(stats.tickets || 0);
   if (ordersCount) ordersCount.textContent = String(stats.orders || 0);
   if (spentAmount) spentAmount.textContent = formatCurrency(stats.spent || 0);
+  
+  const sidebarAvatar = document.getElementById('sidebarAvatar');
+  const sidebarUserName = document.getElementById('sidebarUserName');
+  const sidebarUserTier = document.getElementById('sidebarUserTier');
+  if (sidebarAvatar) sidebarAvatar.textContent = initials;
+  if (sidebarUserName) sidebarUserName.textContent = name;
+  if (sidebarUserTier) sidebarUserTier.textContent = `👑 ${role} Member`;
 
   renderProfileOrders('profileOrdersBody', profileData.orders || []);
 }
@@ -290,10 +297,13 @@ function updateAuthUI(isLoggedIn) {
   if (userMenu) userMenu.style.display = isLoggedIn ? 'flex' : 'none';
   if (sidebarGuest) sidebarGuest.style.display = isLoggedIn ? 'none' : 'block';
   if (sidebarUser) sidebarUser.style.display = isLoggedIn ? 'block' : 'none';
+
+  const sidebarFooter = document.getElementById('sidebarFooter');
+  if (sidebarFooter) sidebarFooter.style.display = isLoggedIn ? 'block' : 'none';
 }
 
 function ensureAuthForPage() {
-  const authOnlyPages = new Set(['profile']);
+  const authOnlyPages = new Set(['profile', 'my-tickets']);
   const activePage = document.body?.dataset?.activePage || '';
   if (!authOnlyPages.has(activePage)) return;
 
@@ -334,6 +344,57 @@ async function hydrateProfile() {
     updateAuthUI(false);
     renderProfileOrders('profileOrdersBody', []);
     redirectProfileToLogin();
+  }
+}
+
+async function updatePassword() {
+  const currentPassword = document.getElementById('currentPassword')?.value;
+  const newPassword = document.getElementById('newPassword')?.value;
+  const confirmPassword = document.getElementById('confirmPassword')?.value;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showToast('⚠️', 'Thiếu thông tin', 'Vui lòng nhập đầy đủ các trường.');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast('⚠️', 'Lỗi xác nhận', 'Mật khẩu mới không khớp.');
+    return;
+  }
+
+  const token = getAuthToken();
+  if (!token) {
+    navigateTo('login');
+    return;
+  }
+
+  try {
+    const res = await fetch(appUrl('/api/auth/update-password'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      const firstError = data.errors ? Object.values(data.errors)[0][0] : 'Cập nhật thất bại.';
+      showToast('⚠️', 'Lỗi', firstError);
+      return;
+    }
+
+    showToast('✅', 'Thành công', 'Mật khẩu đã được cập nhật.');
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  } catch (error) {
+    showToast('⚠️', 'Lỗi kết nối', 'Không thể cập nhật mật khẩu.');
   }
 }
 

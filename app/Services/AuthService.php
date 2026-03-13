@@ -130,4 +130,40 @@ class AuthService
             return ['errors' => ['token' => [$e->getMessage()]]];
         }
     }
+
+    public function updatePassword(int $userId, array $data): array
+    {
+        $errors = Validator::required($data, ['current_password', 'new_password', 'confirm_password']);
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $currentPassword = (string) $data['current_password'];
+        $newPassword = (string) $data['new_password'];
+        $confirmPassword = (string) $data['confirm_password'];
+
+        if ($newPassword !== $confirmPassword) {
+            return ['errors' => ['confirm_password' => ['Passwords do not match.']]];
+        }
+
+        $passwordError = Validator::minLength($newPassword, 8);
+        if ($passwordError) {
+            return ['errors' => ['new_password' => [$passwordError]]];
+        }
+
+        $user = $this->users->findById($userId);
+        if (!$user || !password_verify($currentPassword, $user['password'])) {
+            return ['errors' => ['current_password' => ['Invalid current password.']]];
+        }
+
+        $hashed = password_hash($newPassword, PASSWORD_BCRYPT);
+        try {
+            $this->users->update($userId, ['password' => $hashed]);
+            $this->logger->info('User password updated', ['user_id' => $userId]);
+            return ['data' => ['message' => 'Password updated successfully']];
+        } catch (Exception $e) {
+            $this->logger->error('Password update failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
+            return ['errors' => ['server' => ['Failed to update password.']]];
+        }
+    }
 }

@@ -60,4 +60,27 @@ class AuthController
 
         return $response->json(['message' => 'Logout successful'], 200);
     }
+
+    public function updatePassword(Request $request, Response $response)
+    {
+        $token = $request->bearerToken();
+        if (!$token) {
+            return $response->json(['errors' => ['token' => ['Missing bearer token.']]], 401);
+        }
+
+        try {
+            $auth = new \App\Core\Auth();
+            $payload = $auth->verifyToken($token);
+            $userId = (int) ($payload['user_id'] ?? 0);
+        } catch (\Exception $e) {
+            return $response->json(['errors' => ['token' => [$e->getMessage()]]], 401);
+        }
+
+        $result = $this->service->updatePassword($userId, $request->getBody());
+        if (isset($result['errors'])) {
+            return $response->json(['errors' => $result['errors']], 422);
+        }
+
+        return $response->json(['message' => 'Password updated successfully'], 200);
+    }
 }

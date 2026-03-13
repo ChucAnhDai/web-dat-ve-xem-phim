@@ -37,6 +37,8 @@
     <option>Most Popular</option>
     <option>Price: Low-High</option>
     <option>Price: High-Low</option>
+    <option>Newest</option>
+    <option>Oldest</option>
   </select>
 </div>
 

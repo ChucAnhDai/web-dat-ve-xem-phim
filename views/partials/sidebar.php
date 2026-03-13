@@ -29,10 +29,10 @@
       </div>
     </div>
     <div id="sidebarUserActions" style="display:none">
-      <div class="nav-item" onclick="navigateTo('profile')">
+      <div class="nav-item <?php echo ($activePage ?? '') === 'my-tickets' ? 'active' : ''; ?>" onclick="navigateTo('my-tickets')">
         <span class="nav-icon">🎫</span> My Tickets
       </div>
-      <div class="nav-item" onclick="navigateTo('profile')">
+      <div class="nav-item <?php echo ($activePage ?? '') === 'my-orders' ? 'active' : ''; ?>" onclick="navigateTo('my-orders')">
         <span class="nav-icon">📦</span> My Orders
       </div>
       <div class="nav-item" onclick="navigateTo('profile')">
@@ -40,6 +40,16 @@
       </div>
       <div class="nav-item" onclick="handleLogout()">
         <span class="nav-icon">🚪</span> Đăng xuất
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-footer" id="sidebarFooter" style="display:none">
+    <div class="sidebar-user" onclick="navigateTo('profile')">
+      <div class="sidebar-avatar" id="sidebarAvatar">??</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="sidebarUserName">User Name</div>
+        <div class="sidebar-user-tier" id="sidebarUserTier">👑 Member</div>
       </div>
     </div>
   </div>

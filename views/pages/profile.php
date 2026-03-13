@@ -37,17 +37,13 @@
     <div class="form-section-title" style="font-size:18px">Personal Information</div>
     <div class="form-row">
       <div class="form-group">
-        <label>First Name</label>
+        <label>Name</label>
         <input class="form-control" id="profileFirstName" value="" placeholder="First name">
       </div>
       <div class="form-group">
-        <label>Last Name</label>
-        <input class="form-control" id="profileLastName" value="" placeholder="Last name">
+        <label>Email</label>
+        <input class="form-control" id="profileEmailInput" value="" placeholder="Email">
       </div>
-    </div>
-    <div class="form-group">
-      <label>Email</label>
-      <input class="form-control" id="profileEmailInput" value="" readonly>
     </div>
     <div class="form-group">
       <label>Phone</label>
@@ -75,17 +71,17 @@
     <div class="form-section-title" style="font-size:18px">Change Password</div>
     <div class="form-group">
       <label>Current Password</label>
-      <input class="form-control" type="password" placeholder="********">
+      <input class="form-control" type="password" id="currentPassword" placeholder="********">
     </div>
     <div class="form-group">
       <label>New Password</label>
-      <input class="form-control" type="password" placeholder="********">
+      <input class="form-control" type="password" id="newPassword" placeholder="********">
     </div>
     <div class="form-group">
       <label>Confirm New Password</label>
-      <input class="form-control" type="password" placeholder="********">
+      <input class="form-control" type="password" id="confirmPassword" placeholder="********">
     </div>
-    <button class="btn btn-primary" type="button" onclick="showToast('ℹ️','Update not available','Password updates have not been connected yet.')">Update Password</button>
+    <button class="btn btn-primary" type="button" onclick="updatePassword()">Update Password</button>
   </div>
 </div>
 

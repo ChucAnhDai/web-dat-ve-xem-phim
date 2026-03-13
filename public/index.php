@@ -26,6 +26,8 @@ $app->router->get('/shop', [WebController::class, 'showShopPage']);
 $app->router->get('/shop/product-detail', [WebController::class, 'showProductDetailPage']);
 $app->router->get('/cart', [WebController::class, 'showCartPage']);
 $app->router->get('/profile', [WebController::class, 'showProfilePage']);
+$app->router->get('/my-orders', [WebController::class, 'showMyOrdersPage']);
+$app->router->get('/my-tickets', [WebController::class, 'showMyTicketsPage']);
 $app->router->get('/login', [WebController::class, 'showLoginForm']);
 $app->router->get('/register', [WebController::class, 'showRegisterForm']);
 

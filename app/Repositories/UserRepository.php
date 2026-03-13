@@ -148,6 +148,20 @@ class UserRepository
         return $stmt->fetchAll() ?: [];
     }
 
+    public function update(int $id, array $data): bool
+    {
+        $fields = [];
+        $params = ['id' => $id];
+        foreach ($data as $key => $value) {
+            if ($key === 'id') continue;
+            $fields[] = "$key = :$key";
+            $params[$key] = $value;
+        }
+        $sql = "UPDATE users SET " . implode(', ', $fields) . " WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($params);
+    }
+
     private function scalar(string $sql, array $params = [])
     {
         $stmt = $this->db->prepare($sql);
