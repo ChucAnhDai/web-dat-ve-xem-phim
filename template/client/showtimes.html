@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — Showtimes</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.showtime-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;gap:16px;padding:16px;margin-bottom:12px;align-items:center;flex-wrap:wrap;transition:var(--transition)}
+.showtime-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-1px)}
+.showtime-poster{width:52px;border-radius:6px;flex-shrink:0}
+.showtime-info{flex:1;min-width:150px}
+.showtime-title{font-size:15px;font-weight:700;margin-bottom:2px}
+.showtime-hall{font-size:11px;color:var(--text3)}
+.time-chips{display:flex;gap:8px;flex-wrap:wrap}
+.time-chip{padding:8px 16px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition);text-decoration:none;color:var(--text)}
+.time-chip:hover{border-color:var(--red);color:var(--red)}
+.time-chip.full{opacity:0.4;cursor:not-allowed;pointer-events:none}
+.date-tabs{display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;padding-bottom:4px}
+.date-tab{flex-shrink:0;padding:10px 16px;border-radius:var(--radius-sm);background:var(--bg3);border:1px solid var(--border);text-align:center;cursor:pointer;transition:var(--transition);min-width:70px}
+.date-tab.active{background:var(--red);border-color:var(--red)}
+.date-tab .day{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
+.date-tab.active .day{color:rgba(255,255,255,0.8)}
+.date-tab .date-num{font-size:20px;font-weight:700;line-height:1.2}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Showtimes</h1>
+      <p class="page-subtitle">Find the perfect time for your movie experience</p>
+    </div>
+
+    <div class="date-tabs" id="dateTabs"></div>
+
+    <div class="filter-bar">
+      <select class="filter-select" id="hallFilter">
+        <option value="">All Halls</option>
+        <option>Hall 1 — IMAX</option>
+        <option>Hall 3 — Standard</option>
+        <option>Hall 5 — 4DX</option>
+      </select>
+      <select class="filter-select" id="movieFilter">
+        <option value="">All Movies</option>
+        <option>Dune: Part Two</option>
+        <option>Inside Out 2</option>
+        <option>Oppenheimer</option>
+        <option>Deadpool & Wolverine</option>
+      </select>
+      <div class="filter-chip active">Today</div>
+      <div class="filter-chip">Tomorrow</div>
+      <div class="filter-chip">Weekend</div>
+    </div>
+
+    <div id="showtimesGrid"></div>
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('showtimes');
+
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const dates = [11,12,13,14,15,16,17];
+  const dateTabs = document.getElementById('dateTabs');
+  dates.forEach((d,i) => {
+    const tab = document.createElement('div');
+    tab.className = 'date-tab' + (i===0?' active':'');
+    tab.innerHTML = `<div class="day">${days[i]}</div><div class="date-num">${d}</div>`;
+    tab.addEventListener('click', () => { document.querySelectorAll('.date-tab').forEach(t=>t.classList.remove('active')); tab.classList.add('active'); });
+    dateTabs.appendChild(tab);
+  });
+
+  const SHOWTIMES = [
+    {movie:'Dune: Part Two',poster:'https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg',hall:'Hall 1 — IMAX',times:['1:30 PM','4:45 PM','8:00 PM','10:30 PM'],full:['10:00 AM']},
+    {movie:'Inside Out 2',poster:'https://image.tmdb.org/t/p/w200/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg',hall:'Hall 3 — Standard',times:['2:15 PM','5:30 PM','9:15 PM'],full:['11:00 AM']},
+    {movie:'Oppenheimer',poster:'https://image.tmdb.org/t/p/w200/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg',hall:'Hall 5 — 4DX',times:['3:00 PM','7:15 PM'],full:[]},
+    {movie:'Deadpool & Wolverine',poster:'https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg',hall:'Hall 2 — Standard',times:['12:00 PM','3:30 PM','7:00 PM'],full:['10:30 AM']},
+    {movie:'The Substance',poster:'https://image.tmdb.org/t/p/w200/lqoMzCcZYEFK729d6qzt349fB4o.jpg',hall:'Hall 4 — Dolby',times:['4:00 PM','8:30 PM'],full:[]},
+  ];
+
+  function render() {
+    const hallVal = document.getElementById('hallFilter').value;
+    const movieVal = document.getElementById('movieFilter').value;
+    let list = SHOWTIMES.filter(s => {
+      if (hallVal && s.hall !== hallVal) return false;
+      if (movieVal && s.movie !== movieVal) return false;
+      return true;
+    });
+    const grid = document.getElementById('showtimesGrid');
+    if (!list.length) { grid.innerHTML = `<p style="color:var(--text2);padding:40px 0;text-align:center">No showtimes found for selected filters.</p>`; return; }
+    grid.innerHTML = list.map(s => `
+      <div class="showtime-card">
+        <img src="${s.poster}" class="showtime-poster" alt="" onerror="this.style.display='none'">
+        <div class="showtime-info">
+          <div class="showtime-title">${s.movie}</div>
+          <div class="showtime-hall">🎭 ${s.hall}</div>
+        </div>
+        <div class="time-chips">
+          ${s.full.map(t=>`<div class="time-chip full">${t}</div>`).join('')}
+          ${s.times.map(t=>`<a href="seat-selection.html" class="time-chip">${t}</a>`).join('')}
+        </div>
+        <a href="movie-detail.html" class="btn btn-primary btn-sm" style="flex-shrink:0">Details</a>
+      </div>`).join('');
+  }
+
+  document.getElementById('hallFilter').addEventListener('change', render);
+  document.getElementById('movieFilter').addEventListener('change', render);
+  render();
+</script>
+</body>
+</html>

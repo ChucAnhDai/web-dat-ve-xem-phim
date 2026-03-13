@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — Movies</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">All Movies</h1>
+      <p class="page-subtitle">Discover the latest blockbusters and timeless classics</p>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" class="search-input-full" id="movieSearch" placeholder="🔍 Search movies..." style="max-width:260px">
+      <select class="filter-select" id="genreFilter">
+        <option value="">All Genres</option>
+        <option>Action</option><option>Drama</option><option>Animation</option>
+        <option>Horror</option><option>Sci-Fi</option><option>Romance</option>
+      </select>
+      <select class="filter-select" id="ratingFilter">
+        <option value="">All Ratings</option>
+        <option value="9">9+ Rating</option>
+        <option value="8">8+ Rating</option>
+        <option value="7">7+ Rating</option>
+      </select>
+      <select class="filter-select" id="sortFilter">
+        <option value="popular">Most Popular</option>
+        <option value="newest">Newest</option>
+        <option value="rating">Highest Rated</option>
+      </select>
+      <div style="margin-left:auto;display:flex;gap:6px">
+        <div class="filter-chip active" data-status="all">All</div>
+        <div class="filter-chip" data-status="now">Now Showing</div>
+        <div class="filter-chip" data-status="coming">Coming Soon</div>
+      </div>
+    </div>
+
+    <div class="movies-grid" id="moviesGrid"></div>
+  </main>
+
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('movies');
+
+  let currentStatus = 'all';
+
+  function renderGrid() {
+    const search = document.getElementById('movieSearch').value.toLowerCase();
+    const genre = document.getElementById('genreFilter').value;
+    const minRating = parseFloat(document.getElementById('ratingFilter').value) || 0;
+    const sort = document.getElementById('sortFilter').value;
+
+    let list = MOVIES.filter(m => {
+      if (currentStatus !== 'all' && m.status !== currentStatus) return false;
+      if (genre && m.genre !== genre) return false;
+      if (m.rating < minRating) return false;
+      if (search && !m.title.toLowerCase().includes(search)) return false;
+      return true;
+    });
+
+    if (sort === 'rating') list = [...list].sort((a,b) => b.rating - a.rating);
+    else if (sort === 'newest') list = [...list].reverse();
+
+    const grid = document.getElementById('moviesGrid');
+    grid.innerHTML = list.length
+      ? list.map(m => renderMovieCard(m)).join('')
+      : `<p style="color:var(--text2);grid-column:1/-1;padding:40px 0;text-align:center;font-size:16px">No movies found.</p>`;
+  }
+
+  document.getElementById('movieSearch').addEventListener('input', renderGrid);
+  document.getElementById('genreFilter').addEventListener('change', renderGrid);
+  document.getElementById('ratingFilter').addEventListener('change', renderGrid);
+  document.getElementById('sortFilter').addEventListener('change', renderGrid);
+
+  document.querySelectorAll('[data-status]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('[data-status]').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      currentStatus = chip.dataset.status;
+      renderGrid();
+    });
+  });
+
+  renderGrid();
+</script>
+</body>
+</html>

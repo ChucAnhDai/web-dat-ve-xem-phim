@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — Shop</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Cinema Shop</h1>
+      <p class="page-subtitle">Snacks, drinks, combos & exclusive merchandise</p>
+    </div>
+
+    <div class="category-tabs" id="categoryTabs">
+      <div class="cat-tab active" data-cat="all"><span class="cat-tab-icon">🌟</span> All Products</div>
+      <div class="cat-tab" data-cat="combo"><span class="cat-tab-icon">🎉</span> Combo Deals</div>
+      <div class="cat-tab" data-cat="popcorn"><span class="cat-tab-icon">🍿</span> Popcorn</div>
+      <div class="cat-tab" data-cat="drinks"><span class="cat-tab-icon">🥤</span> Drinks</div>
+      <div class="cat-tab" data-cat="snacks"><span class="cat-tab-icon">🍫</span> Snacks</div>
+      <div class="cat-tab" data-cat="merch"><span class="cat-tab-icon">👕</span> Merchandise</div>
+    </div>
+
+    <div class="filter-bar">
+      <input type="text" class="search-input-full" id="productSearch" placeholder="🔍 Search products..." style="max-width:260px">
+      <select class="filter-select" id="priceFilter">
+        <option value="">All Prices</option>
+        <option value="10">Under $10</option>
+        <option value="20">$10 – $20</option>
+        <option value="99">$20+</option>
+      </select>
+      <select class="filter-select" id="sortFilter">
+        <option value="popular">Most Popular</option>
+        <option value="low">Price: Low – High</option>
+        <option value="high">Price: High – Low</option>
+      </select>
+    </div>
+
+    <div class="products-grid" id="shopGrid"></div>
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('shop');
+  let currentCat = 'all';
+
+  function render() {
+    const search = document.getElementById('productSearch').value.toLowerCase();
+    const priceVal = document.getElementById('priceFilter').value;
+    const sort = document.getElementById('sortFilter').value;
+    let list = PRODUCTS.filter(p => {
+      if (currentCat !== 'all' && p.cat !== currentCat) return false;
+      if (search && !p.name.toLowerCase().includes(search)) return false;
+      if (priceVal === '10' && p.price >= 10) return false;
+      if (priceVal === '20' && (p.price < 10 || p.price > 20)) return false;
+      if (priceVal === '99' && p.price <= 20) return false;
+      return true;
+    });
+    if (sort === 'low') list = [...list].sort((a,b)=>a.price-b.price);
+    else if (sort === 'high') list = [...list].sort((a,b)=>b.price-a.price);
+    const grid = document.getElementById('shopGrid');
+    grid.innerHTML = list.length
+      ? list.map(p=>renderProductCard(p)).join('')
+      : `<p style="color:var(--text2);grid-column:1/-1;padding:40px 0;text-align:center">No products found.</p>`;
+  }
+
+  document.querySelectorAll('.cat-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.cat-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      currentCat = tab.dataset.cat;
+      render();
+    });
+  });
+  document.getElementById('productSearch').addEventListener('input', render);
+  document.getElementById('priceFilter').addEventListener('change', render);
+  document.getElementById('sortFilter').addEventListener('change', render);
+  render();
+</script>
+</body>
+</html>

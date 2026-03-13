@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — My Profile</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.profile-header{display:flex;align-items:center;gap:20px;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;flex-wrap:wrap}
+.profile-avatar{width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,var(--red),#8B0000);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:700;flex-shrink:0}
+.profile-name{font-size:22px;font-weight:700;margin-bottom:4px}
+.profile-email{font-size:13px;color:var(--text2);margin-bottom:8px}
+.profile-stats{display:flex;gap:20px;flex-wrap:wrap}
+.stat-item{text-align:center}
+.stat-val{font-size:22px;font-weight:700;color:var(--red)}
+.stat-label{font-size:11px;color:var(--text3)}
+.profile-tabs{display:flex;gap:0;background:var(--bg3);border-radius:var(--radius-sm);padding:4px;width:fit-content;margin-bottom:20px;flex-wrap:wrap}
+.profile-tab{padding:8px 20px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text2);cursor:pointer;transition:var(--transition)}
+.profile-tab.active{background:var(--surface);color:var(--text)}
+.profile-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:24px;max-width:600px}
+.tab-section{display:none}
+.tab-section.active{display:block}
+.avatar-upload{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.avatar-big{width:72px;height:72px;border-radius:14px;background:linear-gradient(135deg,var(--red),#8B0000);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:700}
+.orders-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.table-header{display:grid;grid-template-columns:120px 1fr 130px 110px 110px;gap:16px;padding:14px 20px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.table-row{display:grid;grid-template-columns:120px 1fr 130px 110px 110px;gap:16px;padding:16px 20px;border-bottom:1px solid var(--border2);align-items:center;transition:var(--transition)}
+.table-row:last-child{border-bottom:none}
+.table-row:hover{background:var(--bg3)}
+.order-id{font-size:13px;font-weight:600;color:var(--red)}
+@media(max-width:768px){.profile-header{flex-direction:column;text-align:center}.table-header{display:none}.table-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">My Profile</h1>
+      <p class="page-subtitle">Manage your account information</p>
+    </div>
+
+    <div class="profile-header">
+      <div class="profile-avatar">JD</div>
+      <div style="flex:1">
+        <div class="profile-name">John Doe</div>
+        <div class="profile-email">john.doe@email.com</div>
+        <div class="profile-stats">
+          <div class="stat-item"><div class="stat-val">24</div><div class="stat-label">Tickets</div></div>
+          <div class="stat-item"><div class="stat-val">12</div><div class="stat-label">Orders</div></div>
+          <div class="stat-item"><div class="stat-val">$280</div><div class="stat-label">Spent</div></div>
+          <div class="stat-item"><div class="stat-val">VIP</div><div class="stat-label">Tier</div></div>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="showToast('📷','Photo','Photo upload feature coming soon.')">📷 Change Photo</button>
+    </div>
+
+    <div class="profile-tabs">
+      <div class="profile-tab active" onclick="switchTab('info')">Profile</div>
+      <div class="profile-tab" onclick="switchTab('password')">Password</div>
+      <div class="profile-tab" onclick="switchTab('history')">Order History</div>
+    </div>
+
+    <!-- Profile Info Tab -->
+    <div class="tab-section active" id="tab-info">
+      <div class="profile-form">
+        <div class="form-section-title" style="font-size:18px">Personal Information</div>
+        <div class="avatar-upload">
+          <div class="avatar-big">JD</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">John Doe</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:8px">Member since Jan 2024</div>
+            <button class="btn btn-secondary btn-sm" onclick="showToast('📷','Photo','Upload feature coming soon.')">Upload new photo</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>First Name</label><input class="form-control" value="John" id="firstName"></div>
+          <div class="form-group"><label>Last Name</label><input class="form-control" value="Doe" id="lastName"></div>
+        </div>
+        <div class="form-group"><label>Email Address</label><input class="form-control" type="email" value="john.doe@email.com" id="email"></div>
+        <div class="form-group"><label>Phone Number</label><input class="form-control" type="tel" value="+1 555 123 4567"></div>
+        <div class="form-group"><label>Date of Birth</label><input class="form-control" type="date" value="1992-05-15"></div>
+        <div class="form-group"><label>Preferred Language</label>
+          <select class="form-control"><option>English</option><option>Vietnamese</option><option>Spanish</option></select>
+        </div>
+        <div style="margin-top:8px;display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="saveProfile()">Save Changes</button>
+          <button class="btn btn-ghost">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password Tab -->
+    <div class="tab-section" id="tab-password">
+      <div class="profile-form">
+        <div class="form-section-title" style="font-size:18px">Change Password</div>
+        <div class="form-group"><label>Current Password</label><input class="form-control" type="password" placeholder="••••••••"></div>
+        <div class="form-group"><label>New Password</label><input class="form-control" type="password" placeholder="••••••••" id="newPass"></div>
+        <div class="form-group"><label>Confirm New Password</label><input class="form-control" type="password" placeholder="••••••••" id="confirmPass"></div>
+        <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px;font-size:12px;color:var(--text2);margin-bottom:16px">
+          Password must be at least 8 characters with 1 uppercase letter, 1 number, and 1 special character.
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()">Update Password</button>
+      </div>
+    </div>
+
+    <!-- Order History Tab -->
+    <div class="tab-section" id="tab-history">
+      <div class="orders-table">
+        <div class="table-header">
+          <span>Order ID</span><span>Items</span><span>Date</span><span>Amount</span><span>Status</span>
+        </div>
+        <div id="historyBody"></div>
+      </div>
+    </div>
+
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('profile');
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+    document.querySelectorAll('.profile-tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    const tabs = document.querySelectorAll('.profile-tab');
+    const tabMap = {info:0,password:1,history:2};
+    tabs[tabMap[tab]].classList.add('active');
+    if (tab==='history') renderHistory();
+  }
+
+  function saveProfile() {
+    const first = document.getElementById('firstName').value;
+    const last = document.getElementById('lastName').value;
+    document.querySelector('.profile-name').textContent = `${first} ${last}`;
+    showToast('✅','Profile Updated','Your changes have been saved.');
+  }
+
+  function changePassword() {
+    const p1 = document.getElementById('newPass').value;
+    const p2 = document.getElementById('confirmPass').value;
+    if (!p1) { showToast('⚠️','Error','Please enter a new password.'); return; }
+    if (p1 !== p2) { showToast('⚠️','Mismatch','Passwords do not match.'); return; }
+    showToast('🔒','Password Updated','Your password has been changed successfully.');
+  }
+
+  const ORDERS = [
+    {id:'#CX-2026-001',items:[{name:'Classic Popcorn Combo',img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=100&q=80'}],date:'Mar 11, 2026',total:'$36.97',status:'delivered'},
+    {id:'#CX-2026-002',items:[{name:'Large Cola',img:'https://images.unsplash.com/photo-1580031359745-f8ab35a1f9b5?w=100&q=80'}],date:'Mar 8, 2026',total:'$9.98',status:'processing'},
+    {id:'#CX-2026-003',items:[{name:'CinemaX T-Shirt',img:'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=100&q=80'}],date:'Mar 2, 2026',total:'$24.99',status:'delivered'},
+  ];
+
+  function renderHistory() {
+    document.getElementById('historyBody').innerHTML = ORDERS.map(o=>`
+      <div class="table-row">
+        <span class="order-id">${o.id}</span>
+        <div style="display:flex;gap:4px">${o.items.slice(0,2).map(it=>`<div style="width:32px;height:32px;border-radius:6px;overflow:hidden;background:var(--bg3)"><img src="${it.img}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'"></div>`).join('')}</div>
+        <span style="font-size:12px;color:var(--text2)">${o.date}</span>
+        <span style="font-weight:600">${o.total}</span>
+        <span class="ticket-status status-${o.status}">${o.status}</span>
+      </div>`).join('');
+  }
+</script>
+</body>
+</html>

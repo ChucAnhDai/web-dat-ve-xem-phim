@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — Product Detail</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.product-detail-layout{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-bottom:36px}
+.product-gallery{display:flex;flex-direction:column;gap:10px}
+.product-main-img{border-radius:var(--radius);overflow:hidden;background:var(--bg3);aspect-ratio:1}
+.product-main-img img{width:100%;height:100%;object-fit:cover;transition:var(--transition)}
+.product-thumbs{display:flex;gap:8px}
+.product-thumb{width:64px;height:64px;border-radius:var(--radius-sm);overflow:hidden;background:var(--bg3);cursor:pointer;border:2px solid transparent;transition:var(--transition);flex-shrink:0}
+.product-thumb:hover,.product-thumb.active{border-color:var(--red)}
+.product-thumb img{width:100%;height:100%;object-fit:cover}
+.product-detail-info{display:flex;flex-direction:column;padding-top:8px}
+.in-stock{color:#22c55e}
+.product-detail-title{font-family:'Bebas Neue',cursive;font-size:40px;line-height:1;letter-spacing:0.5px;margin-bottom:8px}
+.product-detail-price{font-size:32px;font-weight:700;color:var(--red);margin-bottom:16px;display:flex;align-items:baseline;gap:10px}
+.product-detail-desc{font-size:14px;color:var(--text2);line-height:1.7;margin-bottom:20px}
+.qty-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.qty-big{display:flex;align-items:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden}
+.qty-big button{width:40px;height:42px;font-size:18px;color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}
+.qty-big button:hover{background:var(--surface);color:var(--text)}
+.qty-big span{width:48px;text-align:center;font-size:16px;font-weight:700}
+.action-row{display:flex;gap:10px;flex-wrap:wrap}
+.includes-box{background:var(--bg3);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px}
+.includes-box .label{font-size:12px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600}
+.includes-box p{font-size:13px;color:var(--text2);line-height:1.8}
+@media(max-width:768px){.product-detail-layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div style="margin-bottom:16px"><a href="shop.html" class="btn btn-ghost btn-sm">← Back to Shop</a></div>
+
+    <div class="product-detail-layout">
+      <div class="product-gallery">
+        <div class="product-main-img">
+          <img id="mainImg" src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt="Product">
+        </div>
+        <div class="product-thumbs" id="thumbs"></div>
+      </div>
+      <div class="product-detail-info">
+        <div style="font-size:12px;font-weight:600;color:#22c55e;display:flex;align-items:center;gap:5px;margin-bottom:8px">✓ In Stock</div>
+        <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🎉 Combo Deals</div>
+        <h1 class="product-detail-title">Ultimate Popcorn Combo</h1>
+        <div class="product-detail-price">
+          $14.99
+          <span style="font-size:16px;color:var(--text3);font-weight:400;text-decoration:line-through">$18.99</span>
+          <span style="background:rgba(229,9,20,0.15);color:var(--red);font-size:13px;font-weight:600;padding:2px 8px;border-radius:4px">-21%</span>
+        </div>
+        <p class="product-detail-desc">The perfect cinema companion! Includes 1 large popcorn (your choice of flavor), 2 medium drinks, and 1 pack of nachos. Perfect for sharing.</p>
+        <div class="includes-box">
+          <div class="label">Includes</div>
+          <p>🍿 1× Large Popcorn (Butter / Caramel / Cheese)<br>🥤 2× Medium Soft Drink<br>🧀 1× Nachos with Salsa</p>
+        </div>
+        <div class="qty-row">
+          <div class="qty-big">
+            <button onclick="changeQty(-1)">−</button>
+            <span id="qty">1</span>
+            <button onclick="changeQty(1)">+</button>
+          </div>
+          <span style="font-size:13px;color:var(--text3)">Max 10 per order</span>
+        </div>
+        <div class="action-row">
+          <button class="btn btn-primary btn-lg" onclick="addCart()">🛒 Add to Cart</button>
+          <button class="btn btn-secondary btn-lg" onclick="buyNow()">⚡ Buy Now</button>
+          <button class="btn btn-secondary btn-icon btn-lg" onclick="showToast('🔖','Saved','Added to wishlist.')">🔖</button>
+        </div>
+        <div style="margin-top:16px;padding:12px;background:var(--bg3);border-radius:var(--radius-sm);font-size:12px;color:var(--text2)">
+          🎭 <strong>Pickup at Cinema:</strong> Ready within 5 minutes<br>
+          🚚 <strong>Home Delivery:</strong> Est. 2–3 hours
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <h2 class="section-title">Related <span>Products</span></h2>
+      <a href="shop.html" class="btn btn-ghost btn-sm">View all →</a>
+    </div>
+    <div class="products-grid" id="relatedGrid"></div>
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('shop');
+
+  const thumbImgs = [
+    'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+    'https://images.unsplash.com/photo-1576866209830-589e1bfbaa4d?w=600&q=80',
+    'https://images.unsplash.com/photo-1524041255072-7da0525d6b34?w=600&q=80',
+  ];
+  const thumbs = document.getElementById('thumbs');
+  thumbImgs.forEach((src,i) => {
+    const d = document.createElement('div');
+    d.className = 'product-thumb' + (i===0?' active':'');
+    d.innerHTML = `<img src="${src.replace('w=600','w=200')}" alt="">`;
+    d.addEventListener('click', () => {
+      document.querySelectorAll('.product-thumb').forEach(t=>t.classList.remove('active'));
+      d.classList.add('active');
+      document.getElementById('mainImg').src = src;
+    });
+    thumbs.appendChild(d);
+  });
+
+  let qty = 1;
+  function changeQty(d) { qty = Math.max(1,Math.min(10,qty+d)); document.getElementById('qty').textContent = qty; }
+  function addCart() { CART.push({id:99,name:'Ultimate Popcorn Combo',cat:'combo',price:14.99,qty,img:thumbImgs[0]}); saveCart(); updateCartBadges(); showToast('🛒','Added to Cart','Ultimate Popcorn Combo added!'); }
+  function buyNow() { addCart(); location.href='checkout.html'; }
+
+  document.getElementById('relatedGrid').innerHTML = PRODUCTS.slice(1,5).map(p=>renderProductCard(p)).join('');
+</script>
+</body>
+</html>

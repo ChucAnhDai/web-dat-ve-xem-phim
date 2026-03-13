@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — My Tickets</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.tickets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px}
+.ticket-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;position:relative}
+.ticket-card::after{content:'';position:absolute;left:0;right:0;top:108px;height:1px;background:repeating-linear-gradient(90deg,transparent,transparent 4px,var(--bg) 4px,var(--bg) 10px)}
+.ticket-top{display:flex;gap:14px;padding:16px;background:linear-gradient(135deg,var(--bg3),var(--surface));min-height:108px}
+.ticket-poster{width:56px;height:80px;border-radius:6px;overflow:hidden;flex-shrink:0}
+.ticket-poster img{width:100%;height:100%;object-fit:cover}
+.ticket-movie{font-size:15px;font-weight:700;margin-bottom:6px}
+.ticket-meta p{font-size:11px;color:var(--text2);margin-bottom:3px;display:flex;align-items:center;gap:5px}
+.ticket-bottom{display:flex;justify-content:space-between;align-items:center;padding:16px;padding-top:22px}
+.ticket-seats{display:flex;gap:4px;flex-wrap:wrap}
+.ticket-seat-tag{background:rgba(229,9,20,0.15);border:1px solid rgba(229,9,20,0.3);color:var(--red);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700}
+.qr-code{width:64px;height:64px;background:white;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:40px;flex-shrink:0}
+.ticket-status-badge{position:absolute;top:12px;right:12px;padding:3px 10px;border-radius:40px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px}
+@media(max-width:480px){.tickets-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">My Tickets</h1>
+      <p class="page-subtitle">Your upcoming and past movie bookings</p>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-chip active" data-filter="all">All</div>
+      <div class="filter-chip" data-filter="confirmed">Upcoming</div>
+      <div class="filter-chip" data-filter="cancelled">Cancelled</div>
+    </div>
+    <div class="tickets-grid" id="ticketsGrid"></div>
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('my-tickets');
+
+  const TICKETS = [
+    {movie:'Dune: Part Two',hall:'Hall 1 — IMAX',date:'Mon Mar 11',time:'4:45 PM',seats:['E5','E6'],status:'confirmed',poster:'https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg'},
+    {movie:'Inside Out 2',hall:'Hall 3 — Standard',date:'Fri Mar 8',time:'7:30 PM',seats:['D3'],status:'confirmed',poster:'https://image.tmdb.org/t/p/w200/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg'},
+    {movie:'Oppenheimer',hall:'Hall 5 — 4DX',date:'Sat Mar 2',time:'2:00 PM',seats:['G4','G5','G6'],status:'confirmed',poster:'https://image.tmdb.org/t/p/w200/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg'},
+    {movie:'Deadpool & Wolverine',hall:'Hall 1 — IMAX',date:'Wed Feb 28',time:'9:00 PM',seats:['B7'],status:'cancelled',poster:'https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg'},
+    {movie:'The Substance',hall:'Hall 4 — Dolby',date:'Sat Feb 24',time:'6:00 PM',seats:['H1','H2'],status:'confirmed',poster:'https://image.tmdb.org/t/p/w200/lqoMzCcZYEFK729d6qzt349fB4o.jpg'},
+  ];
+
+  let currentFilter = 'all';
+
+  function renderTickets() {
+    const list = currentFilter === 'all' ? TICKETS : TICKETS.filter(t=>t.status===currentFilter);
+    const grid = document.getElementById('ticketsGrid');
+    if (!list.length) { grid.innerHTML='<p style="color:var(--text2);padding:40px 0;text-align:center">No tickets found.</p>'; return; }
+    grid.innerHTML = list.map(t=>`
+      <div class="ticket-card">
+        <span class="ticket-status-badge status-${t.status}">${t.status}</span>
+        <div class="ticket-top">
+          <div class="ticket-poster"><img src="${t.poster}" alt="" onerror="this.parentNode.style.background='var(--bg4)'"></div>
+          <div>
+            <div class="ticket-movie">${t.movie}</div>
+            <div class="ticket-meta">
+              <p>🎭 ${t.hall}</p>
+              <p>📅 ${t.date}</p>
+              <p>⏰ ${t.time}</p>
+            </div>
+          </div>
+        </div>
+        <div class="ticket-bottom">
+          <div>
+            <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">Seats</div>
+            <div class="ticket-seats">${t.seats.map(s=>`<span class="ticket-seat-tag">${s}</span>`).join('')}</div>
+          </div>
+          <div class="qr-code">⬛</div>
+        </div>
+      </div>`).join('');
+  }
+
+  document.querySelectorAll('[data-filter]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter]').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      currentFilter = chip.dataset.filter;
+      renderTickets();
+    });
+  });
+
+  renderTickets();
+</script>
+</body>
+</html>

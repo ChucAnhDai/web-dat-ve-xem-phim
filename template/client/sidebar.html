@@ -1,0 +1,62 @@
+<!-- ═══════════════════════════════════════════
+     CINEMAX — SIDEBAR COMPONENT
+     Được inject vào tất cả các trang qua components.js
+═══════════════════════════════════════════ -->
+
+<!-- Overlay cho mobile -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+
+  <!-- Main Nav -->
+  <a href="index.html"     class="nav-item" data-page="home">
+    <span class="nav-icon">🏠</span>
+    <span class="nav-label">Home</span>
+  </a>
+  <a href="movies.html"    class="nav-item" data-page="movies">
+    <span class="nav-icon">🎬</span>
+    <span class="nav-label">Movies</span>
+  </a>
+  <a href="showtimes.html" class="nav-item" data-page="showtimes">
+    <span class="nav-icon">🕐</span>
+    <span class="nav-label">Showtimes</span>
+  </a>
+  <a href="shop.html"      class="nav-item" data-page="shop">
+    <span class="nav-icon">🛍️</span>
+    <span class="nav-label">Shop</span>
+  </a>
+  <a href="cart.html"      class="nav-item" data-page="cart">
+    <span class="nav-icon">🛒</span>
+    <span class="nav-label">Cart</span>
+    <span class="nav-badge" id="cartNavBadge">0</span>
+  </a>
+
+  <!-- Account Section -->
+  <div class="sidebar-section">
+    <div class="sidebar-label">Account</div>
+    <a href="my-tickets.html" class="nav-item" data-page="my-tickets">
+      <span class="nav-icon">🎫</span>
+      <span class="nav-label">My Tickets</span>
+    </a>
+    <a href="my-orders.html"  class="nav-item" data-page="my-orders">
+      <span class="nav-icon">📦</span>
+      <span class="nav-label">My Orders</span>
+    </a>
+    <a href="profile.html"    class="nav-item" data-page="profile">
+      <span class="nav-icon">👤</span>
+      <span class="nav-label">Profile</span>
+    </a>
+  </div>
+
+  <!-- Sidebar Footer -->
+  <div class="sidebar-footer">
+    <div class="sidebar-user">
+      <div class="sidebar-avatar">JD</div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name">John Doe</div>
+        <div class="sidebar-user-tier">👑 VIP Member</div>
+      </div>
+    </div>
+  </div>
+
+</aside>

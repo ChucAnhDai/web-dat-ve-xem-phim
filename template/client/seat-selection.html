@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — Select Seats</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.seat-layout{display:grid;grid-template-columns:1fr 320px;gap:24px}
+.seat-map-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px}
+.screen-label{background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);border:1px solid rgba(255,255,255,0.1);border-radius:4px;text-align:center;padding:8px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--text3);margin-bottom:32px}
+.seat-grid{display:flex;flex-direction:column;gap:6px;align-items:center}
+.seat-row{display:flex;align-items:center;gap:6px}
+.row-label{width:20px;text-align:center;font-size:11px;font-weight:600;color:var(--text3);flex-shrink:0}
+.seat{width:28px;height:24px;border-radius:4px 4px 2px 2px;border:1px solid transparent;cursor:pointer;transition:var(--transition);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600}
+.seat.available{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4);color:rgba(34,197,94,0.6)}
+.seat.available:hover{background:rgba(34,197,94,0.3);border-color:rgb(34,197,94);transform:scale(1.1)}
+.seat.selected{background:rgba(229,9,20,0.3);border-color:var(--red);color:var(--red)}
+.seat.booked{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.06);color:var(--text3);cursor:not-allowed}
+.seat.vip{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.4);color:rgba(201,168,76,0.7)}
+.seat.vip:hover{background:rgba(201,168,76,0.3);border-color:var(--gold);transform:scale(1.1)}
+.seat-aisle{width:20px}
+.seat-legend{display:flex;gap:20px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+.legend-seat{width:16px;height:14px;border-radius:3px 3px 1px 1px;border:1px solid}
+.legend-seat.available{background:rgba(34,197,94,0.15);border-color:rgba(34,197,94,0.4)}
+.legend-seat.selected{background:rgba(229,9,20,0.3);border-color:var(--red)}
+.legend-seat.booked{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1)}
+.legend-seat.vip{background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.4)}
+.seats-display{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.seat-tag{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600}
+.seat-tag.has-seat{background:rgba(229,9,20,0.15);border-color:rgba(229,9,20,0.4);color:var(--red)}
+@media(max-width:992px){.seat-layout{grid-template-columns:1fr}}
+@media(max-width:480px){.seat{width:22px;height:20px}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div style="margin-bottom:16px"><a href="movie-detail.html" class="btn btn-ghost btn-sm">← Back to Showtimes</a></div>
+    <div class="page-header">
+      <h1 class="page-title">Select Your Seats</h1>
+      <p class="page-subtitle">Dune: Part Two — Hall 1 IMAX — Tue, Mar 11 · 4:45 PM</p>
+    </div>
+    <div class="seat-layout">
+      <div class="seat-map-wrap">
+        <div class="screen-label">◀ — — — SCREEN — — — ▶</div>
+        <div class="seat-grid" id="seatGrid"></div>
+        <div class="seat-legend">
+          <div class="legend-item"><div class="legend-seat available"></div> Available</div>
+          <div class="legend-item"><div class="legend-seat selected"></div> Selected</div>
+          <div class="legend-item"><div class="legend-seat booked"></div> Booked</div>
+          <div class="legend-item"><div class="legend-seat vip"></div> VIP (+$5)</div>
+        </div>
+      </div>
+      <div class="summary-panel">
+        <div class="summary-title">Booking Summary</div>
+        <div class="summary-movie">
+          <img src="https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="">
+          <div class="summary-movie-info">
+            <h4>Dune: Part Two</h4>
+            <p>Hall 1 — IMAX</p>
+            <p>Tue, Mar 11 · 4:45 PM</p>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="summary-row"><label>Selected Seats</label></div>
+        <div class="seats-display" id="selectedSeatsDisplay"><span class="seat-tag">None selected</span></div>
+        <div class="divider"></div>
+        <div class="summary-row"><label>Ticket Type</label><span>IMAX Standard</span></div>
+        <div class="summary-row"><label>Price per seat</label><span>$18.00</span></div>
+        <div class="summary-row"><label>Seats</label><span id="seatCount">0</span></div>
+        <div class="divider"></div>
+        <div class="summary-row total"><label>Total</label><span id="seatTotal" style="color:var(--red)">$0.00</span></div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary btn-full btn-lg" onclick="proceedCheckout()">Proceed to Checkout →</button>
+          <a href="movie-detail.html" class="btn btn-ghost btn-full btn-sm" style="margin-top:8px;display:flex">← Back to Showtimes</a>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('movies');
+
+  const ROWS = ['A','B','C','D','E','F','G','H','I','J'];
+  const BOOKED = ['A3','A4','B7','B8','C1','C2','D5','D6','E9','E10','F3','F4','G7','G8'];
+  const VIP_ROWS = ['H','I','J'];
+  let selected = [];
+
+  function buildSeatMap() {
+    const grid = document.getElementById('seatGrid');
+    grid.innerHTML = '';
+    ROWS.forEach(row => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'seat-row';
+      const label = document.createElement('div');
+      label.className = 'row-label'; label.textContent = row;
+      rowEl.appendChild(label);
+      for (let s = 1; s <= 12; s++) {
+        if (s === 7) { const a = document.createElement('div'); a.className = 'seat-aisle'; rowEl.appendChild(a); }
+        const id = `${row}${s}`;
+        const isBooked = BOOKED.includes(id);
+        const isVip = VIP_ROWS.includes(row);
+        const seat = document.createElement('div');
+        seat.className = `seat ${isBooked ? 'booked' : isVip ? 'vip' : 'available'}`;
+        seat.textContent = s; seat.dataset.id = id;
+        if (!isBooked) seat.addEventListener('click', () => toggleSeat(seat, id, isVip));
+        rowEl.appendChild(seat);
+      }
+      grid.appendChild(rowEl);
+    });
+  }
+
+  function toggleSeat(el, id, isVip) {
+    const idx = selected.indexOf(id);
+    if (idx === -1) { selected.push(id); el.classList.remove('available','vip'); el.classList.add('selected'); }
+    else { selected.splice(idx,1); el.classList.remove('selected'); el.classList.add(isVip?'vip':'available'); }
+    updateSummary();
+  }
+
+  function updateSummary() {
+    const d = document.getElementById('selectedSeatsDisplay');
+    document.getElementById('seatCount').textContent = selected.length;
+    document.getElementById('seatTotal').textContent = `$${(selected.length * 18).toFixed(2)}`;
+    d.innerHTML = selected.length
+      ? selected.map(s => `<span class="seat-tag has-seat">${s}</span>`).join('')
+      : '<span class="seat-tag">None selected</span>';
+  }
+
+  function proceedCheckout() {
+    if (!selected.length) { showToast('⚠️','No Seats','Please select at least one seat.'); return; }
+    showToast('🎫','Seats Reserved',`${selected.length} seat(s) held for 10 minutes.`);
+    setTimeout(() => location.href = 'checkout.html', 1200);
+  }
+
+  buildSeatMap();
+</script>
+</body>
+</html>

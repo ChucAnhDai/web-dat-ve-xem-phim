@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CinemaX — Cart</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+.cart-layout{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+.cart-table{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.cart-header-row{display:grid;grid-template-columns:2fr 1fr 120px 1fr 40px;gap:16px;align-items:center;padding:14px 20px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)}
+.cart-item-row{display:grid;grid-template-columns:2fr 1fr 120px 1fr 40px;gap:16px;align-items:center;padding:16px 20px;border-bottom:1px solid var(--border2);transition:var(--transition)}
+.cart-item-row:last-child{border-bottom:none}
+.cart-item-row:hover{background:var(--bg3)}
+.cart-item-product{display:flex;align-items:center;gap:12px}
+.cart-item-img{width:56px;height:56px;border-radius:8px;background:var(--bg3);overflow:hidden;flex-shrink:0}
+.cart-item-img img{width:100%;height:100%;object-fit:cover}
+.cart-item-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.cart-item-cat{font-size:11px;color:var(--text3)}
+.qty-control{display:flex;align-items:center;gap:2px}
+.qty-btn{width:28px;height:28px;border-radius:6px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition)}
+.qty-btn:hover{background:var(--surface);color:var(--text)}
+.qty-val{width:36px;text-align:center;font-size:13px;font-weight:600}
+.cart-price{font-size:14px;font-weight:600}
+.cart-subtotal{font-size:14px;font-weight:700;color:var(--red)}
+.remove-btn{width:32px;height:32px;border-radius:6px;color:var(--text3);display:flex;align-items:center;justify-content:center;transition:var(--transition);cursor:pointer;font-size:16px}
+.remove-btn:hover{background:rgba(229,9,20,0.15);color:var(--red)}
+.cart-summary-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;position:sticky;top:calc(var(--header-h) + 28px)}
+.promo-input-wrap{display:flex;gap:6px;margin-bottom:16px}
+.promo-input-wrap input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:13px;color:var(--text);outline:none}
+.empty-cart{text-align:center;padding:60px 20px;color:var(--text2)}
+.empty-cart .empty-icon{font-size:64px;margin-bottom:16px}
+.empty-cart h3{font-size:20px;font-weight:600;margin-bottom:8px;color:var(--text)}
+@media(max-width:992px){.cart-layout{grid-template-columns:1fr}}
+@media(max-width:768px){.cart-header-row{display:none}.cart-item-row{grid-template-columns:1fr auto;gap:10px}.cart-item-row>*:nth-child(2),.cart-item-row>*:nth-child(4){display:none}}
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <div id="cx-header"></div>
+  <div id="cx-sidebar"></div>
+  <main class="main">
+    <div class="page-header">
+      <h1 class="page-title">Shopping Cart</h1>
+      <p class="page-subtitle" id="cartSubtitle">Loading...</p>
+    </div>
+    <div class="cart-layout" id="cartLayout">
+      <div>
+        <div class="cart-table">
+          <div class="cart-header-row">
+            <span>Product</span><span>Price</span><span>Quantity</span><span>Subtotal</span><span></span>
+          </div>
+          <div id="cartItems"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <a href="shop.html" class="btn btn-ghost btn-sm">← Continue Shopping</a>
+          <button class="btn btn-secondary btn-sm" onclick="clearCart()">🗑️ Clear Cart</button>
+        </div>
+      </div>
+      <div class="cart-summary-box">
+        <div class="summary-title">Order Summary</div>
+        <div class="promo-input-wrap">
+          <input type="text" placeholder="Promo code..." id="promoInput">
+          <button class="btn btn-outline btn-sm" onclick="applyPromo()">Apply</button>
+        </div>
+        <div class="divider"></div>
+        <div class="summary-row"><label>Subtotal</label><span id="subtotalVal">$0.00</span></div>
+        <div class="summary-row"><label>Discount</label><span id="discountVal" style="color:#22c55e">$0.00</span></div>
+        <div class="summary-row"><label>Delivery</label><span>Free</span></div>
+        <div class="divider"></div>
+        <div class="summary-row total"><label>Total</label><span id="totalVal" style="color:var(--red)">$0.00</span></div>
+        <a href="checkout.html" class="btn btn-primary btn-full btn-lg" style="margin-top:16px;display:flex">Checkout →</a>
+      </div>
+    </div>
+  </main>
+  <div id="cx-footer"></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script src="shared.js"></script>
+<script src="components.js"></script>
+<script>
+  CX.init('cart');
+
+  function renderCart() {
+    const el = document.getElementById('cartItems');
+    const count = cartCount();
+    document.getElementById('cartSubtitle').textContent = `${count} item${count!==1?'s':''} in your cart`;
+    if (!CART.length) {
+      document.getElementById('cartLayout').innerHTML = `<div class="empty-cart" style="grid-column:1/-1"><div class="empty-icon">🛒</div><h3>Your cart is empty</h3><p>Browse our shop to add items.</p><a href="shop.html" class="btn btn-primary btn-lg" style="margin-top:16px;display:inline-flex">Browse Shop</a></div>`;
+      return;
+    }
+    el.innerHTML = CART.map(item => `
+      <div class="cart-item-row">
+        <div class="cart-item-product">
+          <div class="cart-item-img"><img src="${item.img}" alt="" onerror="this.style.display='none'"></div>
+          <div><div class="cart-item-name">${item.name}</div><div class="cart-item-cat">${item.cat}</div></div>
+        </div>
+        <div class="cart-price">$${item.price.toFixed(2)}</div>
+        <div class="qty-control">
+          <div class="qty-btn" onclick="changeQty(${item.id},-1)">−</div>
+          <div class="qty-val">${item.qty}</div>
+          <div class="qty-btn" onclick="changeQty(${item.id},1)">+</div>
+        </div>
+        <div class="cart-subtotal">$${(item.price*item.qty).toFixed(2)}</div>
+        <div class="remove-btn" onclick="removeItem(${item.id})">✕</div>
+      </div>`).join('');
+    const subtotal = CART.reduce((s,i)=>s+i.price*i.qty,0);
+    document.getElementById('subtotalVal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('discountVal').textContent = `− $0.00`;
+    document.getElementById('totalVal').textContent = `$${subtotal.toFixed(2)}`;
+    updateCartBadges();
+  }
+
+  function changeQty(id, delta) {
+    const item = CART.find(i=>i.id===id);
+    if (!item) return;
+    item.qty = Math.max(1, item.qty + delta);
+    saveCart(); renderCart();
+  }
+  function removeItem(id) {
+    const idx = CART.findIndex(i=>i.id===id);
+    if (idx > -1) { const n=CART[idx].name; CART.splice(idx,1); saveCart(); renderCart(); showToast('🗑️','Removed',`${n} removed from cart.`); }
+  }
+  function clearCart() {
+    if (!CART.length) return;
+    CART.length = 0; saveCart(); renderCart(); showToast('🗑️','Cart Cleared','All items removed.');
+  }
+  function applyPromo() {
+    const val = document.getElementById('promoInput').value.trim().toUpperCase();
+    if (val === 'SAVE10') { showToast('🎉','Promo Applied','10% discount applied!'); document.getElementById('discountVal').textContent='− $5.00'; }
+    else showToast('❌','Invalid Code','Promo code not found.');
+  }
+
+  renderCart();
+</script>
+</body>
+</html>

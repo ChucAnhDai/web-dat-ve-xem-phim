@@ -1,0 +1,50 @@
+<!-- ═══════════════════════════════════════════
+     CINEMAX — HEADER COMPONENT
+     Được inject vào tất cả các trang qua components.js
+═══════════════════════════════════════════ -->
+<header class="header">
+  <button class="hamburger" id="hamburgerBtn" aria-label="Toggle menu">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <a class="header-logo" href="index.html">
+    <div class="logo-icon">🎬</div>
+    Cinema<span>X</span>
+  </a>
+
+  <nav class="header-nav">
+    <a href="index.html"      data-page="home">Home</a>
+    <a href="movies.html"     data-page="movies">Movies</a>
+    <a href="showtimes.html"  data-page="showtimes">Showtimes</a>
+    <a href="shop.html"       data-page="shop">Shop</a>
+  </nav>
+
+  <div class="header-search">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="globalSearch" placeholder="Search movies, products..." autocomplete="off">
+    <div class="search-dropdown" id="searchDropdown"></div>
+  </div>
+
+  <div class="header-actions">
+    <a href="cart.html" class="icon-btn" title="Cart">
+      🛒
+      <span class="badge" id="cartBadge">0</span>
+    </a>
+    <button class="icon-btn" title="Notifications" onclick="showToast('🔔','Notifications','You have 2 new notifications.')">
+      🔔
+      <span class="badge">2</span>
+    </button>
+    <div class="avatar-btn" tabindex="0" role="button" aria-label="User menu">
+      JD
+      <div class="dropdown" role="menu">
+        <a href="profile.html"    role="menuitem">👤 My Profile</a>
+        <a href="my-tickets.html" role="menuitem">🎫 My Tickets</a>
+        <a href="my-orders.html"  role="menuitem">📦 My Orders</a>
+        <div class="dropdown-divider"></div>
+        <a href="#" role="menuitem" onclick="showToast('👋','Goodbye','You have been logged out.')">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+</header>
