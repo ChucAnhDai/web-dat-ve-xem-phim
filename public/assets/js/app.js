@@ -490,11 +490,15 @@ async function handleLogout() {
 
 function renderMovieCard(movie) {
   return `
-    <div class="card movie-card">
+    <div class="card movie-card" onclick="navigateTo('movie-detail')">
       <div class="movie-poster">
         <img src="${movie.poster}" alt="${movie.title}" loading="lazy" onerror="this.parentNode.style.background='var(--bg4)'">
         <div class="genre-badge">${movie.genre}</div>
         <div class="rating-badge">⭐ ${movie.rating}</div>
+        <div class="movie-poster-overlay">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();navigateTo('seat-selection')">🎫 Book</button>
+          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">+ Watchlist</button>
+        </div>
       </div>
       <div class="movie-info">
         <div class="movie-title">${movie.title}</div>
@@ -505,8 +509,8 @@ function renderMovieCard(movie) {
         </div>
       </div>
       <div class="movie-actions">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="navigateTo('showtimes')">Book</button>
-        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="navigateTo('movies')">Details</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();navigateTo('movie-detail')">Details</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="event.stopPropagation();navigateTo('seat-selection')">Book</button>
       </div>
     </div>
   `;

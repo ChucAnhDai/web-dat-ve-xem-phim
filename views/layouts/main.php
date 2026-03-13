@@ -13,7 +13,7 @@ $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo htmlspecialchars($title ?? 'CinemaX - Premium Cinema Experience'); ?></title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?php echo htmlspecialchars($publicBase); ?>/assets/css/app.css">
 </head>
 <body data-active-page="<?php echo $activePage ?? ''; ?>">

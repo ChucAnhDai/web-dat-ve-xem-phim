@@ -31,3 +31,9 @@
 [2026-03-12T18:51:33+01:00] INFO: User login {"user_id":"6"}
 [2026-03-12T18:51:57+01:00] INFO: User logout {"user_id":"1"}
 [2026-03-12T18:52:39+01:00] INFO: User login {"user_id":"1"}
+[2026-03-13T10:54:36+01:00] INFO: User logout {"user_id":2}
+[2026-03-13T10:55:09+01:00] INFO: User registered {"user_id":3}
+[2026-03-13T10:56:00+01:00] INFO: User logout {"user_id":3}
+[2026-03-13T10:56:11+01:00] INFO: User login {"user_id":3}
+[2026-03-13T10:57:21+01:00] INFO: User logout {"user_id":3}
+[2026-03-13T10:57:33+01:00] INFO: User login {"user_id":3}
