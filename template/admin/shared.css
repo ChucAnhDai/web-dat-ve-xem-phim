@@ -42,7 +42,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg0); color: var(--
 
 /* ===== SIDEBAR ===== */
 .sidebar {
-  width: var(--sidebar-w); min-height: 100vh;
+  width: var(--sidebar-w); height: 100vh;
   background: var(--bg1); border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
   position: fixed; top: 0; left: 0; z-index: 100;
@@ -63,7 +63,14 @@ body { font-family: 'DM Sans', sans-serif; background: var(--bg0); color: var(--
 .logo-text { display: flex; flex-direction: column; overflow: hidden; white-space: nowrap; text-decoration: none; }
 .logo-title { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--text); line-height: 1; }
 .logo-sub { font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; }
-.sidebar-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 0; }
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 0;
+  max-height: calc(100vh - var(--header-h));
+}
 .nav-section { margin-bottom: 4px; }
 .nav-label {
   padding: 8px 20px 4px; font-size: 10px; font-weight: 600;

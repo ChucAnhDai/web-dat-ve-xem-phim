@@ -29,10 +29,10 @@
       </div>
     </div>
     <div id="sidebarUserActions" style="display:none">
-      <div class="nav-item" onclick="navigateTo('my-tickets')">
+      <div class="nav-item" onclick="navigateTo('profile')">
         <span class="nav-icon">🎫</span> My Tickets
       </div>
-      <div class="nav-item" onclick="navigateTo('my-orders')">
+      <div class="nav-item" onclick="navigateTo('profile')">
         <span class="nav-icon">📦</span> My Orders
       </div>
       <div class="nav-item" onclick="navigateTo('profile')">

@@ -17,8 +17,8 @@ const routeMap = {
   'movie-detail': '/movies',
   'seat-selection': '/showtimes',
   checkout: '/cart',
-  'my-tickets': '/login',
-  'my-orders': '/login'
+  'my-tickets': '/profile',
+  'my-orders': '/profile'
 };
 
 const movies = [
@@ -290,6 +290,17 @@ function updateAuthUI(isLoggedIn) {
   if (userMenu) userMenu.style.display = isLoggedIn ? 'flex' : 'none';
   if (sidebarGuest) sidebarGuest.style.display = isLoggedIn ? 'none' : 'block';
   if (sidebarUser) sidebarUser.style.display = isLoggedIn ? 'block' : 'none';
+}
+
+function ensureAuthForPage() {
+  const authOnlyPages = new Set(['profile']);
+  const activePage = document.body?.dataset?.activePage || '';
+  if (!authOnlyPages.has(activePage)) return;
+
+  if (!getAuthToken()) {
+    updateAuthUI(false);
+    navigateTo('login');
+  }
 }
 
 async function hydrateProfile() {
@@ -746,6 +757,7 @@ document.addEventListener('click', event => {
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initAuthUI();
+  ensureAuthForPage();
 
   const loginForm = document.getElementById('loginForm');
   const registerForm = document.getElementById('registerForm');
