@@ -10,6 +10,7 @@ require_once __DIR__ . '/../app/Core/Response.php';
 
 use App\Core\Application;
 use App\Controllers\WebController;
+use App\Controllers\Admin\AdminController;
 
 $app = new Application();
 
@@ -27,5 +28,20 @@ $app->router->get('/cart', [WebController::class, 'showCartPage']);
 $app->router->get('/profile', [WebController::class, 'showProfilePage']);
 $app->router->get('/login', [WebController::class, 'showLoginForm']);
 $app->router->get('/register', [WebController::class, 'showRegisterForm']);
+
+// Admin routes
+$app->router->get('/admin', [AdminController::class, 'showDashboard']);
+$app->router->get('/admin/dashboard', [AdminController::class, 'showDashboard']);
+$app->router->get('/admin/movies', [AdminController::class, 'showMovies']);
+$app->router->get('/admin/cinemas', [AdminController::class, 'showCinemas']);
+$app->router->get('/admin/payments', [AdminController::class, 'showPayments']);
+$app->router->get('/admin/products', [AdminController::class, 'showProducts']);
+$app->router->get('/admin/promotions', [AdminController::class, 'showPromotions']);
+$app->router->get('/admin/seats', [AdminController::class, 'showSeats']);
+$app->router->get('/admin/shop-orders', [AdminController::class, 'showShopOrders']);
+$app->router->get('/admin/showtimes', [AdminController::class, 'showShowtimes']);
+$app->router->get('/admin/ticket-orders', [AdminController::class, 'showTicketOrders']);
+$app->router->get('/admin/users', [AdminController::class, 'showUsers']);
+$app->router->get('/admin/test', [AdminController::class, 'showTest']);
 
 $app->run();

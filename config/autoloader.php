@@ -1,31 +1,18 @@
 <?php
 
-// Fallback Autoloader since composer might not be installed
-
-spl_autoload_register(function ($class) {
-    // Project-specific namespace prefix
+spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';
+    $baseDir = __DIR__ . '/../app/';
 
-    // Base directory for the namespace prefix
-    $base_dir = __DIR__ . '/../app/';
-
-    // Does the class use the namespace prefix?
     $len = strlen($prefix);
     if (strncmp($prefix, $class, $len) !== 0) {
-        // no, move to the next registered autoloader
         return;
     }
 
-    // Get the relative class name
-    $relative_class = substr($class, $len);
+    $relativeClass = substr($class, $len);
+    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
 
-    // Replace the namespace prefix with the base directory, replace namespace
-    // separators with directory separators in the relative class name, append
-    // with .php
-    $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
-
-    // If the file exists, require it
     if (file_exists($file)) {
-        require $file;
+        require_once $file;
     }
 });
