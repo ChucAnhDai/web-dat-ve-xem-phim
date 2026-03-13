@@ -14,9 +14,9 @@ const routeMap = {
   auth: '/login',
   login: '/login',
   register: '/register',
-  'movie-detail': '/movies',
+  'movie-detail': '/movie-detail',
   'seat-selection': '/showtimes',
-  checkout: '/cart',
+  checkout: '/checkout',
   'my-tickets': '/my-tickets',
   'my-orders': '/my-orders'
 };
@@ -715,33 +715,66 @@ function updateCartBadges() {
 
 function renderCartItems() {
   const cartItemsList = document.getElementById('cartItemsList');
+  const cartContent = document.getElementById('cartContent');
+  const cartEmptyState = document.getElementById('cartEmptyState');
+  const cartSubtitle = document.getElementById('cartSubtitle');
+
+  if (cartSubtitle) {
+    cartSubtitle.textContent = `${cartItems.length} items in your cart`;
+  }
+
   if (!cartItemsList) {
     updateCartBadges();
     return;
   }
 
-  cartItemsList.innerHTML = cartItems.map(item => `
-    <div class="cart-item-row">
-      <div class="cart-item-product">
-        <div class="cart-item-img"><img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'"></div>
-        <div>
-          <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-cat">${item.cat}</div>
+  if (cartItems.length === 0) {
+    if (cartContent) cartContent.style.display = 'none';
+    if (cartEmptyState) cartEmptyState.style.display = 'flex';
+  } else {
+    if (cartContent) cartContent.style.display = 'grid';
+    if (cartEmptyState) cartEmptyState.style.display = 'none';
+
+    cartItemsList.innerHTML = cartItems.map(item => `
+      <div class="cart-item-row">
+        <div class="cart-item-product">
+          <div class="cart-item-img"><img src="${item.img}" alt="${item.name}" onerror="this.style.display='none'"></div>
+          <div>
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-cat">${item.cat}</div>
+          </div>
         </div>
+        <div class="cart-price">$${item.price.toFixed(2)}</div>
+        <div class="qty-control">
+          <div class="qty-btn" onclick="changeCartQty(${item.id}, -1)">−</div>
+          <div class="qty-val">${item.qty}</div>
+          <div class="qty-btn" onclick="changeCartQty(${item.id}, 1)">+</div>
+        </div>
+        <div class="cart-subtotal">$${(item.price * item.qty).toFixed(2)}</div>
+        <div class="remove-btn" onclick="removeCartItem(${item.id})">✕</div>
       </div>
-      <div class="cart-price">$${item.price.toFixed(2)}</div>
-      <div class="qty-control">
-        <div class="qty-btn" onclick="changeCartQty(${item.id}, -1)">−</div>
-        <div class="qty-val">${item.qty}</div>
-        <div class="qty-btn" onclick="changeCartQty(${item.id}, 1)">+</div>
-      </div>
-      <div class="cart-subtotal">$${(item.price * item.qty).toFixed(2)}</div>
-      <div class="remove-btn" onclick="removeCartItem(${item.id})">✕</div>
-    </div>
-  `).join('');
+    `).join('');
+  }
+
+  // Cập nhật tóm tắt đơn hàng
+  const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
+  const discount = subtotal > 40 ? 5.00 : 0.00; // Giảm giá giả lập
+  const total = Math.max(0, subtotal - discount);
+
+  const subtotalLabelEl = document.getElementById('summarySubtotalLabel');
+  const subtotalEl = document.getElementById('summarySubtotal');
+  const discountEl = document.getElementById('summaryDiscount');
+  const totalEl = document.getElementById('summaryTotal');
+
+  if (subtotalLabelEl) subtotalLabelEl.textContent = `Subtotal (${cartItems.length} items)`;
+  if (subtotalEl) subtotalEl.textContent = formatCurrency(subtotal);
+  if (discountEl) discountEl.textContent = discount > 0 ? `− ${formatCurrency(discount)}` : '$0.00';
+  if (totalEl) totalEl.textContent = formatCurrency(total);
 
   updateCartBadges();
 }
+
+
 
 function changeCartQty(id, delta) {
   const item = cartItems.find(cartItem => cartItem.id === id);
@@ -761,6 +794,19 @@ function removeCartItem(id) {
     showToast('🗑️', 'Removed', `${target.name} removed from cart.`);
   }
 }
+
+function clearCart() {
+  if (cartItems.length === 0) {
+    showToast('ℹ️', 'Empty Cart', 'Your cart is already empty.');
+    return;
+  }
+  
+  cartItems = [];
+  cartCount = 0;
+  renderCartItems();
+  showToast('🗑️', 'Cart Cleared', 'All items have been removed.');
+}
+
 
 function addToCartProduct(name) {
   cartCount += 1;

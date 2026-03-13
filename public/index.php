@@ -21,6 +21,7 @@ require_once __DIR__ . '/../config/routes.php';
 $app->router->get('/', [WebController::class, 'showHomePage']);
 $app->router->get('/home', [WebController::class, 'showHomePage']);
 $app->router->get('/movies', [WebController::class, 'showMoviesPage']);
+$app->router->get('/movie-detail', [WebController::class, 'showMovieDetailPage']);
 $app->router->get('/showtimes', [WebController::class, 'showShowtimesPage']);
 $app->router->get('/shop', [WebController::class, 'showShopPage']);
 $app->router->get('/shop/product-detail', [WebController::class, 'showProductDetailPage']);
@@ -30,6 +31,8 @@ $app->router->get('/my-orders', [WebController::class, 'showMyOrdersPage']);
 $app->router->get('/my-tickets', [WebController::class, 'showMyTicketsPage']);
 $app->router->get('/login', [WebController::class, 'showLoginForm']);
 $app->router->get('/register', [WebController::class, 'showRegisterForm']);
+$app->router->get('/seat-selection', [WebController::class, 'showSeatSelectionPage']);
+$app->router->get('/checkout', [WebController::class, 'showCheckoutPage']);
 
 // Admin routes
 $app->router->get('/admin', [AdminController::class, 'showDashboard']);

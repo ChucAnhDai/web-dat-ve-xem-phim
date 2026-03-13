@@ -94,4 +94,28 @@ class WebController
             'activePage' => 'register',
         ]);
     }
+
+    public function showMovieDetailPage(Request $request, Response $response)
+    {
+        return $response->view('pages/movie-detail', [
+            'title' => 'Chi tiết phim - CinemaX',
+            'activePage' => 'movies',
+        ]);
+    }
+
+    public function showSeatSelectionPage(Request $request, Response $response)
+    {
+        return $response->view('pages/seat-selection', [
+            'title' => 'Chọn ghế - CinemaX',
+            'activePage' => 'movies',
+        ]);
+    }
+
+    public function showCheckoutPage(Request $request, Response $response)
+    {
+        return $response->view('pages/checkout', [
+            'title' => 'Thanh toán - CinemaX',
+            'activePage' => 'cart',
+        ]);
+    }
 }
