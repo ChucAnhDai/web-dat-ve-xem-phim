@@ -15,7 +15,7 @@ $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="<?php echo htmlspecialchars($publicBase); ?>/assets/admin/shared.css">
 </head>
-<body>
+<body data-active-page="<?php echo htmlspecialchars($activePage ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 <div class="layout">
   <?php include __DIR__ . '/../partials/sidebar.php'; ?>
   <div class="main-wrap" id="mainWrap">

@@ -124,14 +124,28 @@ function _ensureSidebarOverlay() {
 }
 
 function _setActiveNav() {
-  const current = location.pathname.replace(/\/$/, '');
-  document.querySelectorAll('.nav-item[data-page]').forEach(a => {
-    const href = a.getAttribute('href') || '';
+  const activePage = document.body?.dataset?.activePage || '';
+  const navItems = document.querySelectorAll('.nav-item[data-page]');
+
+  navItems.forEach(item => {
+    item.classList.remove('active');
+  });
+
+  if (activePage) {
+    navItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.page === activePage);
+    });
+    return;
+  }
+
+  const current = location.pathname.replace(/\/$/, '') + location.search;
+  navItems.forEach(item => {
+    const href = item.getAttribute('href') || '';
     if (!href) return;
-    const normalized = href.replace(location.origin, '').replace(/\/$/, '');
-    if (normalized === current) {
-      a.classList.add('active');
-    }
+
+    const url = new URL(href, location.origin);
+    const normalized = url.pathname.replace(/\/$/, '') + url.search;
+    item.classList.toggle('active', normalized === current);
   });
 }
 

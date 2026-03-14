@@ -149,9 +149,28 @@ function _ensureSidebarOverlay() {
 // ACTIVE NAV (run after sidebar loads)
 // ══════════════════════════════════════════════
 function _setActiveNav() {
-  const cur = location.pathname.split('/').pop() || 'index.html';
-  document.querySelectorAll('.nav-item[data-page]').forEach(a => {
-    if (a.dataset.page === cur) a.classList.add('active');
+  const activePage = document.body?.dataset?.activePage || '';
+  const navItems = document.querySelectorAll('.nav-item[data-page]');
+
+  navItems.forEach(item => {
+    item.classList.remove('active');
+  });
+
+  if (activePage) {
+    navItems.forEach(item => {
+      item.classList.toggle('active', item.dataset.page === activePage);
+    });
+    return;
+  }
+
+  const current = location.pathname.replace(/\/$/, '') + location.search;
+  navItems.forEach(item => {
+    const href = item.getAttribute('href') || '';
+    if (!href) return;
+
+    const url = new URL(href, location.origin);
+    const normalized = url.pathname.replace(/\/$/, '') + url.search;
+    item.classList.toggle('active', normalized === current);
   });
 }
 
