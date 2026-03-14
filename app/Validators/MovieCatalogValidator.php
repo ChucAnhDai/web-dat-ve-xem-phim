@@ -24,8 +24,13 @@ class MovieCatalogValidator
     private function nullableString($value): ?string
     {
         $cleaned = trim((string) ($value ?? ''));
+        if ($cleaned === '') {
+            return null;
+        }
 
-        return $cleaned === '' ? null : $cleaned;
+        $length = function_exists('mb_strlen') ? mb_strlen($cleaned) : strlen($cleaned);
+
+        return $length >= 2 ? $cleaned : null;
     }
 
     private function toPositiveInt($value): ?int

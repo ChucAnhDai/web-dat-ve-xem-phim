@@ -4,6 +4,7 @@ namespace Tests\Integration;
 
 use App\Clients\OphimClient;
 use App\Core\Logger;
+use App\Repositories\ShowtimeRepository;
 use App\Services\MovieCatalogService;
 use App\Validators\MovieCatalogValidator;
 use PHPUnit\Framework\TestCase;
@@ -65,7 +66,12 @@ class MovieCatalogServiceIntegrationTest extends TestCase
         $service = new MovieCatalogService(
             $client,
             new MovieCatalogValidator(),
-            new IntegrationFakeCatalogLogger()
+            new IntegrationFakeCatalogLogger(),
+            null,
+            null,
+            null,
+            null,
+            new IntegrationFakeShowtimeRepository()
         );
 
         $result = $service->listMovies([
@@ -88,7 +94,12 @@ class MovieCatalogServiceIntegrationTest extends TestCase
         $service = new MovieCatalogService(
             $client,
             new MovieCatalogValidator(),
-            new IntegrationFakeCatalogLogger()
+            new IntegrationFakeCatalogLogger(),
+            null,
+            null,
+            null,
+            null,
+            new IntegrationFakeShowtimeRepository()
         );
 
         $result = $service->getMovieDetail('missing-slug');
@@ -96,14 +107,74 @@ class MovieCatalogServiceIntegrationTest extends TestCase
         $this->assertSame(404, $result['status']);
         $this->assertSame(['Movie not found.'], $result['errors']['movie']);
     }
+
+    public function testListMoviesUsesSearchEndpointForKeywordQueries(): void
+    {
+        $client = new IntegrationFakeOphimClient();
+        $client->searchPayload = [
+            'data' => [
+                'APP_DOMAIN_CDN_IMAGE' => 'https://img.ophim.live',
+                'items' => [
+                    [
+                        'slug' => 'avengers-secret-wars',
+                        'name' => 'Avengers Secret Wars',
+                        'origin_name' => 'Avengers Secret Wars',
+                        'poster_url' => 'avengers-secret-wars.jpg',
+                        'thumb_url' => 'avengers-secret-wars-thumb.jpg',
+                        'time' => '135 min',
+                        'quality' => 'HD',
+                        'lang' => 'Vietsub',
+                        'year' => 2027,
+                        'tmdb' => ['vote_average' => 8.4, 'vote_count' => 44],
+                        'imdb' => ['vote_average' => 0, 'vote_count' => 0],
+                        'category' => [
+                            ['slug' => 'hanh-dong', 'name' => 'Action'],
+                        ],
+                        'episode_current' => 'Full',
+                    ],
+                ],
+                'params' => [
+                    'pagination' => [
+                        'totalItems' => 1,
+                        'totalItemsPerPage' => 12,
+                        'currentPage' => 1,
+                        'totalPages' => 1,
+                    ],
+                ],
+            ],
+        ];
+
+        $service = new MovieCatalogService(
+            $client,
+            new MovieCatalogValidator(),
+            new IntegrationFakeCatalogLogger(),
+            null,
+            null,
+            null,
+            null,
+            new IntegrationFakeShowtimeRepository()
+        );
+
+        $result = $service->listMovies([
+            'status' => 'now_showing',
+            'search' => 'avengers',
+        ]);
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame('avengers', $client->searchCalls[0]['keyword']);
+        $this->assertSame('search', $result['data']['source']['mode']);
+        $this->assertSame('Avengers Secret Wars', $result['data']['items'][0]['title']);
+    }
 }
 
 class IntegrationFakeOphimClient extends OphimClient
 {
     public array $listPayload = [];
+    public array $searchPayload = [];
     public array $detailPayload = [];
     public array $imagesPayload = [];
     public array $listCalls = [];
+    public array $searchCalls = [];
 
     public function __construct()
     {
@@ -114,6 +185,13 @@ class IntegrationFakeOphimClient extends OphimClient
         $this->listCalls[] = ['slug' => $slug, 'query' => $query];
 
         return $this->listPayload;
+    }
+
+    public function searchMovies(string $keyword, array $query = []): array
+    {
+        $this->searchCalls[] = ['keyword' => $keyword, 'query' => $query];
+
+        return $this->searchPayload;
     }
 
     public function getMovieDetail(string $slug): array
@@ -139,5 +217,17 @@ class IntegrationFakeCatalogLogger extends Logger
 
     public function error(string $message, array $context = []): void
     {
+    }
+}
+
+class IntegrationFakeShowtimeRepository extends ShowtimeRepository
+{
+    public function __construct()
+    {
+    }
+
+    public function listUpcomingByMovie(int $movieId, int $limitDays = 6): array
+    {
+        return [];
     }
 }

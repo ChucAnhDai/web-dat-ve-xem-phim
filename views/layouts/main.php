@@ -6,6 +6,8 @@ $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
 $publicBase = rtrim(dirname($scriptName), '/');
 $publicBase = $publicBase === '.' ? '' : $publicBase;
 $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
+$appCssVersion = @filemtime(__DIR__ . '/../../public/assets/css/app.css') ?: time();
+$appJsVersion = @filemtime(__DIR__ . '/../../public/assets/js/app.js') ?: time();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -14,7 +16,7 @@ $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo htmlspecialchars($title ?? 'CinemaX - Premium Cinema Experience'); ?></title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="<?php echo htmlspecialchars($publicBase); ?>/assets/css/app.css">
+  <link rel="stylesheet" href="<?php echo htmlspecialchars($publicBase); ?>/assets/css/app.css?v=<?php echo urlencode((string) $appCssVersion); ?>">
 </head>
 <body data-active-page="<?php echo $activePage ?? ''; ?>">
 <div class="app-shell">
@@ -32,6 +34,6 @@ $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
 window.APP_BASE_PATH = <?php echo json_encode($appBase, JSON_UNESCAPED_UNICODE); ?>;
 window.PUBLIC_BASE_PATH = <?php echo json_encode($publicBase, JSON_UNESCAPED_UNICODE); ?>;
 </script>
-<script src="<?php echo htmlspecialchars($publicBase); ?>/assets/js/app.js"></script>
+<script src="<?php echo htmlspecialchars($publicBase); ?>/assets/js/app.js?v=<?php echo urlencode((string) $appJsVersion); ?>"></script>
 </body>
 </html>

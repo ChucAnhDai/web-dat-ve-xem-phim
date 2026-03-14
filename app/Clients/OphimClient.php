@@ -32,6 +32,14 @@ class OphimClient
         return $this->requestJson('/danh-sach/' . rawurlencode(trim($slug)), $query, 300);
     }
 
+    public function searchMovies(string $keyword, array $query = []): array
+    {
+        $normalizedKeyword = trim($keyword);
+        $normalizedQuery = array_merge(['keyword' => $normalizedKeyword], $query);
+
+        return $this->requestJson('/tim-kiem', $normalizedQuery, 180);
+    }
+
     public function getMovieDetail(string $slug): array
     {
         return $this->requestJson('/phim/' . rawurlencode(trim($slug)), [], 900);

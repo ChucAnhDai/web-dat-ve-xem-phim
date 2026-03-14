@@ -1,1 +1,210 @@
-{"cached_at":1773497158,"payload":{"status":"success","message":"","data":{"seoOnPage":{"og_type":"video.movie","titleHead":"Cá Voi Sát Thủ-Killer Whale (2026) [HD-Vietsub]","seoSchema":{"@context":"https:\/\/schema.org","@type":"Movie","name":"Cá Voi Sát Thủ-Killer Whale (2026) [HD-Vietsub]","dateModified":"2026-01-30T10:49:46.000Z","dateCreated":"2026-01-30T10:49:46.000Z","url":"https:\/\/ophim17.cc\/phim\/ca-voi-sat-thu","datePublished":"2026-01-30T10:49:46.000Z","image":"https:\/\/img.ophim.live\/uploads\/movies\/ca-voi-sat-thu-thumb.jpg","director":"Jo-Anne Brechin"},"descriptionHead":"Hai người bạn thân Maddie và Trish rơi vào tình thế sinh tử khi bị mắc kẹt trong một đầm phá hẻo lánh, nơi trú ngụ của Ceto — một con cá voi sát thủ cực kỳ nguy hiểm. Không có...","og_image":["movies\/ca-voi-sat-thu-thumb.jpg","movies\/ca-voi-sat-thu-thumb.jpg"],"updated_time":1773485778000,"og_url":"phim\/ca-voi-sat-thu"},"breadCrumb":[{"name":"Phim Lẻ","slug":"\/danh-sach\/phim-le","position":2},{"name":"Âu Mỹ","slug":"\/quoc-gia\/au-my","position":3},{"name":"Anh","slug":"\/quoc-gia\/anh","position":3},{"name":"Úc","slug":"\/quoc-gia\/uc","position":3},{"name":"Hành Động","slug":"\/the-loai\/hanh-dong","position":3},{"name":"Viễn Tưởng","slug":"\/the-loai\/vien-tuong","position":3},{"name":"Khoa Học","slug":"\/the-loai\/khoa-hoc","position":3},{"name":"Kinh Dị","slug":"\/the-loai\/kinh-di","position":3},{"name":"Bí ẩn","slug":"\/the-loai\/bi-an","position":3},{"name":"Cá Voi Sát Thủ","isCurrent":true,"position":4}],"params":{"slug":"ca-voi-sat-thu"},"item":{"tmdb":{"type":"movie","id":"1412598","season":null,"vote_average":5.908,"vote_count":49},"imdb":{"id":"tt33479805","vote_average":0,"vote_count":0},"created":{"time":"2026-01-30T10:49:46.000Z"},"modified":{"time":"2026-03-14T10:56:18.000Z"},"_id":"697c2a5ae263b2a94614e0ca","name":"Cá Voi Sát Thủ","slug":"ca-voi-sat-thu","origin_name":"Killer Whale","alternative_names":["Ballena Asesina","Кит-убийца"],"content":"<p>Hai người bạn thân Maddie và Trish rơi vào tình thế sinh tử khi bị mắc kẹt trong một đầm phá hẻo lánh, nơi trú ngụ của Ceto — một con cá voi sát thủ cực kỳ nguy hiểm. Không có đường thoát, họ buộc phải tìm cách sống sót trước kẻ săn mồi khổng lồ đang rình rập dưới làn nước.<\/p>","type":"single","status":"completed","thumb_url":"ca-voi-sat-thu-thumb.jpg","poster_url":"ca-voi-sat-thu-poster.jpg","is_copyright":false,"sub_docquyen":false,"chieurap":false,"trailer_url":"https:\/\/www.youtube.com\/watch?v=Rymtw1fAPbQ","time":"89 Phút","episode_current":"Full","episode_total":"1","quality":"HD","lang":"Vietsub","lang_key":["vs"],"notify":"","showtimes":"","year":2026,"view":0,"actor":["Virginia Gardner","Melanie Jarnson","Mitchell Hope","Isaac Crawley","Luke Cunningham","Anna Yen","Shinji Ikefuji","Ron Smyck","Aliandra Calabrese","Mia Grunwald"],"director":["Jo-Anne Brechin"],"category":[{"id":"620a21b2e0fc277084dfd0c5","name":"Hành Động","slug":"hanh-dong"},{"id":"620a2282e0fc277084dfd435","name":"Viễn Tưởng","slug":"vien-tuong"},{"id":"620a229be0fc277084dfd4dd","name":"Khoa Học","slug":"khoa-hoc"},{"id":"620a22ace0fc277084dfd531","name":"Kinh Dị","slug":"kinh-di"},{"id":"620f84d291fa4af90ab6b3f4","name":"Bí ẩn","slug":"bi-an"}],"country":[{"id":"620a231fe0fc277084dfd7ce","name":"Âu Mỹ","slug":"au-my"},{"id":"620a2370e0fc277084dfd91e","name":"Anh","slug":"anh"},{"id":"62135c8f1f1609c9d9346bb1","name":"Úc","slug":"uc"}],"episodes":[{"server_name":"Vietsub #1","is_ai":false,"server_data":[{"name":"Full","slug":"full","filename":"Killer.Whale.2026.1080p.AMZN.WEB-DL.DDP5.1.H.264-BYNDR (Sub Viet)","link_embed":"https:\/\/vip.opstream90.com\/share\/64dbde30fb80ade324d5fc24b0042f34","link_m3u8":"https:\/\/vip.opstream90.com\/20260314\/27097_64dbde30\/index.m3u8"}]}]},"APP_DOMAIN_CDN_IMAGE":"https:\/\/img.ophim.live"}}}
+{
+    "cached_at": 1773497158,
+    "payload": {
+        "status": "success",
+        "message": "",
+        "data": {
+            "seoOnPage": {
+                "og_type": "video.movie",
+                "titleHead": "Cá Voi Sát Thủ-Killer Whale (2026) [HD-Vietsub]",
+                "seoSchema": {
+                    "@context": "https:\/\/schema.org",
+                    "@type": "Movie",
+                    "name": "Cá Voi Sát Thủ-Killer Whale (2026) [HD-Vietsub]",
+                    "dateModified": "2026-01-30T10:49:46.000Z",
+                    "dateCreated": "2026-01-30T10:49:46.000Z",
+                    "url": "https:\/\/ophim17.cc\/phim\/ca-voi-sat-thu",
+                    "datePublished": "2026-01-30T10:49:46.000Z",
+                    "image": "https:\/\/img.ophim.live\/uploads\/movies\/ca-voi-sat-thu-thumb.jpg",
+                    "director": "Jo-Anne Brechin"
+                },
+                "descriptionHead": "Hai người bạn thân Maddie và Trish rơi vào tình thế sinh tử khi bị mắc kẹt trong một đầm phá hẻo lánh, nơi trú ngụ của Ceto — một con cá voi sát thủ cực kỳ nguy hiểm. Không có...",
+                "og_image": [
+                    "movies\/ca-voi-sat-thu-thumb.jpg",
+                    "movies\/ca-voi-sat-thu-thumb.jpg"
+                ],
+                "updated_time": 1773485778000,
+                "og_url": "phim\/ca-voi-sat-thu"
+            },
+            "breadCrumb": [
+                {
+                    "name": "Phim Lẻ",
+                    "slug": "\/danh-sach\/phim-le",
+                    "position": 2
+                },
+                {
+                    "name": "Âu Mỹ",
+                    "slug": "\/quoc-gia\/au-my",
+                    "position": 3
+                },
+                {
+                    "name": "Anh",
+                    "slug": "\/quoc-gia\/anh",
+                    "position": 3
+                },
+                {
+                    "name": "Úc",
+                    "slug": "\/quoc-gia\/uc",
+                    "position": 3
+                },
+                {
+                    "name": "Hành Động",
+                    "slug": "\/the-loai\/hanh-dong",
+                    "position": 3
+                },
+                {
+                    "name": "Viễn Tưởng",
+                    "slug": "\/the-loai\/vien-tuong",
+                    "position": 3
+                },
+                {
+                    "name": "Khoa Học",
+                    "slug": "\/the-loai\/khoa-hoc",
+                    "position": 3
+                },
+                {
+                    "name": "Kinh Dị",
+                    "slug": "\/the-loai\/kinh-di",
+                    "position": 3
+                },
+                {
+                    "name": "Bí ẩn",
+                    "slug": "\/the-loai\/bi-an",
+                    "position": 3
+                },
+                {
+                    "name": "Cá Voi Sát Thủ",
+                    "isCurrent": true,
+                    "position": 4
+                }
+            ],
+            "params": {
+                "slug": "ca-voi-sat-thu"
+            },
+            "item": {
+                "tmdb": {
+                    "type": "movie",
+                    "id": "1412598",
+                    "season": null,
+                    "vote_average": 5.908,
+                    "vote_count": 49
+                },
+                "imdb": {
+                    "id": "tt33479805",
+                    "vote_average": 0,
+                    "vote_count": 0
+                },
+                "created": {
+                    "time": "2026-01-30T10:49:46.000Z"
+                },
+                "modified": {
+                    "time": "2026-03-14T10:56:18.000Z"
+                },
+                "_id": "697c2a5ae263b2a94614e0ca",
+                "name": "Cá Voi Sát Thủ",
+                "slug": "ca-voi-sat-thu",
+                "origin_name": "Killer Whale",
+                "alternative_names": [
+                    "Ballena Asesina",
+                    "Кит-убийца"
+                ],
+                "content": "<p>Hai người bạn thân Maddie và Trish rơi vào tình thế sinh tử khi bị mắc kẹt trong một đầm phá hẻo lánh, nơi trú ngụ của Ceto — một con cá voi sát thủ cực kỳ nguy hiểm. Không có đường thoát, họ buộc phải tìm cách sống sót trước kẻ săn mồi khổng lồ đang rình rập dưới làn nước.<\/p>",
+                "type": "single",
+                "status": "completed",
+                "thumb_url": "ca-voi-sat-thu-thumb.jpg",
+                "poster_url": "ca-voi-sat-thu-poster.jpg",
+                "is_copyright": false,
+                "sub_docquyen": false,
+                "chieurap": false,
+                "trailer_url": "https:\/\/www.youtube.com\/watch?v=Rymtw1fAPbQ",
+                "time": "89 Phút",
+                "episode_current": "Full",
+                "episode_total": "1",
+                "quality": "HD",
+                "lang": "Vietsub",
+                "lang_key": [
+                    "vs"
+                ],
+                "notify": "",
+                "showtimes": "",
+                "year": 2026,
+                "view": 0,
+                "actor": [
+                    "Virginia Gardner",
+                    "Melanie Jarnson",
+                    "Mitchell Hope",
+                    "Isaac Crawley",
+                    "Luke Cunningham",
+                    "Anna Yen",
+                    "Shinji Ikefuji",
+                    "Ron Smyck",
+                    "Aliandra Calabrese",
+                    "Mia Grunwald"
+                ],
+                "director": [
+                    "Jo-Anne Brechin"
+                ],
+                "category": [
+                    {
+                        "id": "620a21b2e0fc277084dfd0c5",
+                        "name": "Hành Động",
+                        "slug": "hanh-dong"
+                    },
+                    {
+                        "id": "620a2282e0fc277084dfd435",
+                        "name": "Viễn Tưởng",
+                        "slug": "vien-tuong"
+                    },
+                    {
+                        "id": "620a229be0fc277084dfd4dd",
+                        "name": "Khoa Học",
+                        "slug": "khoa-hoc"
+                    },
+                    {
+                        "id": "620a22ace0fc277084dfd531",
+                        "name": "Kinh Dị",
+                        "slug": "kinh-di"
+                    },
+                    {
+                        "id": "620f84d291fa4af90ab6b3f4",
+                        "name": "Bí ẩn",
+                        "slug": "bi-an"
+                    }
+                ],
+                "country": [
+                    {
+                        "id": "620a231fe0fc277084dfd7ce",
+                        "name": "Âu Mỹ",
+                        "slug": "au-my"
+                    },
+                    {
+                        "id": "620a2370e0fc277084dfd91e",
+                        "name": "Anh",
+                        "slug": "anh"
+                    },
+                    {
+                        "id": "62135c8f1f1609c9d9346bb1",
+                        "name": "Úc",
+                        "slug": "uc"
+                    }
+                ],
+                "episodes": [
+                    {
+                        "server_name": "Vietsub #1",
+                        "is_ai": false,
+                        "server_data": [
+                            {
+                                "name": "Full",
+                                "slug": "full",
+                                "filename": "Killer.Whale.2026.1080p.AMZN.WEB-DL.DDP5.1.H.264-BYNDR (Sub Viet)",
+                                "link_embed": "https:\/\/vip.opstream90.com\/share\/64dbde30fb80ade324d5fc24b0042f34",
+                                "link_m3u8": "https:\/\/vip.opstream90.com\/20260314\/27097_64dbde30\/index.m3u8"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "APP_DOMAIN_CDN_IMAGE": "https:\/\/img.ophim.live"
+        }
+    }
+}

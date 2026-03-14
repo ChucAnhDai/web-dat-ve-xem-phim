@@ -4,7 +4,7 @@
 </div>
 
 <div class="filter-bar">
-  <input id="movieCatalogSearchInput" type="text" class="search-input-full" placeholder="Search movies..." style="max-width:260px">
+  <input id="movieCatalogSearchInput" type="text" class="search-input-full" placeholder="Search movies (2+ chars)..." style="max-width:260px">
   <select id="movieCatalogCategoryFilter" class="filter-select">
     <option value="">All Categories</option>
   </select>
@@ -33,4 +33,5 @@
 <div class="movies-grid" id="allMoviesGrid"></div>
 <div id="movieCatalogPagination" class="catalog-pagination"></div>
 
-<script src="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/assets/js/movie-catalog.js"></script>
+<?php $movieCatalogScriptVersion = @filemtime(__DIR__ . '/../../public/assets/js/movie-catalog.js') ?: time(); ?>
+<script src="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/assets/js/movie-catalog.js?v=<?php echo urlencode((string) $movieCatalogScriptVersion); ?>"></script>

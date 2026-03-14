@@ -88,4 +88,34 @@ class ShowtimeRepository
 
         return $result;
     }
+
+    public function findPublicDetail(int $showtimeId): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                s.id,
+                s.movie_id,
+                s.room_id,
+                s.show_date,
+                s.start_time,
+                s.price,
+                m.slug AS movie_slug,
+                m.title AS movie_title,
+                m.poster_url,
+                c.name AS cinema_name,
+                r.room_name,
+                r.total_seats
+            FROM showtimes s
+            INNER JOIN movies m ON m.id = s.movie_id
+            INNER JOIN rooms r ON r.id = s.room_id
+            INNER JOIN cinemas c ON c.id = r.cinema_id
+            WHERE s.id = :id
+            LIMIT 1
+        ");
+        $stmt->execute(['id' => $showtimeId]);
+
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
 }

@@ -1411,10 +1411,12 @@ input,select,textarea{font-family:inherit}
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  background: var(--bg3);
 }
 .detail-poster img {
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
 }
 .detail-info {
   display: flex;
@@ -1485,36 +1487,26 @@ input,select,textarea{font-family:inherit}
   margin-top: 2px;
 }
 .trailer-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
   margin-bottom: 28px;
 }
-.trailer-placeholder {
-  aspect-ratio: 16/9;
-  background: linear-gradient(135deg, var(--bg3), var(--bg4));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
+.trailer-section[hidden] {
+  display: none !important;
+}
+.detail-player-shell-featured {
+  aspect-ratio: 16 / 9;
+  border-radius: 22px;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #000;
+  box-shadow: 0 28px 70px rgba(0,0,0,0.38);
 }
-.play-btn-big {
-  width: 72px;
-  height: 72px;
-  background: rgba(229,9,20,0.9);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  transition: var(--transition);
-}
-.play-btn-big:hover {
-  transform: scale(1.1);
-  background: var(--red);
+.detail-player-shell-featured iframe,
+.detail-player-shell-featured video {
+  width: 100%;
+  height: 100%;
+  display: block;
+  border: 0;
+  background: #000;
 }
 .showtime-section {
   background: var(--surface);
@@ -1522,6 +1514,45 @@ input,select,textarea{font-family:inherit}
   border-radius: var(--radius);
   padding: 24px;
   margin-top: 24px;
+}
+.detail-section-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.detail-section-title {
+  font-family: 'Bebas Neue', cursive;
+  font-size: 22px;
+  letter-spacing: 0.5px;
+}
+.detail-section-copy {
+  margin-top: 6px;
+  color: var(--text2);
+  font-size: 13px;
+  max-width: 680px;
+}
+.detail-player-shell {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #000;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+}
+.detail-player-shell-trailer {
+  max-width: 100%;
+}
+.detail-player-frame,
+.detail-player-video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: #000;
 }
 .date-tabs {
   display: flex;
@@ -1562,6 +1593,9 @@ input,select,textarea{font-family:inherit}
 .cinema-row {
   margin-bottom: 20px;
 }
+.detail-showtime-row:last-child {
+  margin-bottom: 0;
+}
 .cinema-name {
   font-size: 13px;
   font-weight: 600;
@@ -1582,11 +1616,34 @@ input,select,textarea{font-family:inherit}
   background:rgba(255,255,255,0.02);
   color:var(--text2);
 }
+.detail-state-card-compact {
+  min-height: 0;
+  padding: 24px;
+}
 .detail-state-card strong{
   display:block;
   margin-bottom:8px;
   color:var(--text);
   font-size:18px;
+}
+.detail-media-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+}
+.detail-poster-fallback[hidden],
+.detail-media-fallback[hidden] {
+  display: none !important;
+}
+.detail-media-card-poster {
+  aspect-ratio: 2 / 3;
+}
+.detail-media-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .detail-poster-fallback{
   aspect-ratio:2/3;
@@ -1599,19 +1656,72 @@ input,select,textarea{font-family:inherit}
   font-size:48px;
   letter-spacing:2px;
 }
+.detail-media-fallback {
+  min-height: 160px;
+  background: linear-gradient(135deg, var(--bg3), var(--bg4));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text2);
+  font-family: 'Bebas Neue', cursive;
+  font-size: 32px;
+  letter-spacing: 2px;
+}
+.detail-source-grid {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.detail-source-btn {
+  min-width: 120px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  text-align: left;
+  transition: var(--transition);
+}
+.detail-source-btn:hover {
+  border-color: rgba(229, 9, 20, 0.5);
+  transform: translateY(-1px);
+}
+.detail-source-btn.active {
+  border-color: var(--red);
+  background: rgba(229, 9, 20, 0.12);
+  box-shadow: 0 0 0 1px rgba(229, 9, 20, 0.18);
+}
+.detail-source-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+}
+.detail-source-meta {
+  display: block;
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 4px;
+}
 .detail-gallery{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
   gap:12px;
-  margin-top:20px;
 }
-.detail-gallery img{
-  width:100%;
-  height:120px;
-  object-fit:cover;
-  border-radius:12px;
-  border:1px solid var(--border);
-  background:var(--bg3);
+.detail-gallery-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+}
+.detail-gallery-card .detail-media-img,
+.detail-gallery-card .detail-media-fallback {
+  height: 140px;
+}
+.detail-gallery-meta {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--text2);
+  border-top: 1px solid var(--border2);
 }
 .detail-review-list{
   display:grid;
@@ -1664,10 +1774,15 @@ input,select,textarea{font-family:inherit}
   .detail-credits {
     grid-template-columns: 1fr 1fr;
   }
+  .detail-section-head {
+    text-align: left;
+  }
 }
 
 @media(max-width:480px) {
   .tickets-grid { grid-template-columns: 1fr; }
+  .detail-credits { grid-template-columns: 1fr; }
+  .detail-source-grid { flex-direction: column; }
 }
 
 /* ═══════════════════════════════════════════
@@ -1759,6 +1874,16 @@ input,select,textarea{font-family:inherit}
   border-color: var(--gold);
   transform: scale(1.1);
 }
+.seat.couple {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.45);
+  color: rgba(147, 197, 253, 0.9);
+}
+.seat.couple:hover {
+  background: rgba(59, 130, 246, 0.28);
+  border-color: rgba(96, 165, 250, 0.95);
+  transform: scale(1.1);
+}
 .seat-aisle {
   width: 20px;
 }
@@ -1797,6 +1922,10 @@ input,select,textarea{font-family:inherit}
 .legend-seat.vip {
   background: rgba(201, 168, 76, 0.15);
   border-color: rgba(201, 168, 76, 0.4);
+}
+.legend-seat.couple {
+  background: rgba(59, 130, 246, 0.16);
+  border-color: rgba(59, 130, 246, 0.45);
 }
 .seats-display {
   display: flex;

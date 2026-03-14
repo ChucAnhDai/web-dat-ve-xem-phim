@@ -78,7 +78,8 @@
   }
 
   async function loadMovieCatalog() {
-    setLoading(true, 'Loading movie catalog...');
+    const activeSearch = normalizedSearchKeyword(state.filters.search);
+    setLoading(true, activeSearch ? 'Searching movies...' : 'Loading movie catalog...');
 
     try {
       const response = await fetchJson('/api/movies', buildQuery());
@@ -92,13 +93,13 @@
       renderStatusButtons();
       renderGrid();
       renderPagination();
-      updateRequestStatus('Movie catalog synced');
+      updateRequestStatus(activeSearch ? `Search results for "${activeSearch}"` : 'Movie catalog synced');
     } catch (error) {
       state.items = [];
       state.meta = { ...DEFAULT_META };
       renderGridError(error.message || 'Failed to load movie catalog.');
       renderPagination();
-      updateRequestStatus('Movie catalog unavailable');
+      updateRequestStatus(activeSearch ? 'Movie search unavailable' : 'Movie catalog unavailable');
 
       if (typeof showToast === 'function') {
         showToast('i', 'Movie Catalog', error.message || 'Failed to load movie catalog.');
@@ -109,10 +110,12 @@
   }
 
   function buildQuery() {
+    const activeSearch = normalizedSearchKeyword(state.filters.search);
+
     return {
       page: state.filters.page,
       per_page: state.filters.per_page,
-      search: state.filters.search,
+      search: activeSearch,
       category_id: state.filters.category_id,
       min_rating: state.filters.min_rating,
       sort: state.filters.sort,
@@ -186,11 +189,12 @@
     }
 
     if (state.items.length === 0) {
+      const activeSearch = normalizedSearchKeyword(state.filters.search);
       dom.grid.innerHTML = `
         <div class="catalog-empty-state" style="grid-column:1/-1;">
           <div>
-            <strong>No movies matched this view.</strong>
-            <div>Try another category, rating, search, or status tab to load a different part of the catalog.</div>
+            <strong>${escapeHtml(activeSearch ? `No movies matched "${activeSearch}".` : 'No movies matched this view.')}</strong>
+            <div>${escapeHtml(activeSearch ? 'Try another keyword or switch status tabs to search a different part of the catalog.' : 'Try another category, rating, search, or status tab to load a different part of the catalog.')}</div>
           </div>
         </div>
       `;
@@ -341,8 +345,15 @@
   function handleSearchInput() {
     window.clearTimeout(state.searchTimer);
     state.searchTimer = window.setTimeout(() => {
-      state.filters.search = dom.search?.value.trim() || '';
+      const nextSearch = dom.search?.value.trim() || '';
+      state.filters.search = nextSearch;
       state.filters.page = 1;
+
+      if (nextSearch !== '' && textLength(nextSearch) < 2) {
+        updateRequestStatus('Type at least 2 characters to search');
+        return;
+      }
+
       void loadMovieCatalog();
     }, 300);
   }
@@ -438,6 +449,16 @@
 
     const query = searchParams.toString();
     return query ? `?${query}` : '';
+  }
+
+  function normalizedSearchKeyword(value) {
+    const keyword = String(value || '').trim();
+
+    return textLength(keyword) >= 2 ? keyword : '';
+  }
+
+  function textLength(value) {
+    return Array.from(String(value || '')).length;
   }
 
   function firstErrorMessage(errors, fallback) {

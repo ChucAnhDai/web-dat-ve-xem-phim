@@ -3,6 +3,7 @@
 use App\Controllers\Auth\AuthController;
 use App\Controllers\Admin\MovieManagementController;
 use App\Controllers\Api\MovieCatalogController;
+use App\Controllers\Api\ShowtimeCatalogController;
 use App\Middlewares\AdminMiddleware;
 use App\Middlewares\AuthMiddleware;
 
@@ -16,6 +17,7 @@ $app->router->post('/api/auth/update-password', [AuthController::class, 'updateP
 
 $app->router->get('/api/movies', [MovieCatalogController::class, 'listMovies']);
 $app->router->get('/api/movies/{slug}', [MovieCatalogController::class, 'getMovieDetail']);
+$app->router->get('/api/showtimes/{id}/seat-map', [ShowtimeCatalogController::class, 'getSeatMap']);
 
 $app->router->post('/api/admin/auth/login', [AuthController::class, 'adminLogin']);
 $app->router->post('/api/admin/auth/logout', [AuthController::class, 'adminLogout'], [AdminMiddleware::class]);

@@ -66,7 +66,6 @@ class MovieCatalogControllerTest extends TestCase
             'data' => [
                 'movie' => ['slug' => 'detail-movie', 'title' => 'Detail Movie'],
                 'gallery' => [],
-                'playback_groups' => [],
                 'reviews' => [],
                 'related_movies' => [],
             ],
@@ -82,6 +81,7 @@ class MovieCatalogControllerTest extends TestCase
 
         $this->assertSame(200, $response->statusCode);
         $this->assertSame('Detail Movie', $response->payload['data']['movie']['title']);
+        $this->assertArrayNotHasKey('playback_groups', $response->payload['data']);
     }
 
     public function testGetMovieDetailReturnsErrorPayload(): void

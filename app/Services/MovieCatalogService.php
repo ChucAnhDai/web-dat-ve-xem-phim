@@ -8,6 +8,7 @@ use App\Repositories\MovieCategoryRepository;
 use App\Repositories\MovieImageRepository;
 use App\Repositories\MovieRepository;
 use App\Repositories\MovieReviewRepository;
+use App\Repositories\ShowtimeRepository;
 use App\Validators\MovieCatalogValidator;
 use Throwable;
 
@@ -25,6 +26,7 @@ class MovieCatalogService
     private MovieCategoryRepository $categories;
     private MovieImageRepository $images;
     private MovieReviewRepository $reviews;
+    private ShowtimeRepository $showtimes;
 
     public function __construct(
         ?OphimClient $client = null,
@@ -33,7 +35,8 @@ class MovieCatalogService
         ?MovieRepository $movies = null,
         ?MovieCategoryRepository $categories = null,
         ?MovieImageRepository $images = null,
-        ?MovieReviewRepository $reviews = null
+        ?MovieReviewRepository $reviews = null,
+        ?ShowtimeRepository $showtimes = null
     ) {
         $this->logger = $logger ?? new Logger();
         $this->client = $client ?? new OphimClient(null, $this->logger);
@@ -42,11 +45,16 @@ class MovieCatalogService
         $this->categories = $categories ?? new MovieCategoryRepository();
         $this->images = $images ?? new MovieImageRepository();
         $this->reviews = $reviews ?? new MovieReviewRepository();
+        $this->showtimes = $showtimes ?? new ShowtimeRepository();
     }
 
     public function listMovies(array $filters): array
     {
         $normalizedFilters = $this->validator->normalizeListFilters($filters);
+
+        if ($this->hasSearchQuery($normalizedFilters)) {
+            return $this->searchOphimMovies($normalizedFilters);
+        }
 
         try {
             if ($this->hasLocalPublicCatalog()) {
@@ -94,7 +102,6 @@ class MovieCatalogService
             $imagesPayload = $this->safeLoadMovieImages($normalizedSlug);
             $gallery = $this->mapGallery($imagesPayload);
             $movie = $this->mapMovieDetail($item, $detailCdnBase, $gallery);
-            $playbackGroups = $this->mapPlaybackGroups($item['episodes'] ?? []);
             $relatedMovies = $this->loadRelatedMovies($item, $movie['status']);
         } catch (Throwable $exception) {
             $this->logger->error('Public movie detail load failed from OPhim', [
@@ -107,8 +114,8 @@ class MovieCatalogService
 
         return $this->success([
             'movie' => $movie,
+            'showtimes' => [],
             'gallery' => $gallery,
-            'playback_groups' => $playbackGroups,
             'reviews' => [],
             'related_movies' => $relatedMovies,
             'source' => [
@@ -170,7 +177,7 @@ class MovieCatalogService
                 return $this->mapCatalogMovie($item, $cdnBase, $filters['status']);
             }, $rawItems);
 
-            $items = $this->applyLocalFilters($items, $filters);
+            $items = $this->filterCatalogItems($items, $filters);
             $items = $this->sortCatalogMovies($items, $filters['sort']);
             $categories = $this->collectCategories($rawItems);
             $meta = $this->buildCatalogMeta($data['params']['pagination'] ?? [], $items, $filters);
@@ -201,6 +208,55 @@ class MovieCatalogService
         ]);
     }
 
+    private function searchOphimMovies(array $filters): array
+    {
+        $keyword = (string) ($filters['search'] ?? '');
+
+        try {
+            $payload = $this->client->searchMovies($keyword, [
+                'page' => $filters['page'],
+                'limit' => $filters['per_page'],
+            ]);
+            $data = is_array($payload['data'] ?? null) ? $payload['data'] : [];
+            $rawItems = is_array($data['items'] ?? null) ? $data['items'] : [];
+            $cdnBase = $this->extractCdnBase($data);
+
+            $items = array_map(function (array $item) use ($cdnBase): array {
+                return $this->mapCatalogMovie($item, $cdnBase, null);
+            }, $rawItems);
+
+            $items = $this->filterCatalogItems($items, $filters, false);
+            $items = $this->sortCatalogMovies($items, $filters['sort']);
+            $categories = $this->collectCategories($rawItems);
+            $meta = $this->searchPaginationMeta($data['params']['pagination'] ?? [], $filters);
+        } catch (Throwable $exception) {
+            $this->logger->error('Public movie search failed from OPhim', [
+                'error' => $exception->getMessage(),
+                'filters' => $filters,
+            ]);
+
+            return $this->error(['server' => ['Failed to search movie catalog.']], 500);
+        }
+
+        return $this->success([
+            'items' => $items,
+            'meta' => $meta,
+            'categories' => $categories,
+            'filters' => [
+                'status' => $filters['status'],
+                'sort' => $filters['sort'],
+                'category_id' => $filters['category_id'],
+                'min_rating' => $filters['min_rating'],
+                'search' => $filters['search'],
+            ],
+            'source' => [
+                'provider' => 'ophim',
+                'mode' => 'search',
+                'keyword' => $keyword,
+            ],
+        ]);
+    }
+
     private function buildLocalMovieDetail(array $row): array
     {
         $movieId = (int) ($row['id'] ?? 0);
@@ -210,6 +266,7 @@ class MovieCatalogService
             $assets = $this->images->listActiveAssetsForMovie($movieId);
             $reviews = $this->reviews->listApprovedVisibleForMovie($movieId, 5);
             $related = $this->movies->listPublicRelatedMovies($movieId, (int) ($row['primary_category_id'] ?? 0), 4);
+            $showtimes = $this->showtimes->listUpcomingByMovie($movieId);
         } catch (Throwable $exception) {
             $this->logger->error('Local movie detail dependencies failed to load', [
                 'movie_id' => $movieId,
@@ -231,14 +288,13 @@ class MovieCatalogService
 
         return $this->success([
             'movie' => $movie,
+            'showtimes' => $this->mapLocalShowtimes($showtimes),
             'gallery' => $gallery,
-            'playback_groups' => $this->loadOphimPlaybackGroups((string) ($row['slug'] ?? '')),
             'reviews' => array_map([$this, 'mapLocalReview'], $reviews),
             'related_movies' => array_map([$this, 'mapLocalCatalogMovie'], $related),
             'source' => [
                 'provider' => 'local',
                 'mode' => 'admin-managed',
-                'playback_provider' => 'ophim',
             ],
         ]);
     }
@@ -264,7 +320,12 @@ class MovieCatalogService
         return $this->movies->countPublicCatalog() > 0;
     }
 
-    private function mapCatalogMovie(array $item, ?string $cdnBase, string $requestedStatus): array
+    private function hasSearchQuery(array $filters): bool
+    {
+        return trim((string) ($filters['search'] ?? '')) !== '';
+    }
+
+    private function mapCatalogMovie(array $item, ?string $cdnBase, ?string $requestedStatus = null): array
     {
         $primaryCategory = $this->extractPrimaryCategory($item);
         $status = $this->inferStatus($item, $requestedStatus);
@@ -402,6 +463,60 @@ class MovieCatalogService
         ];
     }
 
+    private function mapLocalShowtimes(array $rows): array
+    {
+        $groups = [];
+
+        foreach ($rows as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+
+            $venues = [];
+            foreach (($row['venues'] ?? []) as $venue) {
+                if (!is_array($venue)) {
+                    continue;
+                }
+
+                $times = [];
+                foreach (($venue['times'] ?? []) as $time) {
+                    if (!is_array($time)) {
+                        continue;
+                    }
+
+                    $times[] = [
+                        'id' => (int) ($time['id'] ?? 0),
+                        'start_time' => $time['start_time'] ?? null,
+                        'start_time_label' => $this->formatTimeLabel($time['start_time'] ?? null),
+                        'price' => isset($time['price']) ? (float) $time['price'] : null,
+                    ];
+                }
+
+                if (empty($times)) {
+                    continue;
+                }
+
+                $venues[] = [
+                    'cinema_name' => $venue['cinema_name'] ?? null,
+                    'room_name' => $venue['room_name'] ?? null,
+                    'times' => $times,
+                ];
+            }
+
+            if (empty($venues)) {
+                continue;
+            }
+
+            $groups[] = [
+                'date' => $row['date'] ?? null,
+                'is_today' => ($row['date'] ?? null) === date('Y-m-d'),
+                'venues' => $venues,
+            ];
+        }
+
+        return $groups;
+    }
+
     private function mapGallery(array $payload): array
     {
         $data = is_array($payload['data'] ?? null) ? $payload['data'] : [];
@@ -451,77 +566,6 @@ class MovieCatalogService
         return $this->mapGallery($payload);
     }
 
-    private function loadOphimPlaybackGroups(string $slug): array
-    {
-        if (trim($slug) === '') {
-            return [];
-        }
-
-        try {
-            $detailPayload = $this->client->getMovieDetail($slug);
-            $detailData = is_array($detailPayload['data'] ?? null) ? $detailPayload['data'] : [];
-            $item = is_array($detailData['item'] ?? null) ? $detailData['item'] : [];
-
-            return $this->mapPlaybackGroups($item['episodes'] ?? []);
-        } catch (Throwable $exception) {
-            $this->logger->info('Playback groups could not be loaded from OPhim', [
-                'slug' => $slug,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return [];
-        }
-    }
-
-    private function mapPlaybackGroups($episodes): array
-    {
-        if (!is_array($episodes)) {
-            return [];
-        }
-
-        $groups = [];
-        foreach ($episodes as $index => $group) {
-            if (!is_array($group)) {
-                continue;
-            }
-
-            $serverName = (string) ($group['server_name'] ?? '');
-            $serverData = is_array($group['server_data'] ?? null) ? $group['server_data'] : [];
-            if ($serverName === '' || empty($serverData)) {
-                continue;
-            }
-
-            $items = [];
-            foreach ($serverData as $itemIndex => $serverItem) {
-                if (!is_array($serverItem)) {
-                    continue;
-                }
-
-                $items[] = [
-                    'id' => $this->stableId($serverName . '|' . ($serverItem['slug'] ?? $itemIndex)),
-                    'label' => $serverItem['name'] ?? sprintf('Episode %d', $itemIndex + 1),
-                    'slug' => $serverItem['slug'] ?? null,
-                    'filename' => $serverItem['filename'] ?? null,
-                    'embed_url' => $serverItem['link_embed'] ?? null,
-                    'stream_url' => $serverItem['link_m3u8'] ?? null,
-                ];
-            }
-
-            if (empty($items)) {
-                continue;
-            }
-
-            $groups[] = [
-                'id' => $index + 1,
-                'server_name' => $serverName,
-                'is_ai' => (bool) ($group['is_ai'] ?? false),
-                'items' => $items,
-            ];
-        }
-
-        return $groups;
-    }
-
     private function loadRelatedMovies(array $item, string $status): array
     {
         $listSlug = $this->resolveListSlug($status);
@@ -564,12 +608,14 @@ class MovieCatalogService
         }
     }
 
-    private function applyLocalFilters(array $items, array $filters): array
+    private function filterCatalogItems(array $items, array $filters, bool $applySearch = true): array
     {
-        $search = strtolower((string) ($filters['search'] ?? ''));
+        $search = $applySearch ? strtolower((string) ($filters['search'] ?? '')) : '';
         $minRating = $filters['min_rating'];
+        $categoryId = strtolower(trim((string) ($filters['category_id'] ?? '')));
+        $status = strtolower(trim((string) ($filters['status'] ?? '')));
 
-        return array_values(array_filter($items, static function (array $item) use ($search, $minRating): bool {
+        return array_values(array_filter($items, static function (array $item) use ($search, $minRating, $categoryId, $status): bool {
             if ($search !== '') {
                 $haystack = strtolower(implode(' ', array_filter([
                     $item['title'] ?? '',
@@ -583,7 +629,15 @@ class MovieCatalogService
                 }
             }
 
+            if ($categoryId !== '' && strtolower((string) ($item['primary_category_id'] ?? '')) !== $categoryId) {
+                return false;
+            }
+
             if ($minRating !== null && (float) ($item['average_rating'] ?? 0) < (float) $minRating) {
+                return false;
+            }
+
+            if ($status !== '' && ($item['status'] ?? '') !== $status) {
                 return false;
             }
 
@@ -632,6 +686,21 @@ class MovieCatalogService
             'page' => max(1, $page),
             'per_page' => max(1, $perPage),
             'total_pages' => max(1, (int) ceil($total / max(1, $perPage))),
+        ];
+    }
+
+    private function searchPaginationMeta($pagination, array $filters): array
+    {
+        $total = (int) ($pagination['totalItems'] ?? 0);
+        $perPage = (int) ($pagination['totalItemsPerPage'] ?? $filters['per_page']);
+        $page = (int) ($pagination['currentPage'] ?? $filters['page']);
+        $totalPages = (int) ($pagination['totalPages'] ?? 0);
+
+        return [
+            'total' => max(0, $total),
+            'page' => max(1, $page),
+            'per_page' => max(1, $perPage),
+            'total_pages' => max(1, $totalPages ?: (int) ceil(max(0, $total) / max(1, $perPage))),
         ];
     }
 
@@ -815,6 +884,21 @@ class MovieCatalogService
         }
 
         return max(0, (int) $matches[1]);
+    }
+
+    private function formatTimeLabel($value): ?string
+    {
+        $time = trim((string) ($value ?? ''));
+        if ($time === '') {
+            return null;
+        }
+
+        $parsed = strtotime($time);
+        if ($parsed === false) {
+            return $time;
+        }
+
+        return date('g:i A', $parsed);
     }
 
     private function releaseDateFromYear($value): ?string

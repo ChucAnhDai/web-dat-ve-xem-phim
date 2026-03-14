@@ -8,6 +8,7 @@ use App\Repositories\MovieCategoryRepository;
 use App\Repositories\MovieImageRepository;
 use App\Repositories\MovieRepository;
 use App\Repositories\MovieReviewRepository;
+use App\Repositories\ShowtimeRepository;
 use App\Services\MovieCatalogService;
 use App\Validators\MovieCatalogValidator;
 use PHPUnit\Framework\TestCase;
@@ -57,7 +58,8 @@ class MovieCatalogServiceTest extends TestCase
             new UnitFakePublicMovieRepository(),
             new UnitFakePublicCategoryRepository(),
             new UnitFakePublicImageRepository(),
-            new UnitFakePublicReviewRepository()
+            new UnitFakePublicReviewRepository(),
+            new UnitFakeShowtimeRepository()
         );
 
         $result = $service->listMovies([
@@ -79,7 +81,90 @@ class MovieCatalogServiceTest extends TestCase
         $this->assertSame('ophim', $result['data']['source']['provider']);
     }
 
-    public function testGetMovieDetailReturnsMappedPlaybackAndGalleryData(): void
+    public function testListMoviesUsesOphimSearchEndpointWhenKeywordProvided(): void
+    {
+        $client = new UnitFakeOphimClient();
+        $client->searchPayload = [
+            'data' => [
+                'APP_DOMAIN_CDN_IMAGE' => 'https://img.ophim.live',
+                'items' => [
+                    [
+                        'slug' => 'avengers-doomsday',
+                        'name' => 'Avengers: Doomsday',
+                        'origin_name' => 'Avengers: Doomsday',
+                        'poster_url' => 'avengers-doomsday.jpg',
+                        'thumb_url' => 'avengers-doomsday-thumb.jpg',
+                        'time' => '120 min',
+                        'quality' => 'HD',
+                        'lang' => 'Vietsub',
+                        'year' => 2026,
+                        'tmdb' => ['vote_average' => 8.8, 'vote_count' => 300],
+                        'imdb' => ['vote_average' => 0, 'vote_count' => 0],
+                        'category' => [
+                            ['slug' => 'hanh-dong', 'name' => 'Action'],
+                        ],
+                        'episode_current' => 'Full',
+                    ],
+                    [
+                        'slug' => 'avengers-trailer',
+                        'name' => 'Avengers Trailer',
+                        'origin_name' => 'Avengers Trailer',
+                        'poster_url' => 'avengers-trailer.jpg',
+                        'thumb_url' => 'avengers-trailer-thumb.jpg',
+                        'time' => '2 min',
+                        'quality' => 'HD',
+                        'lang' => 'Vietsub',
+                        'year' => 2026,
+                        'tmdb' => ['vote_average' => 7.2, 'vote_count' => 50],
+                        'imdb' => ['vote_average' => 0, 'vote_count' => 0],
+                        'category' => [
+                            ['slug' => 'hanh-dong', 'name' => 'Action'],
+                        ],
+                        'episode_current' => 'Trailer',
+                    ],
+                ],
+                'params' => [
+                    'pagination' => [
+                        'totalItems' => 15,
+                        'totalItemsPerPage' => 12,
+                        'currentPage' => 2,
+                        'totalPages' => 2,
+                    ],
+                ],
+            ],
+        ];
+
+        $movies = new UnitFakePublicMovieRepository();
+        $movies->publicCatalogCount = 5;
+
+        $service = new MovieCatalogService(
+            $client,
+            new MovieCatalogValidator(),
+            new UnitFakeCatalogLogger(),
+            $movies,
+            new UnitFakePublicCategoryRepository(),
+            new UnitFakePublicImageRepository(),
+            new UnitFakePublicReviewRepository(),
+            new UnitFakeShowtimeRepository()
+        );
+
+        $result = $service->listMovies([
+            'page' => 2,
+            'per_page' => 12,
+            'status' => 'now_showing',
+            'search' => 'avengers',
+        ]);
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame('avengers', $client->recordedSearchCalls[0]['keyword']);
+        $this->assertSame(2, $client->recordedSearchCalls[0]['query']['page']);
+        $this->assertSame('search', $result['data']['source']['mode']);
+        $this->assertSame(15, $result['data']['meta']['total']);
+        $this->assertCount(1, $result['data']['items']);
+        $this->assertSame('Avengers: Doomsday', $result['data']['items'][0]['title']);
+    }
+
+    public function testGetMovieDetailReturnsMappedTrailerAndGalleryData(): void
     {
         $client = new UnitFakeOphimClient();
         $client->detailPayload = [
@@ -107,21 +192,6 @@ class MovieCatalogServiceTest extends TestCase
                     ],
                     'country' => [
                         ['slug' => 'anh', 'name' => 'Anh'],
-                    ],
-                    'episodes' => [
-                        [
-                            'server_name' => 'Vietsub #1',
-                            'is_ai' => false,
-                            'server_data' => [
-                                [
-                                    'name' => 'Full',
-                                    'slug' => 'full',
-                                    'filename' => 'crime-101-full',
-                                    'link_embed' => 'https://player.example.com/embed/xyz',
-                                    'link_m3u8' => 'https://example.com/video.m3u8',
-                                ],
-                            ],
-                        ],
                     ],
                 ],
             ],
@@ -170,7 +240,8 @@ class MovieCatalogServiceTest extends TestCase
             new UnitFakePublicMovieRepository(),
             new UnitFakePublicCategoryRepository(),
             new UnitFakePublicImageRepository(),
-            new UnitFakePublicReviewRepository()
+            new UnitFakePublicReviewRepository(),
+            new UnitFakeShowtimeRepository()
         );
 
         $result = $service->getMovieDetail('toi-pham-101');
@@ -179,8 +250,9 @@ class MovieCatalogServiceTest extends TestCase
         $this->assertSame('Tội Phạm 101', $result['data']['movie']['title']);
         $this->assertSame(['Hình Sự'], $result['data']['movie']['category_names']);
         $this->assertSame('https://image.tmdb.org/t/p/w1280/abc.jpg', $result['data']['gallery'][0]['image_url']);
-        $this->assertSame('Vietsub #1', $result['data']['playback_groups'][0]['server_name']);
-        $this->assertSame('Full', $result['data']['playback_groups'][0]['items'][0]['label']);
+        $this->assertSame('https://youtube.com/watch?v=xyz', $result['data']['movie']['trailer_url']);
+        $this->assertSame([], $result['data']['showtimes']);
+        $this->assertArrayNotHasKey('playback_groups', $result['data']);
         $this->assertSame('ke-an-dat', $result['data']['related_movies'][0]['slug']);
     }
 
@@ -192,19 +264,6 @@ class MovieCatalogServiceTest extends TestCase
                 'item' => [
                     'slug' => 'toi-pham-101',
                     'name' => 'Old OPhim Title',
-                    'episodes' => [
-                        [
-                            'server_name' => 'Server 1',
-                            'server_data' => [
-                                [
-                                    'name' => 'Full',
-                                    'slug' => 'full',
-                                    'link_embed' => 'https://player.example.com/embed/local',
-                                    'link_m3u8' => 'https://example.com/local.m3u8',
-                                ],
-                            ],
-                        ],
-                    ],
                 ],
             ],
         ];
@@ -283,6 +342,23 @@ class MovieCatalogServiceTest extends TestCase
             ],
         ];
 
+        $showtimes = new UnitFakeShowtimeRepository();
+        $showtimes->items = [
+            [
+                'date' => '2026-03-14',
+                'venues' => [
+                    [
+                        'cinema_name' => 'CinemaX Landmark',
+                        'room_name' => 'Hall 1 - IMAX',
+                        'times' => [
+                            ['id' => 101, 'start_time' => '13:30:00', 'price' => 18.00],
+                            ['id' => 102, 'start_time' => '16:45:00', 'price' => 18.00],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
         $service = new MovieCatalogService(
             $client,
             new MovieCatalogValidator(),
@@ -290,7 +366,8 @@ class MovieCatalogServiceTest extends TestCase
             $movies,
             new UnitFakePublicCategoryRepository(),
             $images,
-            $reviews
+            $reviews,
+            $showtimes
         );
 
         $result = $service->getMovieDetail('toi-pham-101');
@@ -298,7 +375,9 @@ class MovieCatalogServiceTest extends TestCase
         $this->assertSame(200, $result['status']);
         $this->assertSame('Edited Local Title', $result['data']['movie']['title']);
         $this->assertSame('local', $result['data']['source']['provider']);
-        $this->assertSame('Server 1', $result['data']['playback_groups'][0]['server_name']);
+        $this->assertArrayNotHasKey('playback_groups', $result['data']);
+        $this->assertSame('2026-03-14', $result['data']['showtimes'][0]['date']);
+        $this->assertSame('1:30 PM', $result['data']['showtimes'][0]['venues'][0]['times'][0]['start_time_label']);
         $this->assertSame('Related Local', $result['data']['related_movies'][0]['title']);
     }
 }
@@ -306,10 +385,12 @@ class MovieCatalogServiceTest extends TestCase
 class UnitFakeOphimClient extends OphimClient
 {
     public array $listPayload = [];
+    public array $searchPayload = [];
     public array $detailPayload = [];
     public array $imagesPayload = [];
     public array $relatedPayload = [];
     public array $recordedListCalls = [];
+    public array $recordedSearchCalls = [];
 
     public function __construct()
     {
@@ -324,6 +405,13 @@ class UnitFakeOphimClient extends OphimClient
         }
 
         return $this->listPayload;
+    }
+
+    public function searchMovies(string $keyword, array $query = []): array
+    {
+        $this->recordedSearchCalls[] = ['keyword' => $keyword, 'query' => $query];
+
+        return $this->searchPayload;
     }
 
     public function getMovieDetail(string $slug): array
@@ -426,6 +514,20 @@ class UnitFakePublicReviewRepository extends MovieReviewRepository
     }
 
     public function listApprovedVisibleForMovie(int $movieId, int $limit = 5): array
+    {
+        return $this->items;
+    }
+}
+
+class UnitFakeShowtimeRepository extends ShowtimeRepository
+{
+    public array $items = [];
+
+    public function __construct()
+    {
+    }
+
+    public function listUpcomingByMovie(int $movieId, int $limitDays = 6): array
     {
         return $this->items;
     }
