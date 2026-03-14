@@ -135,6 +135,17 @@ class MovieRepository
         return $this->paginateQuery($this->db, $selectSql, $countSql, $params, $filters['page'], $filters['per_page']);
     }
 
+    public function countPublicCatalog(): int
+    {
+        $stmt = $this->db->query("
+            SELECT COUNT(*)
+            FROM movies
+            WHERE status IN ('now_showing', 'coming_soon')
+        ");
+
+        return (int) $stmt->fetchColumn();
+    }
+
     public function findPublicDetailBySlug(string $slug): ?array
     {
         $stmt = $this->db->prepare("
@@ -474,8 +485,16 @@ class MovieRepository
             $params['status'] = $filters['status'];
         }
         if (!empty($filters['category_id'])) {
-            $conditions[] = 'm.primary_category_id = :category_id';
-            $params['category_id'] = (int) $filters['category_id'];
+            $conditions[] = "
+                EXISTS (
+                    SELECT 1
+                    FROM movie_category_assignments public_assignments
+                    INNER JOIN movie_categories public_categories ON public_categories.id = public_assignments.category_id
+                    WHERE public_assignments.movie_id = m.id
+                      AND public_categories.slug = :category_slug
+                )
+            ";
+            $params['category_slug'] = $filters['category_id'];
         }
         if ($filters['min_rating'] !== null) {
             $conditions[] = 'm.average_rating >= :min_rating';

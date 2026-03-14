@@ -189,8 +189,8 @@
       dom.grid.innerHTML = `
         <div class="catalog-empty-state" style="grid-column:1/-1;">
           <div>
-            <strong>No public movies matched this view.</strong>
-            <div>Only movies marked Now Showing or Coming Soon are visible here. Movies still saved as Draft in admin stay hidden until they are published.</div>
+            <strong>No movies matched this view.</strong>
+            <div>Try another category, rating, search, or status tab to load a different part of the catalog.</div>
           </div>
         </div>
       `;
@@ -213,7 +213,7 @@
       <div class="catalog-empty-state" style="grid-column:1/-1;">
         <div>
           <strong>${escapeHtml(message)}</strong>
-          <div>Please wait while the catalog is being synchronized.</div>
+          <div>Please wait while the movie catalog is being synchronized.</div>
         </div>
       </div>
     `;
@@ -258,7 +258,7 @@
           <div class="rating-badge">${escapeHtml(rating)}</div>
           <div class="movie-poster-overlay">
             <button class="btn btn-primary btn-sm" type="button" data-action="details" data-url="${escapeHtmlAttr(detailsUrl)}">Details</button>
-            <button class="btn btn-secondary btn-sm" type="button" data-action="showtimes" ${bookDisabled ? 'disabled' : ''}>${bookDisabled ? 'Coming Soon' : 'Book'}</button>
+            <button class="btn btn-secondary btn-sm" type="button" data-action="showtimes" data-url="${escapeHtmlAttr(detailsUrl)}" ${bookDisabled ? 'disabled' : ''}>${bookDisabled ? 'Coming Soon' : 'Watch'}</button>
           </div>
         </div>
         <div class="movie-info">
@@ -273,12 +273,12 @@
           <div class="movie-meta" style="margin-top:8px;">
             <span>${escapeHtml(statusLabel)}</span>
             <span class="dot"></span>
-            <span>${escapeHtml(`${Number(movie.review_count || 0)} reviews`)}</span>
+            <span>${escapeHtml(`${Number(movie.review_count || 0)} votes`)}</span>
           </div>
         </div>
         <div class="movie-actions">
           <button class="btn btn-primary btn-sm" style="flex:1" type="button" data-action="details" data-url="${escapeHtmlAttr(detailsUrl)}">Details</button>
-          <button class="btn btn-secondary btn-sm" style="flex:1" type="button" data-action="showtimes" ${bookDisabled ? 'disabled' : ''}>${bookDisabled ? 'Preview' : 'Book'}</button>
+          <button class="btn btn-secondary btn-sm" style="flex:1" type="button" data-action="showtimes" data-url="${escapeHtmlAttr(detailsUrl)}" ${bookDisabled ? 'disabled' : ''}>${bookDisabled ? 'Preview' : 'Open'}</button>
         </div>
       </div>
     `;
@@ -371,8 +371,8 @@
       if (action === 'details' && actionButton.dataset.url) {
         window.location.href = actionButton.dataset.url;
       }
-      if (action === 'showtimes' && !actionButton.disabled) {
-        window.location.href = catalogAppUrl('/showtimes');
+      if (action === 'showtimes' && !actionButton.disabled && actionButton.dataset.url) {
+        window.location.href = actionButton.dataset.url;
       }
       return;
     }
@@ -403,6 +403,7 @@
       headers: {
         Accept: 'application/json',
       },
+      cache: 'no-store',
     });
 
     const payload = await response.json().catch(() => ({}));

@@ -179,6 +179,7 @@ async function adminApiRequest(path, options = {}) {
     headers: requestHeaders,
     body: requestBody,
     credentials: 'same-origin',
+    cache: 'no-store',
   });
 
   const contentType = response.headers.get('content-type') || '';

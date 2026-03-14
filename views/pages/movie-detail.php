@@ -39,9 +39,9 @@
   </div>
 
   <div class="showtime-section">
-    <h3 style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:0.5px;margin-bottom:16px">Available Showtimes</h3>
-    <div class="date-tabs" id="movieDetailDateTabs"></div>
-    <div id="movieDetailShowtimes"></div>
+    <h3 style="font-family:'Bebas Neue',cursive;font-size:22px;letter-spacing:0.5px;margin-bottom:16px">Available Sources</h3>
+    <div class="detail-muted" style="margin-bottom:16px">Streaming/embed sources are synchronized from your OPhim provider.</div>
+    <div id="movieDetailPlaybackGroups"></div>
   </div>
 
   <div class="showtime-section" id="movieDetailReviewsSection" hidden>

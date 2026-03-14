@@ -11,8 +11,11 @@ Da chuan hoa va trien khai module `Movie Management` theo huong backend truoc, a
   - `Movies`
   - `Categories`
   - `Movie Images`
+- Bo sung chuc nang import/sync movie tu OPhim vao admin local DB
+- Bo sung chuc nang batch sync movie list tu OPhim vao admin local DB
 - Bo sung admin auth/login/logout de bao ve admin pages va admin API
 - Bo sung validation, transaction, logging, error handling, test artifacts
+- Noi public user movie pages vao OPhim-backed API de user doc catalog/detail that
 
 ## 2. Schema du lieu da chuan hoa
 
@@ -133,6 +136,8 @@ Noi dung da dong bo:
 Trang thai ket noi:
 
 - `Movies`: da noi backend that voi file `public/assets/admin/movie-management-movies.js`
+- `Movies`: da co them chuc nang `Import OPhim` vao local DB qua route `/api/admin/movies/import-ophim`
+- `Movies`: da co them `Batch Sync OPhim` qua route `/api/admin/movies/import-ophim-list`
 - `Categories`: da noi backend that voi file `public/assets/admin/movie-management-categories.js`
 - `Movie Images`: da noi backend that voi file `public/assets/admin/movie-management-movie-images.js`
 - `Reviews`: moi o muc schema-aligned preview, chua noi backend that
@@ -159,23 +164,22 @@ Noi dung:
 Da cap nhat:
 
 - `public/assets/js/app.js`
+- `public/assets/js/movie-catalog.js`
+- `public/assets/js/movie-detail.js`
 - `views/pages/home.php`
 - `views/pages/movies.php`
 - `views/pages/movie-detail.php`
 
 Noi dung:
 
-- User movie data da doi sang field moi:
-  - `slug`
-  - `primary_category`
-  - `average_rating`
-  - `duration_minutes`
-  - `poster_url`
-  - `status`
-- Status user da chuan hoa theo:
-  - `now_showing`
-  - `coming_soon`
-- Rating user UI da dong bo ve he `0-5`
+- Trang `/movies` va `/movie-detail` da doc du lieu that qua OPhim-backed public API
+- Local endpoints cong khai giu on dinh contract FE:
+  - `GET /api/movies`
+  - `GET /api/movies/{slug}`
+- Catalog user map status theo OPhim:
+  - `phim-chieu-rap` -> `now_showing`
+  - `phim-sap-chieu` -> `coming_soon`
+- Movie detail user render gallery, trailer, playback groups tu du lieu OPhim
 
 ## 4. Backend Phase 1 da trien khai
 
@@ -292,6 +296,7 @@ Noi dung:
 Da them:
 
 - `app/Services/MovieManagementService.php`
+- `app/Services/MovieOphimSyncService.php`
 
 Trach nhiem:
 
@@ -302,6 +307,8 @@ Trach nhiem:
 - Logging cho create/update/archive/moderate
 - Mapping output data ra contract API on dinh
 - Tra summary data cho admin stat cards
+- Import/upsert movie tu OPhim vao local DB, tu dong tao category va sync assets
+- Batch import movie list tu OPhim vao local DB, tong hop ket qua `created/updated/skipped/failed`
 
 Transaction duoc ap dung cho:
 
@@ -309,6 +316,7 @@ Transaction duoc ap dung cho:
 - `update movie + category assignments`
 - `create/update asset + primary flag consistency`
 - `moderate review + recompute movie summary`
+- `OPhim import/update + category assignment replace + asset archive/resync`
 
 ### 5.4 Admin API controller
 
@@ -332,6 +340,8 @@ Da cap nhat:
 API da co:
 
 - `GET /api/admin/movies`
+- `POST /api/admin/movies/import-ophim`
+- `POST /api/admin/movies/import-ophim-list`
 - `GET /api/admin/movies/{id}`
 - `POST /api/admin/movies`
 - `PUT /api/admin/movies/{id}`
@@ -371,6 +381,8 @@ Noi dung:
   - list/search/filter/pagination
   - view detail
   - create/update/archive
+  - import/sync movie tu OPhim vao local DB
+  - batch sync list OPhim vao local DB
   - export CSV
   - load category options that
 - `Categories`
@@ -405,6 +417,8 @@ Log cho:
 - Movie created
 - Movie updated
 - Movie archived
+- Movie imported/synced from OPhim
+- Movie list batch synced from OPhim
 - Category created/updated/deactivated
 - Asset created/updated/archived
 - Review moderated
@@ -443,11 +457,15 @@ Kiem tra:
 - Slug/category normalization
 - Asset validation va archived-primary rule
 - Review moderation rules
+- OPhim import payload validation
+- OPhim batch import payload validation
 - Conflict slug
 - Create movie + assignment
 - List category summary
 - List asset summary
 - Update summary sau moderation
+- Service wrapper tra movie + sync metadata sau OPhim import
+- Service wrapper tra batch summary sau OPhim list import
 
 ### 7.2 Feature tests
 
@@ -460,6 +478,8 @@ Kiem tra:
 - Contract JSON response cua controller
 - Response created
 - Response validation error
+- Response import OPhim thanh cong va message dung ngu nghia
+- Response batch sync OPhim thanh cong va message dung ngu nghia
 
 Ngoai ra da bo sung them test lien quan admin auth:
 
@@ -481,6 +501,8 @@ Kiem tra:
 - List asset summary tren du lieu that
 - Create asset va dam bao chi con 1 primary asset trong cung `movie_id + asset_type`
 - Moderate review cap nhat review va summary movie
+- OPhim import update local movie, tao category moi, replace assignments, archive asset cu va sync asset moi
+- OPhim batch import tao nhieu movie local tu list endpoint
 
 ## 8. Verification da thuc hien
 
@@ -510,6 +532,8 @@ Da verify thanh cong:
 - Rollback transaction khi assignment fail
 - Asset summary va asset primary consistency
 - Router support `PUT` + route param `{id}`
+- Admin login + import OPhim + list movie sau import qua HTTP endpoint that
+- Admin login + batch sync OPhim list + tang total movie trong DB that
 
 ### 8.3 Han che hien tai khi run test
 
@@ -540,6 +564,7 @@ Tuy nhien:
 - `app/Repositories/MovieReviewRepository.php`
 - `app/Services/DefaultAdminProvisioningService.php`
 - `app/Services/MovieManagementService.php`
+- `app/Services/MovieOphimSyncService.php`
 - `app/Support/Slugger.php`
 - `app/Validators/MovieManagementValidator.php`
 - `scripts/ensure_default_admin.php`
@@ -586,6 +611,8 @@ Tuy nhien:
 Trang thai hien tai:
 
 - `Movies`: da xong backend + admin UI that
+- `Movies`: da co import/sync OPhim vao local DB
+- `Movies`: da co batch sync OPhim list vao local DB
 - `Categories`: da xong backend + admin UI that
 - `Movie Images`: da xong backend + admin UI that
 - `Reviews`: backend da co, admin UI chua noi API that
@@ -594,8 +621,8 @@ Con lai:
 
 - Noi tab `Reviews` sang backend that
 - Upload file that / media storage that cho movie assets
-- User read API cong khai cho movie list/detail/reviews
-- Noi user pages vao du lieu that
+- Dong bo/import category-asset nang cao tu OPhim neu can batch sync
+- User review API cong khai neu can mo review that ben user
 - Test end-to-end
 - Observability nang cao
 
@@ -610,6 +637,6 @@ Con lai:
 
 `Phase 4`:
 
-- Tao public read APIs cho user movie pages
-- Noi user movie list/detail/reviews vao data that
-- Dong bo poster/banner/gallery tu `movie_images`
+- Hoan thien `Reviews` admin UI
+- Can nhac them batch import/sync tu OPhim cho admin
+- Neu can dat muc tieu dong nhat nguon du lieu, thiet ke quy trinh user doc tu local DB sau khi admin import

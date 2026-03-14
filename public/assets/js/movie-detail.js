@@ -1,12 +1,9 @@
 (function () {
   const state = {
     slug: '',
-    loading: false,
-    activeDateIndex: 0,
     movie: null,
     gallery: [],
-    showtimeGroups: [],
-    reviews: [],
+    playbackGroups: [],
     relatedMovies: [],
     initialized: false,
   };
@@ -30,12 +27,12 @@
     if (!state.slug) {
       renderStateCard(
         'Movie not selected.',
-        'Choose a published movie from the catalog to open its detail page.'
+        'Choose a movie from the catalog to open its detail page.'
       );
       return;
     }
 
-    renderStateCard('Loading movie details...', 'Please wait while we load the movie profile.');
+    renderStateCard('Loading movie details...', 'Please wait while we load the latest movie profile.');
     void loadMovieDetail();
   }
 
@@ -54,33 +51,26 @@
     dom.trailerLink = document.getElementById('movieDetailTrailerLink');
     dom.gallerySection = document.getElementById('movieDetailGallerySection');
     dom.gallery = document.getElementById('movieDetailGallery');
-    dom.dateTabs = document.getElementById('movieDetailDateTabs');
-    dom.showtimes = document.getElementById('movieDetailShowtimes');
+    dom.playbackGroups = document.getElementById('movieDetailPlaybackGroups');
     dom.reviewsSection = document.getElementById('movieDetailReviewsSection');
-    dom.reviews = document.getElementById('movieDetailReviews');
     dom.relatedMovies = document.getElementById('relatedMovies');
   }
 
   function bindEvents() {
-    dom.dateTabs?.addEventListener('click', handleDateTabClick);
     dom.relatedMovies?.addEventListener('click', handleRelatedMovieClick);
     dom.trailerBtn?.addEventListener('click', handleTrailerClick);
-    dom.bookBtn?.addEventListener('click', handleBookClick);
+    dom.bookBtn?.addEventListener('click', handlePrimaryActionClick);
   }
 
   async function loadMovieDetail() {
-    state.loading = true;
-
     try {
       const payload = await fetchJson(`/api/movies/${encodeURIComponent(state.slug)}`);
       const data = payload?.data || {};
 
       state.movie = data.movie || null;
       state.gallery = Array.isArray(data.gallery) ? data.gallery : [];
-      state.showtimeGroups = Array.isArray(data.showtime_groups) ? data.showtime_groups : [];
-      state.reviews = Array.isArray(data.reviews) ? data.reviews : [];
+      state.playbackGroups = Array.isArray(data.playback_groups) ? data.playback_groups : [];
       state.relatedMovies = Array.isArray(data.related_movies) ? data.related_movies : [];
-      state.activeDateIndex = 0;
 
       renderMovieDetail();
     } catch (error) {
@@ -92,8 +82,6 @@
       if (typeof showToast === 'function') {
         showToast('i', 'Movie Detail', error.message || 'Failed to load movie detail.');
       }
-    } finally {
-      state.loading = false;
     }
   }
 
@@ -108,10 +96,10 @@
     renderCredits(movie);
     renderTrailer(movie);
     renderGallery();
-    renderShowtimes();
-    renderReviews();
+    renderPlaybackGroups();
+    renderReviewsPlaceholder();
     renderRelatedMovies();
-    renderBookButton();
+    renderPrimaryAction();
 
     if (dom.state) {
       dom.state.innerHTML = '';
@@ -153,6 +141,10 @@
       tags.push(`<span class="tag tag-genre">${escapeHtml(category)}</span>`);
     });
 
+    if (movie.language) {
+      tags.push(`<span class="tag tag-genre">${escapeHtml(movie.language)}</span>`);
+    }
+
     if (movie.age_rating) {
       tags.push(`<span class="tag tag-genre">${escapeHtml(movie.age_rating)}</span>`);
     }
@@ -178,13 +170,10 @@
       `<span>${escapeHtml(formatReleaseDate(movie.release_date))}</span>`,
     ];
 
-    if (movie.language) {
+    if (movie.review_count) {
       parts.push('<span class="dot"></span>');
-      parts.push(`<span>${escapeHtml(movie.language)}</span>`);
+      parts.push(`<span>${escapeHtml(formatReviewCount(movie.review_count))}</span>`);
     }
-
-    parts.push('<span class="dot"></span>');
-    parts.push(`<span>${escapeHtml(formatReviewCount(movie.review_count))}</span>`);
 
     dom.meta.innerHTML = parts.join('');
 
@@ -194,9 +183,11 @@
   }
 
   function renderSummary(movie) {
-    if (dom.summary) {
-      dom.summary.textContent = movie.summary || 'Plot summary is being updated for this title.';
+    if (!dom.summary) {
+      return;
     }
+
+    dom.summary.textContent = movie.summary || 'Movie synopsis is being updated from the source provider.';
   }
 
   function renderCredits(movie) {
@@ -206,15 +197,13 @@
 
     const creditItems = [
       { label: 'Director', value: movie.director },
-      { label: 'Writer', value: movie.writer },
       { label: 'Cast', value: movie.cast_text },
-      { label: 'Studio', value: movie.studio },
-      { label: 'Language', value: movie.language },
+      { label: 'Countries', value: movie.studio },
       { label: 'Release', value: formatReleaseDate(movie.release_date) },
     ].filter(item => item.value);
 
     if (creditItems.length === 0) {
-      dom.credits.innerHTML = '<div class="detail-muted">Production credits will be published soon.</div>';
+      dom.credits.innerHTML = '<div class="detail-muted">Additional credits are not available from the source provider.</div>';
       return;
     }
 
@@ -270,95 +259,51 @@
     `).join('');
   }
 
-  function renderShowtimes() {
-    if (!dom.dateTabs || !dom.showtimes) {
+  function renderPlaybackGroups() {
+    if (!dom.playbackGroups) {
       return;
     }
 
-    if (state.showtimeGroups.length === 0) {
-      dom.dateTabs.innerHTML = '';
-      dom.showtimes.innerHTML = `
+    if (state.playbackGroups.length === 0) {
+      dom.playbackGroups.innerHTML = `
         <div class="detail-state-card">
           <div>
-            <strong>No showtimes published yet.</strong>
-            <div>Sessions will appear here once this movie is scheduled for booking.</div>
+            <strong>No playback source published yet.</strong>
+            <div>No playback source has been published for this movie yet.</div>
           </div>
         </div>
       `;
       return;
     }
 
-    if (state.activeDateIndex >= state.showtimeGroups.length) {
-      state.activeDateIndex = 0;
-    }
-
-    dom.dateTabs.innerHTML = state.showtimeGroups.map((group, index) => `
-      <button class="date-tab${index === state.activeDateIndex ? ' active' : ''}" type="button" data-date-index="${index}">
-        <div class="day">${escapeHtml(formatDayLabel(group.date))}</div>
-        <div class="date">${escapeHtml(formatDayNumber(group.date))}</div>
-      </button>
-    `).join('');
-
-    renderShowtimeVenues(state.showtimeGroups[state.activeDateIndex]);
-  }
-
-  function renderShowtimeVenues(group) {
-    if (!dom.showtimes) {
-      return;
-    }
-
-    const venues = Array.isArray(group?.venues) ? group.venues : [];
-    if (venues.length === 0) {
-      dom.showtimes.innerHTML = `
-        <div class="detail-state-card">
-          <div>
-            <strong>No sessions for this day.</strong>
-            <div>Please choose another date or come back later.</div>
-          </div>
-        </div>
-      `;
-      return;
-    }
-
-    dom.showtimes.innerHTML = venues.map(venue => `
+    dom.playbackGroups.innerHTML = state.playbackGroups.map(group => `
       <div class="cinema-row">
-        <div class="cinema-name">${escapeHtml(venue.cinema_name || 'Cinema')} · ${escapeHtml(venue.room_name || 'Room')}</div>
+        <div class="cinema-name">${escapeHtml(group.server_name || 'Playback Server')}</div>
         <div class="time-chips">
-          ${(venue.times || []).map(time => `
-            <a class="time-chip detail-time-link" href="${escapeHtmlAttr(buildSeatSelectionUrl(state.slug, time.id))}">
-              <span>${escapeHtml(formatTimeLabel(time.start_time))}</span>
-              <span class="detail-muted">${escapeHtml(formatCurrency(time.price))}</span>
-            </a>
-          `).join('')}
+          ${(group.items || []).map(item => {
+            const targetUrl = item.embed_url || item.stream_url || '';
+            const helperLabel = item.stream_url ? 'm3u8' : 'embed';
+
+            return `
+              <a
+                class="time-chip detail-time-link"
+                href="${escapeHtmlAttr(targetUrl || '#')}"
+                ${targetUrl ? 'target="_blank" rel="noopener noreferrer"' : 'aria-disabled="true"'}
+              >
+                <span>${escapeHtml(item.label || 'Open')}</span>
+                <span class="detail-muted">${escapeHtml(helperLabel)}</span>
+              </a>
+            `;
+          }).join('')}
         </div>
       </div>
     `).join('');
   }
 
-  function renderReviews() {
-    if (!dom.reviewsSection || !dom.reviews) {
-      return;
-    }
-
-    if (state.reviews.length === 0) {
+  function renderReviewsPlaceholder() {
+    if (dom.reviewsSection) {
       dom.reviewsSection.hidden = true;
-      dom.reviews.innerHTML = '';
-      return;
     }
-
-    dom.reviewsSection.hidden = false;
-    dom.reviews.innerHTML = state.reviews.map(review => `
-      <article class="detail-review-card">
-        <div class="detail-review-header">
-          <div>
-            <strong>${escapeHtml(review.user_name || 'Guest')}</strong>
-            <div class="detail-muted">${escapeHtml(formatReleaseDate(review.created_at))}</div>
-          </div>
-          <div class="rating-stars">${buildStarRating(review.rating)}</div>
-        </div>
-        <p>${escapeHtml(review.comment || 'No review comment provided.')}</p>
-      </article>
-    `).join('');
   }
 
   function renderRelatedMovies() {
@@ -371,7 +316,7 @@
         <div class="detail-state-card" style="grid-column:1/-1;">
           <div>
             <strong>No related movies available.</strong>
-            <div>Publish more movies in the same category to enrich this section.</div>
+            <div>There are no related titles available for this movie yet.</div>
           </div>
         </div>
       `;
@@ -408,24 +353,21 @@
         </div>
         <div class="movie-actions">
           <button class="btn btn-primary btn-sm" style="flex:1" type="button" data-url="${escapeHtmlAttr(detailUrl)}">Open</button>
-          <a class="btn btn-secondary btn-sm" style="flex:1;text-align:center" href="${escapeHtmlAttr(detailUrl)}#movieDetailShowtimes">Showtimes</a>
+          <a class="btn btn-secondary btn-sm" style="flex:1;text-align:center" href="${escapeHtmlAttr(detailUrl)}#movieDetailPlaybackGroups">Sources</a>
         </div>
       </div>
     `;
   }
 
-  function renderBookButton() {
+  function renderPrimaryAction() {
     if (!dom.bookBtn) {
       return;
     }
 
-    const isNowShowing = state.movie?.status === 'now_showing';
-    const hasShowtimes = state.showtimeGroups.length > 0;
-
-    if (isNowShowing && hasShowtimes) {
-      dom.bookBtn.textContent = 'Check Showtimes';
-      dom.bookBtn.href = '#movieDetailShowtimes';
-      dom.bookBtn.dataset.mode = 'showtimes';
+    if (state.playbackGroups.length > 0) {
+      dom.bookBtn.textContent = 'Watch Options';
+      dom.bookBtn.href = '#movieDetailPlaybackGroups';
+      dom.bookBtn.dataset.mode = 'playback';
       return;
     }
 
@@ -441,31 +383,10 @@
     dom.bookBtn.dataset.mode = 'list';
   }
 
-  function handleDateTabClick(event) {
-    const button = event.target.closest('[data-date-index]');
-    if (!button) {
-      return;
-    }
-
-    const nextIndex = Number(button.dataset.dateIndex || 0);
-    if (!Number.isFinite(nextIndex) || nextIndex < 0 || nextIndex === state.activeDateIndex) {
-      return;
-    }
-
-    state.activeDateIndex = nextIndex;
-    renderShowtimes();
-  }
-
   function handleRelatedMovieClick(event) {
     const button = event.target.closest('[data-url]');
     if (button?.dataset?.url) {
       window.location.href = button.dataset.url;
-      return;
-    }
-
-    const card = event.target.closest('[data-url]');
-    if (card?.dataset?.url) {
-      window.location.href = card.dataset.url;
     }
   }
 
@@ -482,18 +403,18 @@
     window.open(trailerUrl, '_blank', 'noopener,noreferrer');
   }
 
-  function handleBookClick(event) {
+  function handlePrimaryActionClick(event) {
     const mode = dom.bookBtn?.dataset?.mode || 'list';
-    if (mode === 'showtimes') {
+    if (mode === 'playback') {
       event.preventDefault();
-      document.getElementById('movieDetailShowtimes')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('movieDetailPlaybackGroups')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
 
     if (mode === 'disabled') {
       event.preventDefault();
       if (typeof showToast === 'function') {
-        showToast('i', 'Booking', 'This movie is not open for booking yet.');
+        showToast('i', 'Movie Status', 'This movie is currently marked as coming soon.');
       }
     }
   }
@@ -508,6 +429,7 @@
       headers: {
         Accept: 'application/json',
       },
+      cache: 'no-store',
     });
 
     const payload = await response.json().catch(() => ({}));
@@ -542,19 +464,6 @@
   function buildMovieDetailUrl(slug) {
     const query = slug ? `?slug=${encodeURIComponent(slug)}` : '';
     return `${appUrl('/movie-detail')}${query}`;
-  }
-
-  function buildSeatSelectionUrl(slug, showtimeId) {
-    const params = new URLSearchParams();
-    if (slug) {
-      params.set('slug', slug);
-    }
-    if (showtimeId) {
-      params.set('showtime_id', String(showtimeId));
-    }
-
-    const query = params.toString();
-    return `${appUrl('/seat-selection')}${query ? `?${query}` : ''}`;
   }
 
   function appUrl(path) {
@@ -600,56 +509,9 @@
     }).format(parsed);
   }
 
-  function formatDayLabel(value) {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return 'Date';
-    }
-
-    return new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(parsed);
-  }
-
-  function formatDayNumber(value) {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) {
-      return '--';
-    }
-
-    return new Intl.DateTimeFormat('en-US', { day: '2-digit' }).format(parsed);
-  }
-
-  function formatTimeLabel(value) {
-    const source = String(value || '').trim();
-    if (!source) {
-      return 'TBA';
-    }
-
-    const parsed = new Date(`1970-01-01T${source}`);
-    if (Number.isNaN(parsed.getTime())) {
-      return source.slice(0, 5);
-    }
-
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(parsed);
-  }
-
   function formatReviewCount(count) {
     const total = Number(count || 0);
-    return `${total} review${total === 1 ? '' : 's'}`;
-  }
-
-  function formatCurrency(value) {
-    const amount = Number(value || 0);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return 'TBA';
-    }
-
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    return `${total} vote${total === 1 ? '' : 's'}`;
   }
 
   function buildStarRating(value) {

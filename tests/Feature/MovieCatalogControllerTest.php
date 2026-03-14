@@ -66,7 +66,7 @@ class MovieCatalogControllerTest extends TestCase
             'data' => [
                 'movie' => ['slug' => 'detail-movie', 'title' => 'Detail Movie'],
                 'gallery' => [],
-                'showtime_groups' => [],
+                'playback_groups' => [],
                 'reviews' => [],
                 'related_movies' => [],
             ],

@@ -2,6 +2,7 @@
 
 namespace Tests\Integration;
 
+use App\Clients\OphimClient;
 use App\Core\Logger;
 use App\Repositories\MovieCategoryAssignmentRepository;
 use App\Repositories\MovieCategoryRepository;
@@ -9,6 +10,7 @@ use App\Repositories\MovieImageRepository;
 use App\Repositories\MovieRepository;
 use App\Repositories\MovieReviewRepository;
 use App\Services\MovieManagementService;
+use App\Services\MovieOphimSyncService;
 use App\Validators\MovieManagementValidator;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -255,6 +257,216 @@ class MovieManagementServiceIntegrationTest extends TestCase
         $this->assertSame(1, (int) $movieRow['review_count']);
     }
 
+    public function testOphimImportUpdatesExistingMovieAndArchivesPriorAssets(): void
+    {
+        $this->db->exec("
+            INSERT INTO movies (
+                id, primary_category_id, slug, title, summary, duration_minutes, release_date, poster_url, trailer_url,
+                age_rating, language, director, writer, cast_text, studio, average_rating, review_count, status, created_at, updated_at
+            ) VALUES (
+                70, 1, 'tro-choi-con-muc', 'Old Title', 'Old summary', 120, '2025-01-01', 'https://example.com/old-poster.jpg',
+                NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 'draft', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+        ");
+        $this->db->exec("INSERT INTO movie_category_assignments (movie_id, category_id) VALUES (70, 1)");
+        $this->db->exec("
+            INSERT INTO movie_images (id, movie_id, asset_type, image_url, alt_text, sort_order, is_primary, status, created_at, updated_at)
+            VALUES (71, 70, 'poster', 'https://example.com/old-poster.jpg', 'Old poster', 1, 1, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ");
+
+        $syncService = new MovieOphimSyncService(
+            $this->db,
+            new MovieRepository($this->db),
+            new MovieCategoryRepository($this->db),
+            new MovieCategoryAssignmentRepository($this->db),
+            new MovieImageRepository($this->db),
+            new IntegrationFakeOphimClient(
+                [
+                    'status' => 'success',
+                    'data' => [
+                        'APP_DOMAIN_CDN_IMAGE' => 'https://img.ophim.live',
+                        'item' => [
+                            '_id' => 'ophim-demo',
+                            'name' => 'Imported Movie',
+                            'slug' => 'tro-choi-con-muc',
+                            'origin_name' => 'Imported Movie Original',
+                            'content' => '<p>Imported from OPhim.</p>',
+                            'poster_url' => 'imported-poster.jpg',
+                            'trailer_url' => 'https://youtube.com/watch?v=demo',
+                            'time' => '181 phut',
+                            'episode_current' => 'Full',
+                            'lang' => 'Vietsub',
+                            'year' => 2026,
+                            'actor' => ['Actor A', 'Actor B'],
+                            'director' => ['Director A'],
+                            'category' => [
+                                ['slug' => 'action', 'name' => 'Action'],
+                                ['slug' => 'bi-an', 'name' => 'Mystery'],
+                            ],
+                            'country' => [
+                                ['slug' => 'han-quoc', 'name' => 'Korea'],
+                            ],
+                            'tmdb' => ['vote_average' => 8.4, 'vote_count' => 1200],
+                            'imdb' => ['vote_average' => 8.1, 'vote_count' => 900],
+                        ],
+                    ],
+                ],
+                [
+                    'success' => true,
+                    'data' => [
+                        'image_sizes' => [
+                            'backdrop' => [
+                                'w1280' => 'https://image.tmdb.org/t/p/w1280',
+                                'original' => 'https://image.tmdb.org/t/p/original',
+                            ],
+                        ],
+                        'images' => [
+                            ['type' => 'backdrop', 'file_path' => '/backdrop-a.jpg'],
+                            ['type' => 'backdrop', 'file_path' => '/backdrop-b.jpg'],
+                        ],
+                    ],
+                ]
+            ),
+            new IntegrationFakeLogger()
+        );
+
+        $result = $syncService->importBySlug([
+            'slug' => 'tro-choi-con-muc',
+            'sync_images' => 1,
+            'overwrite_existing' => 1,
+            'status_override' => 'coming_soon',
+        ], 12);
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame(70, $result['data']['movie_id']);
+        $this->assertFalse((bool) $result['data']['created']);
+
+        $movieRow = $this->db->query("SELECT title, primary_category_id, duration_minutes, status, poster_url, average_rating FROM movies WHERE id = 70")->fetch();
+        $assignmentRows = $this->db->query("SELECT category_id FROM movie_category_assignments WHERE movie_id = 70 ORDER BY category_id ASC")->fetchAll();
+        $mysteryCategory = $this->db->query("SELECT id FROM movie_categories WHERE slug = 'bi-an' LIMIT 1")->fetch();
+        $archivedAsset = $this->db->query("SELECT status, is_primary FROM movie_images WHERE id = 71")->fetch();
+        $activeAssetCount = (int) $this->db->query("SELECT COUNT(*) FROM movie_images WHERE movie_id = 70 AND status = 'active'")->fetchColumn();
+
+        $this->assertSame('Imported Movie', $movieRow['title']);
+        $this->assertSame('coming_soon', $movieRow['status']);
+        $this->assertSame(181, (int) $movieRow['duration_minutes']);
+        $this->assertSame('https://img.ophim.live/uploads/movies/imported-poster.jpg', $movieRow['poster_url']);
+        $this->assertSame(4.2, (float) $movieRow['average_rating']);
+        $this->assertNotFalse($mysteryCategory);
+        $this->assertCount(2, $assignmentRows);
+        $this->assertSame('archived', $archivedAsset['status']);
+        $this->assertSame(0, (int) $archivedAsset['is_primary']);
+        $this->assertSame(4, $activeAssetCount);
+    }
+
+    public function testOphimBatchImportCreatesMultipleMoviesFromList(): void
+    {
+        $syncService = new MovieOphimSyncService(
+            $this->db,
+            new MovieRepository($this->db),
+            new MovieCategoryRepository($this->db),
+            new MovieCategoryAssignmentRepository($this->db),
+            new MovieImageRepository($this->db),
+            new IntegrationFakeOphimClient(
+                [
+                    'alpha-heist' => [
+                        'status' => 'success',
+                        'data' => [
+                            'APP_DOMAIN_CDN_IMAGE' => 'https://img.ophim.live',
+                            'item' => [
+                                '_id' => 'ophim-alpha',
+                                'name' => 'Alpha Heist',
+                                'slug' => 'alpha-heist',
+                                'content' => '<p>Alpha summary</p>',
+                                'poster_url' => 'alpha-heist.jpg',
+                                'trailer_url' => 'https://youtube.com/watch?v=alpha',
+                                'time' => '120 phut',
+                                'episode_current' => 'Full',
+                                'lang' => 'Vietsub',
+                                'year' => 2026,
+                                'actor' => ['Actor Alpha'],
+                                'director' => ['Director Alpha'],
+                                'category' => [
+                                    ['slug' => 'action', 'name' => 'Action'],
+                                ],
+                                'country' => [
+                                    ['slug' => 'my', 'name' => 'USA'],
+                                ],
+                                'tmdb' => ['vote_average' => 8.0, 'vote_count' => 500],
+                                'imdb' => ['vote_average' => 7.8, 'vote_count' => 300],
+                            ],
+                        ],
+                    ],
+                    'beta-circuit' => [
+                        'status' => 'success',
+                        'data' => [
+                            'APP_DOMAIN_CDN_IMAGE' => 'https://img.ophim.live',
+                            'item' => [
+                                '_id' => 'ophim-beta',
+                                'name' => 'Beta Circuit',
+                                'slug' => 'beta-circuit',
+                                'content' => '<p>Beta summary</p>',
+                                'poster_url' => 'beta-circuit.jpg',
+                                'trailer_url' => 'https://youtube.com/watch?v=beta',
+                                'time' => '95 phut',
+                                'episode_current' => 'Full',
+                                'lang' => 'Vietsub',
+                                'year' => 2025,
+                                'actor' => ['Actor Beta'],
+                                'director' => ['Director Beta'],
+                                'category' => [
+                                    ['slug' => 'drama', 'name' => 'Drama'],
+                                ],
+                                'country' => [
+                                    ['slug' => 'kr', 'name' => 'Korea'],
+                                ],
+                                'tmdb' => ['vote_average' => 7.4, 'vote_count' => 210],
+                                'imdb' => ['vote_average' => 7.0, 'vote_count' => 150],
+                            ],
+                        ],
+                    ],
+                ],
+                [],
+                [
+                    'status' => 'success',
+                    'data' => [
+                        'items' => [
+                            ['slug' => 'alpha-heist'],
+                            ['slug' => 'beta-circuit'],
+                        ],
+                    ],
+                ]
+            ),
+            new IntegrationFakeLogger()
+        );
+
+        $result = $syncService->importList([
+            'list_slug' => 'phim-chieu-rap',
+            'page' => 1,
+            'limit' => 12,
+            'sync_images' => 0,
+            'overwrite_existing' => 1,
+            'status_override' => 'now_showing',
+        ], 14);
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame(2, $result['data']['processed_count']);
+        $this->assertSame(2, $result['data']['created_count']);
+        $this->assertSame(0, $result['data']['failed_count']);
+
+        $movieCount = (int) $this->db->query('SELECT COUNT(*) FROM movies')->fetchColumn();
+        $actionMovie = $this->db->query("SELECT title, status FROM movies WHERE slug = 'alpha-heist'")->fetch();
+        $dramaMovie = $this->db->query("SELECT title, status FROM movies WHERE slug = 'beta-circuit'")->fetch();
+        $assignmentCount = (int) $this->db->query('SELECT COUNT(*) FROM movie_category_assignments')->fetchColumn();
+
+        $this->assertSame(2, $movieCount);
+        $this->assertSame('Alpha Heist', $actionMovie['title']);
+        $this->assertSame('now_showing', $actionMovie['status']);
+        $this->assertSame('Beta Circuit', $dramaMovie['title']);
+        $this->assertSame('now_showing', $dramaMovie['status']);
+        $this->assertSame(2, $assignmentCount);
+    }
+
     private function makeService(): MovieManagementService
     {
         return new MovieManagementService(
@@ -393,5 +605,46 @@ class IntegrationFakeLogger extends Logger
 
     public function error(string $message, array $context = []): void
     {
+    }
+}
+
+class IntegrationFakeOphimClient extends OphimClient
+{
+    private array $detailPayload;
+    private array $imagesPayload;
+    private array $listPayload;
+
+    public function __construct(array $detailPayload, array $imagesPayload, array $listPayload = [])
+    {
+        $this->detailPayload = $detailPayload;
+        $this->imagesPayload = $imagesPayload;
+        $this->listPayload = $listPayload;
+    }
+
+    public function getMovieDetail(string $slug): array
+    {
+        if (isset($this->detailPayload[$slug]) && is_array($this->detailPayload[$slug])) {
+            return $this->detailPayload[$slug];
+        }
+
+        return $this->detailPayload;
+    }
+
+    public function getMovieImages(string $slug): array
+    {
+        if (isset($this->imagesPayload[$slug]) && is_array($this->imagesPayload[$slug])) {
+            return $this->imagesPayload[$slug];
+        }
+
+        return $this->imagesPayload;
+    }
+
+    public function listBySlug(string $slug, array $query = []): array
+    {
+        if (isset($this->listPayload[$slug]) && is_array($this->listPayload[$slug])) {
+            return $this->listPayload[$slug];
+        }
+
+        return $this->listPayload;
     }
 }

@@ -184,6 +184,39 @@ class MovieImageRepository
         ]);
     }
 
+    public function archiveByMovieAndTypes(int $movieId, array $assetTypes): void
+    {
+        $assetTypes = array_values(array_unique(array_filter(array_map(static function ($value): string {
+            return strtolower(trim((string) $value));
+        }, $assetTypes), static function ($value): bool {
+            return $value !== '';
+        })));
+
+        if (empty($assetTypes)) {
+            return;
+        }
+
+        $placeholders = [];
+        $params = ['movie_id' => $movieId, 'status' => 'archived'];
+
+        foreach ($assetTypes as $index => $assetType) {
+            $key = 'asset_type_' . $index;
+            $placeholders[] = ':' . $key;
+            $params[$key] = $assetType;
+        }
+
+        $stmt = $this->db->prepare(
+            'UPDATE movie_images
+             SET status = :status,
+                 is_primary = 0,
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE movie_id = :movie_id
+               AND asset_type IN (' . implode(', ', $placeholders) . ')'
+        );
+        $this->bindValues($stmt, $params);
+        $stmt->execute();
+    }
+
     public function clearPrimaryFlagForMovie(int $movieId, string $assetType, ?int $excludeId = null): void
     {
         $sql = '

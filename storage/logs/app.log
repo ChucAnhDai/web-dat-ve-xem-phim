@@ -63,3 +63,75 @@
 [2026-03-14T12:43:38+01:00] INFO: Movie updated {"actor_id":1,"movie_id":1,"duration_ms":10.98}
 [2026-03-14T13:07:33+01:00] INFO: Movie asset created {"actor_id":1,"asset_id":1}
 [2026-03-14T13:33:05+01:00] INFO: Movie updated {"actor_id":1,"movie_id":1,"duration_ms":7.27}
+[2026-03-14T14:21:41+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"test","error":"Failed to communicate with OPhim API."}
+[2026-03-14T14:38:09+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T14:38:28+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T14:38:28+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T14:38:29+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-pham-101","movie_id":2,"created":true,"category_count":1,"asset_count":10,"duration_ms":850.08}
+[2026-03-14T14:38:47+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T14:38:59+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T14:39:54+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T14:52:08+01:00] INFO: Category created {"actor_id":1,"category_id":3}
+[2026-03-14T14:52:23+01:00] INFO: Category deactivated {"actor_id":1,"category_id":3}
+[2026-03-14T15:00:05+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T15:00:05+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T15:00:06+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-pham-101","movie_id":2,"created":false,"category_count":1,"asset_count":0,"duration_ms":429.25}
+[2026-03-14T15:00:08+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"be-ghe-ma-cung","movie_id":3,"created":true,"category_count":2,"asset_count":0,"duration_ms":1330.08}
+[2026-03-14T15:00:08+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"co-dau","movie_id":4,"created":true,"category_count":4,"asset_count":0,"duration_ms":381.97}
+[2026-03-14T15:00:08+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-chieu-rap","page":1,"limit":3,"processed_count":3,"created_count":2,"updated_count":1,"skipped_count":0,"failed_count":0,"duration_ms":2592.14}
+[2026-03-14T15:00:23+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T15:00:36+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T15:05:29+01:00] ERROR: OPhim movie import failed {"actor_id":1,"slug":"vien-tuong","error":"Failed to communicate with OPhim API."}
+[2026-03-14T15:05:38+01:00] ERROR: OPhim movie import failed {"actor_id":1,"slug":"vien-tuong","error":"Failed to communicate with OPhim API."}
+[2026-03-14T15:05:50+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ngay-hoc-cuoi-cung","movie_id":5,"created":true,"category_count":1,"asset_count":10,"duration_ms":791.25}
+[2026-03-14T15:05:51+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-hermit","movie_id":6,"created":true,"category_count":1,"asset_count":5,"duration_ms":658.49}
+[2026-03-14T15:05:51+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"frankensteins-bride","movie_id":7,"created":true,"category_count":1,"asset_count":4,"duration_ms":730.13}
+[2026-03-14T15:05:52+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"akaal-the-unconquered","movie_id":8,"created":true,"category_count":2,"asset_count":1,"duration_ms":610.93}
+[2026-03-14T15:05:53+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"demon-squad-tooth-and-claw","movie_id":9,"created":true,"category_count":2,"asset_count":5,"duration_ms":828.89}
+[2026-03-14T15:05:54+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ghost-elephants","movie_id":10,"created":true,"category_count":1,"asset_count":10,"duration_ms":801.52}
+[2026-03-14T15:05:54+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"yoroi","movie_id":11,"created":true,"category_count":1,"asset_count":10,"duration_ms":730.42}
+[2026-03-14T15:05:55+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"solo-mio","movie_id":12,"created":true,"category_count":1,"asset_count":10,"duration_ms":776.99}
+[2026-03-14T15:05:56+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"barbara-tro-thanh-shirin-david","movie_id":13,"created":true,"category_count":1,"asset_count":1,"duration_ms":637.55}
+[2026-03-14T15:05:57+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"doi-gio-hu-2026","movie_id":14,"created":true,"category_count":1,"asset_count":10,"duration_ms":1463.99}
+[2026-03-14T15:05:57+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-pham-101","movie_id":2,"created":false,"category_count":1,"asset_count":10,"duration_ms":361.39}
+[2026-03-14T15:05:58+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ca-voi-sat-thu","movie_id":15,"created":true,"category_count":5,"asset_count":8,"duration_ms":678.25}
+[2026-03-14T15:05:58+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-le","page":1,"limit":12,"processed_count":12,"created_count":11,"updated_count":1,"skipped_count":0,"failed_count":0,"duration_ms":9437.06}
+[2026-03-14T15:06:13+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"love-phobia","movie_id":16,"created":true,"category_count":3,"asset_count":0,"duration_ms":321.39}
+[2026-03-14T15:06:13+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"truc-ngoc","movie_id":17,"created":true,"category_count":1,"asset_count":0,"duration_ms":358.53}
+[2026-03-14T15:06:14+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"bui-hoa-hong","movie_id":18,"created":true,"category_count":2,"asset_count":0,"duration_ms":351.2}
+[2026-03-14T15:06:14+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ngay-hoc-cuoi-cung","movie_id":5,"created":false,"category_count":1,"asset_count":0,"duration_ms":3.31}
+[2026-03-14T15:06:14+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-hermit","movie_id":6,"created":false,"category_count":1,"asset_count":0,"duration_ms":2.92}
+[2026-03-14T15:06:14+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"frankensteins-bride","movie_id":7,"created":false,"category_count":1,"asset_count":0,"duration_ms":1.65}
+[2026-03-14T15:06:14+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"trai-tim-dap-nhanh","movie_id":19,"created":true,"category_count":1,"asset_count":0,"duration_ms":361.48}
+[2026-03-14T15:06:14+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dinh-menh-vuot-xa-kich-ban","movie_id":20,"created":true,"category_count":2,"asset_count":0,"duration_ms":351.7}
+[2026-03-14T15:06:15+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"giau-kin-tinh-yeu","movie_id":21,"created":true,"category_count":1,"asset_count":0,"duration_ms":368}
+[2026-03-14T15:06:15+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-crow-girl","movie_id":22,"created":true,"category_count":3,"asset_count":0,"duration_ms":440.51}
+[2026-03-14T15:06:15+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"akaal-the-unconquered","movie_id":8,"created":false,"category_count":2,"asset_count":0,"duration_ms":1.89}
+[2026-03-14T15:06:15+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"demon-squad-tooth-and-claw","movie_id":9,"created":false,"category_count":2,"asset_count":0,"duration_ms":2.75}
+[2026-03-14T15:06:15+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-moi","page":1,"limit":12,"processed_count":12,"created_count":7,"updated_count":5,"skipped_count":0,"failed_count":0,"duration_ms":2909.68}
+[2026-03-14T15:06:31+01:00] INFO: Movie updated {"actor_id":1,"movie_id":22,"duration_ms":6.82}
+[2026-03-14T15:09:59+01:00] INFO: Movie updated {"actor_id":1,"movie_id":2,"duration_ms":4.08}
+[2026-03-14T15:13:51+01:00] INFO: Movie updated {"actor_id":1,"movie_id":2,"duration_ms":6.19}
+[2026-03-14T15:14:14+01:00] INFO: Movie updated {"actor_id":1,"movie_id":1,"duration_ms":4.56}
+[2026-03-14T15:14:40+01:00] INFO: Movie updated {"actor_id":1,"movie_id":1,"duration_ms":6.22}
+[2026-03-14T15:18:58+01:00] INFO: Playback groups could not be loaded from OPhim {"slug":"test","error":"Failed to communicate with OPhim API."}
+[2026-03-14T15:21:00+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T15:21:00+01:00] INFO: Movie updated {"actor_id":1,"movie_id":2,"duration_ms":7.86}
+[2026-03-14T15:24:30+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T15:24:30+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-pham-101","movie_id":2,"created":false,"category_count":1,"asset_count":0,"duration_ms":2.01}
+[2026-03-14T15:24:30+01:00] INFO: Movie updated {"actor_id":1,"movie_id":2,"duration_ms":6.57}
+[2026-03-14T15:26:54+01:00] INFO: Playback groups could not be loaded from OPhim {"slug":"test","error":"Failed to communicate with OPhim API."}
+[2026-03-14T15:27:23+01:00] INFO: Movie updated {"actor_id":1,"movie_id":2,"duration_ms":4.29}
+[2026-03-14T15:27:58+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"moi-quy-du","movie_id":23,"created":true,"category_count":2,"asset_count":10,"duration_ms":902.08}
+[2026-03-14T15:27:58+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hung-thu-vo-hinh","movie_id":24,"created":true,"category_count":1,"asset_count":10,"duration_ms":670.83}
+[2026-03-14T15:27:59+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"am-luong-huy-diet","movie_id":25,"created":true,"category_count":2,"asset_count":10,"duration_ms":725.15}
+[2026-03-14T15:28:00+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dem-hung-tan","movie_id":26,"created":true,"category_count":2,"asset_count":10,"duration_ms":834.67}
+[2026-03-14T15:28:01+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"thuy-chien-dao-hansan-rong-troi-day","movie_id":27,"created":true,"category_count":2,"asset_count":10,"duration_ms":744.72}
+[2026-03-14T15:28:03+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-gioi-la-lung","movie_id":28,"created":true,"category_count":2,"asset_count":10,"duration_ms":2124.29}
+[2026-03-14T15:28:04+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"loi-logic-ban-dien-anh","movie_id":29,"created":true,"category_count":2,"asset_count":10,"duration_ms":706.83}
+[2026-03-14T15:28:04+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"578-phat-dan-cua-ke-dien","movie_id":30,"created":true,"category_count":3,"asset_count":10,"duration_ms":760.49}
+[2026-03-14T15:28:05+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nghi-thuc-cam-kumanthong","movie_id":31,"created":true,"category_count":1,"asset_count":8,"duration_ms":666.8}
+[2026-03-14T15:28:06+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hoc-vien-anh-hung-youre-next","movie_id":32,"created":true,"category_count":4,"asset_count":10,"duration_ms":777.56}
+[2026-03-14T15:28:07+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"memory","movie_id":33,"created":true,"category_count":3,"asset_count":10,"duration_ms":861.43}
+[2026-03-14T15:28:07+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ma-guong-3","movie_id":34,"created":true,"category_count":1,"asset_count":3,"duration_ms":679.54}
+[2026-03-14T15:28:07+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-chieu-rap","page":12,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":11200.43}

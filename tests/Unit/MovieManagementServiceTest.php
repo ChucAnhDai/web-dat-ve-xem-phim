@@ -9,6 +9,7 @@ use App\Repositories\MovieImageRepository;
 use App\Repositories\MovieRepository;
 use App\Repositories\MovieReviewRepository;
 use App\Services\MovieManagementService;
+use App\Services\MovieOphimSyncService;
 use App\Validators\MovieManagementValidator;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -282,6 +283,115 @@ class MovieManagementServiceTest extends TestCase
         $this->assertSame(1, $reviewRepo->moderationData['is_visible']);
         $this->assertSame([7, 4.25, 4], $movieRepo->reviewSummaryUpdate);
     }
+
+    public function testImportMovieFromOphimReturnsMappedMovieAndSyncMetadata(): void
+    {
+        $pdo = new PDO('sqlite::memory:');
+        $movieRepo = new UnitFakeMovieRepository();
+        $movieRepo->movieRowsById[88] = [
+            'id' => 88,
+            'primary_category_id' => 2,
+            'primary_category_name' => 'Drama',
+            'category_ids_csv' => '2,5',
+            'slug' => 'tro-choi-con-muc',
+            'title' => 'Squid Game',
+            'summary' => 'Imported from OPhim',
+            'duration_minutes' => 181,
+            'release_date' => '2026-01-01',
+            'poster_url' => 'https://img.example.com/poster.jpg',
+            'trailer_url' => 'https://youtube.com/watch?v=demo',
+            'age_rating' => null,
+            'language' => 'Vietsub',
+            'director' => 'Director',
+            'writer' => null,
+            'cast_text' => 'Actor',
+            'studio' => 'Korea',
+            'average_rating' => 4.2,
+            'review_count' => 1200,
+            'status' => 'coming_soon',
+            'created_at' => null,
+            'updated_at' => null,
+        ];
+
+        $ophimSync = new UnitFakeMovieOphimSyncService();
+        $ophimSync->result = [
+            'status' => 201,
+            'data' => [
+                'movie_id' => 88,
+                'created' => true,
+                'category_count' => 2,
+                'asset_count' => 4,
+                'source_slug' => 'tro-choi-con-muc',
+            ],
+        ];
+
+        $service = new MovieManagementService(
+            $pdo,
+            $movieRepo,
+            new UnitFakeMovieCategoryRepository(),
+            new UnitFakeMovieCategoryAssignmentRepository(),
+            new UnitFakeMovieImageRepository(),
+            new UnitFakeMovieReviewRepository(),
+            new MovieManagementValidator(),
+            new UnitFakeMovieLogger(),
+            $ophimSync
+        );
+
+        $result = $service->importMovieFromOphim([
+            'slug' => 'tro-choi-con-muc',
+            'sync_images' => 1,
+            'overwrite_existing' => 1,
+            'status_override' => 'coming_soon',
+        ], 15);
+
+        $this->assertSame(201, $result['status']);
+        $this->assertSame('Squid Game', $result['data']['movie']['title']);
+        $this->assertSame('tro-choi-con-muc', $result['data']['sync']['source_slug']);
+        $this->assertSame(4, $result['data']['sync']['asset_count']);
+    }
+
+    public function testImportMovieListFromOphimReturnsBatchSummary(): void
+    {
+        $pdo = new PDO('sqlite::memory:');
+        $ophimSync = new UnitFakeMovieOphimSyncService();
+        $ophimSync->batchResult = [
+            'status' => 200,
+            'data' => [
+                'list_slug' => 'phim-chieu-rap',
+                'processed_count' => 12,
+                'created_count' => 10,
+                'updated_count' => 1,
+                'skipped_count' => 1,
+                'failed_count' => 0,
+                'items' => [],
+            ],
+        ];
+
+        $service = new MovieManagementService(
+            $pdo,
+            new UnitFakeMovieRepository(),
+            new UnitFakeMovieCategoryRepository(),
+            new UnitFakeMovieCategoryAssignmentRepository(),
+            new UnitFakeMovieImageRepository(),
+            new UnitFakeMovieReviewRepository(),
+            new MovieManagementValidator(),
+            new UnitFakeMovieLogger(),
+            $ophimSync
+        );
+
+        $result = $service->importMovieListFromOphim([
+            'list_slug' => 'phim-chieu-rap',
+            'page' => 1,
+            'limit' => 12,
+            'sync_images' => 0,
+            'overwrite_existing' => 1,
+        ], 15);
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame('phim-chieu-rap', $result['data']['list_slug']);
+        $this->assertSame(12, $result['data']['processed_count']);
+        $this->assertSame(10, $result['data']['created_count']);
+    }
 }
 
 class UnitFakeMovieRepository extends MovieRepository
@@ -506,5 +616,31 @@ class UnitFakeMovieLogger extends Logger
 
     public function error(string $message, array $context = []): void
     {
+    }
+}
+
+class UnitFakeMovieOphimSyncService extends MovieOphimSyncService
+{
+    public array $result = [
+        'status' => 200,
+        'data' => [],
+    ];
+    public array $batchResult = [
+        'status' => 200,
+        'data' => [],
+    ];
+
+    public function __construct()
+    {
+    }
+
+    public function importBySlug(array $payload, ?int $actorId = null): array
+    {
+        return $this->result;
+    }
+
+    public function importList(array $payload, ?int $actorId = null): array
+    {
+        return $this->batchResult;
     }
 }

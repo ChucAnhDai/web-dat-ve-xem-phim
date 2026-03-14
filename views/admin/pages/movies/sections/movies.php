@@ -37,6 +37,8 @@
     <div class="toolbar-right">
       <span style="font-size:12px;color:var(--text-dim);" id="movieCount">0 movies</span>
       <span class="table-meta-text" id="movieRequestStatus">Ready</span>
+      <button class="btn btn-ghost btn-sm" id="movieImportOphimBtn" type="button">Import OPhim</button>
+      <button class="btn btn-ghost btn-sm" id="movieBatchImportOphimBtn" type="button">Batch Sync OPhim</button>
       <button class="btn btn-ghost btn-sm" id="movieExportBtn" type="button">Export CSV</button>
     </div>
   </div>

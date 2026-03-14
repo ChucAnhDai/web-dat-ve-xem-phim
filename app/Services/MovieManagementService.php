@@ -23,6 +23,7 @@ class MovieManagementService
     private MovieReviewRepository $reviews;
     private MovieManagementValidator $validator;
     private Logger $logger;
+    private MovieOphimSyncService $ophimSync;
 
     public function __construct(
         ?PDO $db = null,
@@ -32,7 +33,8 @@ class MovieManagementService
         ?MovieImageRepository $images = null,
         ?MovieReviewRepository $reviews = null,
         ?MovieManagementValidator $validator = null,
-        ?Logger $logger = null
+        ?Logger $logger = null,
+        ?MovieOphimSyncService $ophimSync = null
     ) {
         $this->db = $db ?? Database::getInstance();
         $this->movies = $movies ?? new MovieRepository($this->db);
@@ -42,6 +44,15 @@ class MovieManagementService
         $this->reviews = $reviews ?? new MovieReviewRepository($this->db);
         $this->validator = $validator ?? new MovieManagementValidator();
         $this->logger = $logger ?? new Logger();
+        $this->ophimSync = $ophimSync ?? new MovieOphimSyncService(
+            $this->db,
+            $this->movies,
+            $this->categories,
+            $this->assignments,
+            $this->images,
+            null,
+            $this->logger
+        );
     }
 
     public function listMovies(array $filters): array
@@ -188,6 +199,37 @@ class MovieManagementService
         ]);
 
         return $this->success(['id' => $id, 'status' => 'archived']);
+    }
+
+    public function importMovieFromOphim(array $payload, ?int $actorId = null): array
+    {
+        $validation = $this->validator->validateOphimImportPayload($payload);
+        if (!empty($validation['errors'])) {
+            return $this->error($validation['errors'], 422);
+        }
+
+        $result = $this->ophimSync->importBySlug($validation['data'], $actorId);
+        if (isset($result['errors'])) {
+            return $result;
+        }
+
+        $movieId = (int) (($result['data']['movie_id'] ?? 0));
+        $movie = $movieId > 0 ? $this->movies->findById($movieId) : null;
+
+        return $this->success([
+            'movie' => $this->mapMovie($movie ?: []),
+            'sync' => $result['data'],
+        ], (int) ($result['status'] ?? 200));
+    }
+
+    public function importMovieListFromOphim(array $payload, ?int $actorId = null): array
+    {
+        $validation = $this->validator->validateOphimBatchImportPayload($payload);
+        if (!empty($validation['errors'])) {
+            return $this->error($validation['errors'], 422);
+        }
+
+        return $this->ophimSync->importList($validation['data'], $actorId);
     }
 
     public function listCategories(array $filters): array

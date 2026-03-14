@@ -81,6 +81,63 @@ class MovieManagementControllerTest extends TestCase
         $this->assertSame(422, $response->statusCode);
         $this->assertSame(['Review status is invalid.'], $response->payload['errors']['status']);
     }
+
+    public function testImportMovieFromOphimReturnsCreatedMessage(): void
+    {
+        $service = new FeatureFakeMovieManagementService();
+        $service->result = [
+            'status' => 201,
+            'data' => [
+                'movie' => ['id' => 8, 'title' => 'Squid Game'],
+                'sync' => [
+                    'movie_id' => 8,
+                    'created' => 1,
+                    'source_slug' => 'tro-choi-con-muc',
+                ],
+            ],
+        ];
+        $controller = new MovieManagementController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = ['slug' => 'tro-choi-con-muc', 'sync_images' => '1'];
+        $request = new Request();
+        $request->setAttribute('auth', ['user_id' => 10, 'role' => 'admin']);
+        $response = new FeatureCapturingResponse();
+
+        $controller->importMovieFromOphim($request, $response);
+
+        $this->assertSame(201, $response->statusCode);
+        $this->assertSame('Movie imported from OPhim successfully', $response->payload['message']);
+        $this->assertSame(8, $response->payload['data']['movie']['id']);
+    }
+
+    public function testImportMovieListFromOphimReturnsBatchMessage(): void
+    {
+        $service = new FeatureFakeMovieManagementService();
+        $service->result = [
+            'status' => 200,
+            'data' => [
+                'list_slug' => 'phim-chieu-rap',
+                'processed_count' => 12,
+                'created_count' => 9,
+                'updated_count' => 3,
+                'failed_count' => 0,
+            ],
+        ];
+        $controller = new MovieManagementController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = ['list_slug' => 'phim-chieu-rap', 'page' => '1', 'limit' => '12'];
+        $request = new Request();
+        $request->setAttribute('auth', ['user_id' => 10, 'role' => 'admin']);
+        $response = new FeatureCapturingResponse();
+
+        $controller->importMovieListFromOphim($request, $response);
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame('Movie list synced from OPhim successfully', $response->payload['message']);
+        $this->assertSame(12, $response->payload['data']['processed_count']);
+    }
 }
 
 class FeatureFakeMovieManagementService extends MovieManagementService
@@ -102,6 +159,16 @@ class FeatureFakeMovieManagementService extends MovieManagementService
     }
 
     public function moderateReview(int $id, array $payload, ?int $actorId = null): array
+    {
+        return $this->result;
+    }
+
+    public function importMovieFromOphim(array $payload, ?int $actorId = null): array
+    {
+        return $this->result;
+    }
+
+    public function importMovieListFromOphim(array $payload, ?int $actorId = null): array
     {
         return $this->result;
     }

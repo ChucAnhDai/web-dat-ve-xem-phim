@@ -52,6 +52,28 @@ class MovieManagementController
         );
     }
 
+    public function importMovieFromOphim(Request $request, Response $response)
+    {
+        $result = $this->service->importMovieFromOphim($request->getBody(), $this->actorId($request));
+        $message = 'Movie synced from OPhim successfully';
+
+        if (!isset($result['errors'])) {
+            $sync = is_array($result['data']['sync'] ?? null) ? $result['data']['sync'] : [];
+            if ((int) ($sync['created'] ?? 0) === 1) {
+                $message = 'Movie imported from OPhim successfully';
+            }
+        }
+
+        return $this->respond($response, $result, $message);
+    }
+
+    public function importMovieListFromOphim(Request $request, Response $response)
+    {
+        $result = $this->service->importMovieListFromOphim($request->getBody(), $this->actorId($request));
+
+        return $this->respond($response, $result, 'Movie list synced from OPhim successfully');
+    }
+
     public function listCategories(Request $request, Response $response)
     {
         return $this->respond($response, $this->service->listCategories($request->getBody()));

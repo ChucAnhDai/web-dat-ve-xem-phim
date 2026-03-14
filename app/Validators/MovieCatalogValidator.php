@@ -14,7 +14,7 @@ class MovieCatalogValidator
             'page' => $this->toPage($input['page'] ?? 1),
             'per_page' => $this->toPerPage($input['per_page'] ?? 12),
             'search' => $this->nullableString($input['search'] ?? null),
-            'category_id' => $this->toPositiveInt($input['category_id'] ?? null),
+            'category_id' => $this->nullableSlug($input['category_id'] ?? null),
             'min_rating' => $this->toAllowedRating($input['min_rating'] ?? null),
             'sort' => $this->normalizeSort($input['sort'] ?? null),
             'status' => $this->normalizeStatus($input['status'] ?? 'now_showing'),
@@ -40,6 +40,19 @@ class MovieCatalogValidator
         $intValue = (int) $value;
 
         return $intValue > 0 ? $intValue : null;
+    }
+
+    private function nullableSlug($value): ?string
+    {
+        $cleaned = strtolower(trim((string) ($value ?? '')));
+        if ($cleaned === '') {
+            return null;
+        }
+        if (!preg_match('/^[a-z0-9,-]+$/', $cleaned)) {
+            return null;
+        }
+
+        return $cleaned;
     }
 
     private function toAllowedRating($value): ?float

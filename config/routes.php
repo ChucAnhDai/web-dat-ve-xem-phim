@@ -22,6 +22,8 @@ $app->router->post('/api/admin/auth/logout', [AuthController::class, 'adminLogou
 $app->router->get('/api/admin/auth/profile', [AuthController::class, 'profile'], [AdminMiddleware::class]);
 
 $app->router->get('/api/admin/movies', [MovieManagementController::class, 'listMovies'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/movies/import-ophim', [MovieManagementController::class, 'importMovieFromOphim'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/movies/import-ophim-list', [MovieManagementController::class, 'importMovieListFromOphim'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/movies/{id}', [MovieManagementController::class, 'getMovie'], [AdminMiddleware::class]);
 $app->router->post('/api/admin/movies', [MovieManagementController::class, 'createMovie'], [AdminMiddleware::class]);
 $app->router->put('/api/admin/movies/{id}', [MovieManagementController::class, 'updateMovie'], [AdminMiddleware::class]);

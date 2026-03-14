@@ -7,6 +7,21 @@ use App\Support\Slugger;
 
 class MovieManagementValidator
 {
+    public const OPHIM_LIST_SLUGS = [
+        'phim-moi',
+        'phim-bo',
+        'phim-le',
+        'tv-shows',
+        'hoat-hinh',
+        'phim-vietsub',
+        'phim-thuyet-minh',
+        'phim-long-tien',
+        'phim-bo-dang-chieu',
+        'phim-bo-hoan-thanh',
+        'phim-sap-chieu',
+        'subteam',
+        'phim-chieu-rap',
+    ];
     public const MOVIE_STATUSES = ['draft', 'coming_soon', 'now_showing', 'ended', 'archived'];
     public const ASSET_TYPES = ['poster', 'banner', 'gallery'];
     public const ASSET_STATUSES = ['draft', 'active', 'archived'];
@@ -103,6 +118,102 @@ class MovieManagementValidator
             'search' => $this->nullableString($input['search'] ?? null),
             'status' => $this->normalizeOptionalEnum($input['status'] ?? null, self::MOVIE_STATUSES),
             'primary_category_id' => $this->toPositiveInt($input['primary_category_id'] ?? null),
+        ];
+    }
+
+    public function validateOphimImportPayload(array $input): array
+    {
+        $errors = Validator::required($input, ['slug']);
+
+        $slug = strtolower(trim((string) ($input['slug'] ?? '')));
+        $syncImages = $this->normalizeImportFlag($input, 'sync_images', 1);
+        $overwriteExisting = $this->normalizeImportFlag($input, 'overwrite_existing', 1);
+        $statusOverride = $this->normalizeOptionalEnum($input['status_override'] ?? null, self::MOVIE_STATUSES);
+
+        if ($slug === '') {
+            $errors['slug'][] = 'Field is required.';
+        } elseif (preg_match('/^[a-z0-9-]+$/', $slug) !== 1) {
+            $errors['slug'][] = 'OPhim slug may only contain lowercase letters, numbers, and hyphens.';
+        }
+
+        if ($syncImages === null) {
+            $errors['sync_images'][] = 'Sync images flag is invalid.';
+        }
+
+        if ($overwriteExisting === null) {
+            $errors['overwrite_existing'][] = 'Overwrite existing flag is invalid.';
+        }
+
+        if (
+            array_key_exists('status_override', $input)
+            && $this->nullableString($input['status_override'] ?? null) !== null
+            && $statusOverride === null
+        ) {
+            $errors['status_override'][] = 'Status override is invalid.';
+        }
+
+        return [
+            'data' => [
+                'slug' => $slug,
+                'sync_images' => $syncImages ?? 1,
+                'overwrite_existing' => $overwriteExisting ?? 1,
+                'status_override' => $statusOverride,
+            ],
+            'errors' => $errors,
+        ];
+    }
+
+    public function validateOphimBatchImportPayload(array $input): array
+    {
+        $errors = Validator::required($input, ['list_slug']);
+
+        $listSlug = strtolower(trim((string) ($input['list_slug'] ?? '')));
+        $page = $this->toPositiveInt($input['page'] ?? 1);
+        $limit = $this->toPositiveInt($input['limit'] ?? 12);
+        $syncImages = $this->normalizeImportFlag($input, 'sync_images', 0);
+        $overwriteExisting = $this->normalizeImportFlag($input, 'overwrite_existing', 1);
+        $statusOverride = $this->normalizeOptionalEnum($input['status_override'] ?? null, self::MOVIE_STATUSES);
+
+        if ($listSlug === '') {
+            $errors['list_slug'][] = 'Field is required.';
+        } elseif (!in_array($listSlug, self::OPHIM_LIST_SLUGS, true)) {
+            $errors['list_slug'][] = 'OPhim list slug is invalid.';
+        }
+
+        if ($page === null || $page < 1 || $page > 100) {
+            $errors['page'][] = 'Page must be between 1 and 100.';
+        }
+
+        if ($limit === null || $limit < 1 || $limit > 24) {
+            $errors['limit'][] = 'Limit must be between 1 and 24.';
+        }
+
+        if ($syncImages === null) {
+            $errors['sync_images'][] = 'Sync images flag is invalid.';
+        }
+
+        if ($overwriteExisting === null) {
+            $errors['overwrite_existing'][] = 'Overwrite existing flag is invalid.';
+        }
+
+        if (
+            array_key_exists('status_override', $input)
+            && $this->nullableString($input['status_override'] ?? null) !== null
+            && $statusOverride === null
+        ) {
+            $errors['status_override'][] = 'Status override is invalid.';
+        }
+
+        return [
+            'data' => [
+                'list_slug' => $listSlug,
+                'page' => $page ?? 1,
+                'limit' => $limit ?? 12,
+                'sync_images' => $syncImages ?? 0,
+                'overwrite_existing' => $overwriteExisting ?? 1,
+                'status_override' => $statusOverride,
+            ],
+            'errors' => $errors,
         ];
     }
 
@@ -398,6 +509,15 @@ class MovieManagementValidator
         }
 
         return null;
+    }
+
+    private function normalizeImportFlag(array $input, string $key, int $default): ?int
+    {
+        if (!array_key_exists($key, $input)) {
+            return $default;
+        }
+
+        return $this->toBoolInt($input[$key]);
     }
 
     private function isValidUrl(string $value): bool

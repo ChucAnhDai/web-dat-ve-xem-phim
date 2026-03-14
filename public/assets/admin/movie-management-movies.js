@@ -1,6 +1,21 @@
 (function () {
   const MOVIE_STATUSES = ['draft', 'coming_soon', 'now_showing', 'ended', 'archived'];
   const AGE_RATINGS = ['P', 'K', 'T13', 'T16', 'T18', 'PG-13', 'R'];
+  const OPHIM_LIST_OPTIONS = [
+    { value: 'phim-chieu-rap', label: 'Phim Chieu Rap' },
+    { value: 'phim-sap-chieu', label: 'Phim Sap Chieu' },
+    { value: 'phim-moi', label: 'Phim Moi' },
+    { value: 'phim-bo', label: 'Phim Bo' },
+    { value: 'phim-le', label: 'Phim Le' },
+    { value: 'tv-shows', label: 'TV Shows' },
+    { value: 'hoat-hinh', label: 'Hoat Hinh' },
+    { value: 'phim-vietsub', label: 'Phim Vietsub' },
+    { value: 'phim-thuyet-minh', label: 'Phim Thuyet Minh' },
+    { value: 'phim-long-tien', label: 'Phim Long Tien' },
+    { value: 'phim-bo-dang-chieu', label: 'Phim Bo Dang Chieu' },
+    { value: 'phim-bo-hoan-thanh', label: 'Phim Bo Hoan Thanh' },
+    { value: 'subteam', label: 'Subteam' },
+  ];
   const DEFAULT_SUMMARY = {
     total: 0,
     draft: 0,
@@ -64,6 +79,8 @@
     dom.movieStatusFilter = document.getElementById('movieStatusFilter');
     dom.movieCount = document.getElementById('movieCount');
     dom.movieRequestStatus = document.getElementById('movieRequestStatus');
+    dom.movieImportOphimBtn = document.getElementById('movieImportOphimBtn');
+    dom.movieBatchImportOphimBtn = document.getElementById('movieBatchImportOphimBtn');
     dom.movieExportBtn = document.getElementById('movieExportBtn');
     dom.moviesBody = document.getElementById('moviesBody');
     dom.moviesPagination = document.getElementById('moviesPagination');
@@ -81,6 +98,8 @@
       state.filters.page = 1;
       loadMovies();
     });
+    dom.movieImportOphimBtn?.addEventListener('click', openImportOphimModal);
+    dom.movieBatchImportOphimBtn?.addEventListener('click', openBatchImportOphimModal);
     dom.movieExportBtn?.addEventListener('click', exportCurrentMovieView);
     dom.moviesBody?.addEventListener('click', handleTableAction);
     dom.moviesPagination?.addEventListener('click', handlePaginationAction);
@@ -456,6 +475,30 @@
     openMovieEditorModal('Add Movie', {});
   }
 
+  function openImportOphimModal() {
+    openModal('Import OPhim Movie', buildOphimImportBody(), {
+      description: 'Fetch a movie from OPhim by slug, map it into the local movie schema, and keep admin data editable afterward.',
+      note: 'The import creates missing categories automatically and can also sync poster, banner, and gallery assets.',
+      submitLabel: 'Import Movie',
+      busyLabel: 'Importing...',
+      onSave: async () => {
+        await submitOphimImportForm();
+      },
+    });
+  }
+
+  function openBatchImportOphimModal() {
+    openModal('Batch Sync OPhim Movies', buildOphimBatchImportBody(), {
+      description: 'Load a page from an OPhim movie list and sync each movie into the local admin catalog.',
+      note: 'Batch sync keeps local movies editable. Image sync is optional and disabled by default for faster imports.',
+      submitLabel: 'Sync Movie List',
+      busyLabel: 'Syncing...',
+      onSave: async () => {
+        await submitOphimBatchImportForm();
+      },
+    });
+  }
+
   async function openEditMovieModal(movieId) {
     if (!(await ensureCategoriesReady())) {
       return;
@@ -718,6 +761,127 @@
     }).join('');
   }
 
+  function buildOphimImportBody(values = {}) {
+    const statusOverride = String(values.status_override || '');
+
+    return `
+      <form id="movieOphimImportForm" class="form-grid" novalidate>
+        <div class="form-alert" data-form-alert hidden></div>
+
+        <div class="field form-full">
+          <label for="movieOphimSlugInput">OPhim Slug</label>
+          <input class="input" id="movieOphimSlugInput" data-field-control="slug" name="slug" type="text" placeholder="tro-choi-con-muc" value="${escapeHtmlAttr(values.slug || '')}">
+          <div class="helper-text">Enter the movie slug from the OPhim detail endpoint.</div>
+          <div class="field-error" data-field-error="slug" hidden></div>
+        </div>
+
+        <div class="field">
+          <label for="movieOphimStatusOverrideInput">Status Override</label>
+          <select class="select" id="movieOphimStatusOverrideInput" data-field-control="status_override" name="status_override">
+            <option value="">Infer from OPhim source</option>
+            ${buildOptions(MOVIE_STATUSES.map(status => ({ value: status, label: humanizeStatus(status) })), statusOverride)}
+          </select>
+          <div class="helper-text">Leave empty to map trailer titles to Coming Soon and the rest to Now Showing.</div>
+          <div class="field-error" data-field-error="status_override" hidden></div>
+        </div>
+
+        <div class="field">
+          <label>Sync Options</label>
+          <label class="checkbox-option">
+            <input id="movieOphimSyncImagesInput" name="sync_images" type="checkbox" value="1"${values.sync_images === 0 ? '' : ' checked'}>
+            <span>
+              <strong>Sync images</strong>
+              <small>Fetch poster, banner, and gallery assets from OPhim/TMDB and archive previous synced assets.</small>
+            </span>
+          </label>
+          <div class="field-error" data-field-error="sync_images" hidden></div>
+        </div>
+
+        <div class="field">
+          <label>Conflict Handling</label>
+          <label class="checkbox-option">
+            <input id="movieOphimOverwriteInput" name="overwrite_existing" type="checkbox" value="1"${values.overwrite_existing === 0 ? '' : ' checked'}>
+            <span>
+              <strong>Overwrite existing movie</strong>
+              <small>Update the local record when a movie with the same slug already exists.</small>
+            </span>
+          </label>
+          <div class="field-error" data-field-error="overwrite_existing" hidden></div>
+        </div>
+      </form>
+    `;
+  }
+
+  function buildOphimBatchImportBody(values = {}) {
+    const listSlug = String(values.list_slug || 'phim-chieu-rap');
+    const statusOverride = String(values.status_override || '');
+    const page = Number(values.page || 1);
+    const limit = Number(values.limit || 12);
+
+    return `
+      <form id="movieOphimBatchImportForm" class="form-grid" novalidate>
+        <div class="form-alert" data-form-alert hidden></div>
+
+        <div class="field">
+          <label for="movieOphimListSlugInput">OPhim List</label>
+          <select class="select" id="movieOphimListSlugInput" data-field-control="list_slug" name="list_slug">
+            ${buildOptions(OPHIM_LIST_OPTIONS, listSlug)}
+          </select>
+          <div class="helper-text">Choose the OPhim catalog list you want to sync into the admin database.</div>
+          <div class="field-error" data-field-error="list_slug" hidden></div>
+        </div>
+
+        <div class="field">
+          <label for="movieOphimBatchStatusOverrideInput">Status Override</label>
+          <select class="select" id="movieOphimBatchStatusOverrideInput" data-field-control="status_override" name="status_override">
+            <option value="">Infer from selected list</option>
+            ${buildOptions(MOVIE_STATUSES.map(status => ({ value: status, label: humanizeStatus(status) })), statusOverride)}
+          </select>
+          <div class="helper-text">Cinema lists default to Now Showing or Coming Soon when you leave this empty.</div>
+          <div class="field-error" data-field-error="status_override" hidden></div>
+        </div>
+
+        <div class="field">
+          <label for="movieOphimBatchPageInput">Page</label>
+          <input class="input" id="movieOphimBatchPageInput" data-field-control="page" name="page" type="number" min="1" max="100" value="${escapeHtmlAttr(page)}">
+          <div class="helper-text">OPhim page index to import.</div>
+          <div class="field-error" data-field-error="page" hidden></div>
+        </div>
+
+        <div class="field">
+          <label for="movieOphimBatchLimitInput">Limit</label>
+          <input class="input" id="movieOphimBatchLimitInput" data-field-control="limit" name="limit" type="number" min="1" max="24" value="${escapeHtmlAttr(limit)}">
+          <div class="helper-text">Import between 1 and 24 movies in one batch.</div>
+          <div class="field-error" data-field-error="limit" hidden></div>
+        </div>
+
+        <div class="field">
+          <label>Sync Options</label>
+          <label class="checkbox-option">
+            <input name="sync_images" type="checkbox" value="1"${values.sync_images === 1 ? ' checked' : ''}>
+            <span>
+              <strong>Sync images for each movie</strong>
+              <small>Fetch poster, banner, and gallery assets per movie. This makes the batch slower but richer.</small>
+            </span>
+          </label>
+          <div class="field-error" data-field-error="sync_images" hidden></div>
+        </div>
+
+        <div class="field">
+          <label>Conflict Handling</label>
+          <label class="checkbox-option">
+            <input name="overwrite_existing" type="checkbox" value="1"${values.overwrite_existing === 0 ? '' : ' checked'}>
+            <span>
+              <strong>Overwrite existing local movies</strong>
+              <small>Update already-imported slugs instead of skipping them.</small>
+            </span>
+          </label>
+          <div class="field-error" data-field-error="overwrite_existing" hidden></div>
+        </div>
+      </form>
+    `;
+  }
+
   function attachMovieFormInteractions(movie = {}) {
     const form = document.getElementById('movieAdminForm');
     if (!form) {
@@ -804,6 +968,101 @@
     }
   }
 
+  async function submitOphimImportForm() {
+    const form = document.getElementById('movieOphimImportForm');
+    if (!form) {
+      throw new Error('OPhim import form is unavailable.');
+    }
+
+    const { payload, errors } = validateOphimImportPayload(collectOphimImportPayload(form));
+    if (Object.keys(errors).length > 0) {
+      applyFormErrors(form, errors);
+      return;
+    }
+
+    clearFormErrors(form);
+    updateRequestStatus('Importing movie from OPhim...');
+
+    try {
+      const response = await adminApiRequest('/api/admin/movies/import-ophim', {
+        method: 'POST',
+        body: payload,
+      });
+
+      closeModal();
+      state.filters.page = 1;
+      const reloadResults = await Promise.allSettled([loadCategoryOptions(), loadMovies()]);
+      const failedReload = reloadResults.find(result => result.status === 'rejected');
+      if (failedReload && failedReload.reason) {
+        throw failedReload.reason;
+      }
+
+      updateRequestStatus('OPhim movie synced');
+
+      const movieTitle = response?.data?.movie?.title || payload.slug;
+      const fallbackMessage = response?.data?.sync?.created
+        ? `Imported "${movieTitle}" from OPhim.`
+        : `Synced "${movieTitle}" from OPhim.`;
+
+      showToast(response?.message || fallbackMessage, 'success');
+    } catch (error) {
+      updateRequestStatus('OPhim import failed');
+
+      if (error instanceof AdminApiError && [404, 409, 422].includes(error.status)) {
+        applyFormErrors(form, error.errors);
+        return;
+      }
+
+      throw error;
+    }
+  }
+
+  async function submitOphimBatchImportForm() {
+    const form = document.getElementById('movieOphimBatchImportForm');
+    if (!form) {
+      throw new Error('OPhim batch import form is unavailable.');
+    }
+
+    const { payload, errors } = validateOphimBatchImportPayload(collectOphimBatchImportPayload(form));
+    if (Object.keys(errors).length > 0) {
+      applyFormErrors(form, errors);
+      return;
+    }
+
+    clearFormErrors(form);
+    updateRequestStatus('Syncing OPhim movie list...');
+
+    try {
+      const response = await adminApiRequest('/api/admin/movies/import-ophim-list', {
+        method: 'POST',
+        body: payload,
+      });
+
+      closeModal();
+      state.filters.page = 1;
+      const reloadResults = await Promise.allSettled([loadCategoryOptions(), loadMovies()]);
+      const failedReload = reloadResults.find(result => result.status === 'rejected');
+      if (failedReload && failedReload.reason) {
+        throw failedReload.reason;
+      }
+
+      updateRequestStatus('OPhim movie list synced');
+
+      const summary = response?.data || {};
+      const toastType = Number(summary.failed_count || 0) > 0 ? 'warning' : 'success';
+      showToast(buildOphimBatchSyncMessage(summary), toastType);
+    } catch (error) {
+      updateRequestStatus('OPhim batch sync failed');
+
+      if (error instanceof AdminApiError && [404, 422].includes(error.status)) {
+        applyFormErrors(form, error.errors);
+        return;
+      }
+
+      throw error;
+    }
+  }
+
   function collectMovieFormPayload(form) {
     return {
       title: form.querySelector('[name="title"]')?.value || '',
@@ -823,6 +1082,26 @@
       trailer_url: form.querySelector('[name="trailer_url"]')?.value || '',
       summary: form.querySelector('[name="summary"]')?.value || '',
       category_ids: Array.from(form.querySelectorAll('input[name="category_ids[]"]:checked')).map(checkbox => checkbox.value),
+    };
+  }
+
+  function collectOphimImportPayload(form) {
+    return {
+      slug: form.querySelector('[name="slug"]')?.value || '',
+      status_override: form.querySelector('[name="status_override"]')?.value || '',
+      sync_images: form.querySelector('[name="sync_images"]')?.checked ? '1' : '0',
+      overwrite_existing: form.querySelector('[name="overwrite_existing"]')?.checked ? '1' : '0',
+    };
+  }
+
+  function collectOphimBatchImportPayload(form) {
+    return {
+      list_slug: form.querySelector('[name="list_slug"]')?.value || '',
+      page: form.querySelector('[name="page"]')?.value || '1',
+      limit: form.querySelector('[name="limit"]')?.value || '12',
+      status_override: form.querySelector('[name="status_override"]')?.value || '',
+      sync_images: form.querySelector('[name="sync_images"]')?.checked ? '1' : '0',
+      overwrite_existing: form.querySelector('[name="overwrite_existing"]')?.checked ? '1' : '0',
     };
   }
 
@@ -907,6 +1186,66 @@
     payload.studio = payload.studio || null;
     payload.cast_text = payload.cast_text || null;
     payload.summary = payload.summary || null;
+
+    return { payload, errors };
+  }
+
+  function validateOphimImportPayload(input) {
+    const errors = {};
+    const payload = {
+      slug: String(input.slug || '').trim().toLowerCase(),
+      status_override: String(input.status_override || '').trim().toLowerCase(),
+      sync_images: input.sync_images === '0' ? 0 : 1,
+      overwrite_existing: input.overwrite_existing === '0' ? 0 : 1,
+    };
+
+    if (payload.slug === '') {
+      errors.slug = ['Field is required.'];
+    } else if (!/^[a-z0-9-]+$/.test(payload.slug)) {
+      errors.slug = ['OPhim slug may only contain lowercase letters, numbers, and hyphens.'];
+    }
+
+    if (payload.status_override !== '' && !MOVIE_STATUSES.includes(payload.status_override)) {
+      errors.status_override = ['Status override is invalid.'];
+    }
+
+    payload.status_override = payload.status_override || null;
+
+    return { payload, errors };
+  }
+
+  function validateOphimBatchImportPayload(input) {
+    const errors = {};
+    const payload = {
+      list_slug: String(input.list_slug || '').trim().toLowerCase(),
+      page: toPositiveInteger(input.page),
+      limit: toPositiveInteger(input.limit),
+      status_override: String(input.status_override || '').trim().toLowerCase(),
+      sync_images: input.sync_images === '1' ? 1 : 0,
+      overwrite_existing: input.overwrite_existing === '0' ? 0 : 1,
+    };
+
+    const allowedListSlugs = OPHIM_LIST_OPTIONS.map(option => option.value);
+
+    if (payload.list_slug === '') {
+      errors.list_slug = ['Field is required.'];
+    } else if (!allowedListSlugs.includes(payload.list_slug)) {
+      errors.list_slug = ['OPhim list slug is invalid.'];
+    }
+
+    if (!payload.page || payload.page < 1 || payload.page > 100) {
+      errors.page = ['Page must be between 1 and 100.'];
+    }
+
+    if (!payload.limit || payload.limit < 1 || payload.limit > 24) {
+      errors.limit = ['Limit must be between 1 and 24.'];
+    }
+
+    if (payload.status_override !== '' && !MOVIE_STATUSES.includes(payload.status_override)) {
+      errors.status_override = ['Status override is invalid.'];
+    }
+
+    payload.status_override = payload.status_override || null;
 
     return { payload, errors };
   }
@@ -1059,6 +1398,22 @@
       .map(part => part.charAt(0))
       .join('')
       .toUpperCase() || 'MV';
+  }
+
+  function buildOphimBatchSyncMessage(summary = {}) {
+    const created = Number(summary.created_count || 0);
+    const updated = Number(summary.updated_count || 0);
+    const skipped = Number(summary.skipped_count || 0);
+    const failed = Number(summary.failed_count || 0);
+    const processed = Number(summary.processed_count || 0);
+    const listLabel = getOphimListLabel(summary.list_slug);
+
+    return `${listLabel}: processed ${processed}, created ${created}, updated ${updated}, skipped ${skipped}, failed ${failed}.`;
+  }
+
+  function getOphimListLabel(value) {
+    const option = OPHIM_LIST_OPTIONS.find(item => item.value === value);
+    return option?.label || 'OPhim list';
   }
 
   function formatMovieDate(value) {

@@ -74,8 +74,10 @@ class MovieCategoryRepository
                 c.name,
                 c.slug
             FROM movie_categories c
+            INNER JOIN movie_category_assignments a
+                ON a.category_id = c.id
             INNER JOIN movies m
-                ON m.primary_category_id = c.id
+                ON m.id = a.movie_id
                AND m.status IN ('now_showing', 'coming_soon')
             WHERE c.is_active = 1
             GROUP BY c.id, c.name, c.slug, c.display_order
