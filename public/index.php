@@ -11,6 +11,8 @@ require_once __DIR__ . '/../app/Core/Response.php';
 use App\Core\Application;
 use App\Controllers\WebController;
 use App\Controllers\Admin\AdminController;
+use App\Controllers\Admin\AdminAuthController;
+use App\Middlewares\AdminPageMiddleware;
 
 $app = new Application();
 
@@ -35,19 +37,21 @@ $app->router->get('/seat-selection', [WebController::class, 'showSeatSelectionPa
 $app->router->get('/checkout', [WebController::class, 'showCheckoutPage']);
 
 // Admin routes
-$app->router->get('/admin/login', [AdminController::class, 'showLogin']);
-$app->router->get('/admin', [AdminController::class, 'showDashboard']);
-$app->router->get('/admin/dashboard', [AdminController::class, 'showDashboard']);
-$app->router->get('/admin/movies', [AdminController::class, 'showMovies']);
-$app->router->get('/admin/cinemas', [AdminController::class, 'showCinemas']);
-$app->router->get('/admin/payments', [AdminController::class, 'showPayments']);
-$app->router->get('/admin/products', [AdminController::class, 'showProducts']);
-$app->router->get('/admin/promotions', [AdminController::class, 'showPromotions']);
-$app->router->get('/admin/seats', [AdminController::class, 'showSeats']);
-$app->router->get('/admin/shop-orders', [AdminController::class, 'showShopOrders']);
-$app->router->get('/admin/showtimes', [AdminController::class, 'showShowtimes']);
-$app->router->get('/admin/ticket-orders', [AdminController::class, 'showTicketOrders']);
-$app->router->get('/admin/users', [AdminController::class, 'showUsers']);
-$app->router->get('/admin/test', [AdminController::class, 'showTest']);
+$app->router->get('/admin/login', [AdminAuthController::class, 'showLogin']);
+$app->router->post('/admin/login', [AdminAuthController::class, 'login']);
+$app->router->get('/admin/logout', [AdminAuthController::class, 'logout']);
+$app->router->get('/admin', [AdminController::class, 'showDashboard'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/dashboard', [AdminController::class, 'showDashboard'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/movies', [AdminController::class, 'showMovies'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/cinemas', [AdminController::class, 'showCinemas'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/payments', [AdminController::class, 'showPayments'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/products', [AdminController::class, 'showProducts'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/promotions', [AdminController::class, 'showPromotions'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/seats', [AdminController::class, 'showSeats'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/shop-orders', [AdminController::class, 'showShopOrders'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/showtimes', [AdminController::class, 'showShowtimes'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/ticket-orders', [AdminController::class, 'showTicketOrders'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/users', [AdminController::class, 'showUsers'], [AdminPageMiddleware::class]);
+$app->router->get('/admin/test', [AdminController::class, 'showTest'], [AdminPageMiddleware::class]);
 
 $app->run();

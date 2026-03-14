@@ -33,6 +33,38 @@ class Response
         ], $statusCode);
     }
 
+    public function redirect(string $path, int $statusCode = 302): void
+    {
+        $this->setStatusCode($statusCode);
+        header('Location: ' . $path, true, $statusCode);
+        exit;
+    }
+
+    public function setCookie(string $name, string $value, array $options = []): void
+    {
+        $defaults = [
+            'expires' => 0,
+            'path' => '/',
+            'domain' => '',
+            'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
+            'httponly' => true,
+            'samesite' => 'Lax',
+        ];
+
+        $settings = array_merge($defaults, $options);
+
+        setcookie($name, $value, $settings);
+        $_COOKIE[$name] = $value;
+    }
+
+    public function clearCookie(string $name, array $options = []): void
+    {
+        $this->setCookie($name, '', array_merge($options, [
+            'expires' => time() - 3600,
+        ]));
+        unset($_COOKIE[$name]);
+    }
+
     public function view(string $viewPath, array $params = []): void
     {
         $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');

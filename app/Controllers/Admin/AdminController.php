@@ -7,21 +7,13 @@ use App\Core\Response;
 
 class AdminController
 {
-    private function renderPage(Response $response, string $view, string $title, string $activePage): void
+    private function renderPage(Request $request, Response $response, string $view, string $title, string $activePage): void
     {
         $response->view($view, [
             'title' => $title,
             'layout' => 'admin/layouts/main',
             'activePage' => $activePage,
-        ]);
-    }
-
-    private function renderAuthPage(Response $response, string $view, string $title, string $activePage): void
-    {
-        $response->view($view, [
-            'title' => $title,
-            'layout' => 'admin/layouts/auth',
-            'activePage' => $activePage,
+            'adminUser' => $request->getAttribute('adminUser'),
         ]);
     }
 
@@ -48,12 +40,7 @@ class AdminController
             'admin-profile' => 'Admin Profile - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/dashboard/index', $titles[$activePage] ?? $titles['dashboard'], $activePage);
-    }
-
-    public function showLogin(Request $request, Response $response): void
-    {
-        $this->renderAuthPage($response, 'admin/auth/login', 'Admin Login - CineShop Admin', 'admin-login');
+        $this->renderPage($request, $response, 'admin/pages/dashboard/index', $titles[$activePage] ?? $titles['dashboard'], $activePage);
     }
 
     public function showMovies(Request $request, Response $response): void
@@ -66,7 +53,7 @@ class AdminController
             'reviews' => 'Reviews - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/movies/index', $titles[$activePage] ?? $titles['movies'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/movies/index', $titles[$activePage] ?? $titles['movies'], $activePage);
     }
 
     public function showCinemas(Request $request, Response $response): void
@@ -77,7 +64,7 @@ class AdminController
             'rooms' => 'Rooms - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/cinemas/index', $titles[$activePage] ?? $titles['cinemas'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/cinemas/index', $titles[$activePage] ?? $titles['cinemas'], $activePage);
     }
 
     public function showPayments(Request $request, Response $response): void
@@ -88,7 +75,7 @@ class AdminController
             'payment-methods' => 'Payment Methods - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/payments/index', $titles[$activePage] ?? $titles['payments'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/payments/index', $titles[$activePage] ?? $titles['payments'], $activePage);
     }
 
     public function showProducts(Request $request, Response $response): void
@@ -100,7 +87,7 @@ class AdminController
             'product-images' => 'Product Images - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/products/index', $titles[$activePage] ?? $titles['products'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/products/index', $titles[$activePage] ?? $titles['products'], $activePage);
     }
 
     public function showPromotions(Request $request, Response $response): void
@@ -111,12 +98,12 @@ class AdminController
             'product-promotions' => 'Product Promotions - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/promotions/index', $titles[$activePage] ?? $titles['promotions'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/promotions/index', $titles[$activePage] ?? $titles['promotions'], $activePage);
     }
 
     public function showSeats(Request $request, Response $response): void
     {
-        $this->renderPage($response, 'admin/pages/seats', 'Seats - CineShop Admin', 'seats');
+        $this->renderPage($request, $response, 'admin/pages/seats', 'Seats - CineShop Admin', 'seats');
     }
 
     public function showShopOrders(Request $request, Response $response): void
@@ -127,12 +114,12 @@ class AdminController
             'order-details' => 'Order Details - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/shop-orders/index', $titles[$activePage] ?? $titles['shop-orders'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/shop-orders/index', $titles[$activePage] ?? $titles['shop-orders'], $activePage);
     }
 
     public function showShowtimes(Request $request, Response $response): void
     {
-        $this->renderPage($response, 'admin/pages/showtimes', 'Showtimes - CineShop Admin', 'showtimes');
+        $this->renderPage($request, $response, 'admin/pages/showtimes', 'Showtimes - CineShop Admin', 'showtimes');
     }
 
     public function showTicketOrders(Request $request, Response $response): void
@@ -143,7 +130,7 @@ class AdminController
             'ticket-details' => 'Ticket Details - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/ticket-orders/index', $titles[$activePage] ?? $titles['ticket-orders'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/ticket-orders/index', $titles[$activePage] ?? $titles['ticket-orders'], $activePage);
     }
 
     public function showUsers(Request $request, Response $response): void
@@ -155,11 +142,11 @@ class AdminController
             'roles' => 'Roles - CineShop Admin',
         ];
 
-        $this->renderPage($response, 'admin/pages/users/index', $titles[$activePage] ?? $titles['users'], $activePage);
+        $this->renderPage($request, $response, 'admin/pages/users/index', $titles[$activePage] ?? $titles['users'], $activePage);
     }
 
     public function showTest(Request $request, Response $response): void
     {
-        $this->renderPage($response, 'admin/pages/test', 'Admin Test - CineShop Admin', 'test');
+        $this->renderPage($request, $response, 'admin/pages/test', 'Admin Test - CineShop Admin', 'test');
     }
 }

@@ -9,7 +9,7 @@
       <h1 class="hero-title">Dune:<br>Part Two</h1>
       <div class="hero-meta">
         <span class="rating-stars">★★★★★</span>
-        <span>8.9/10</span>
+        <span>4.8/5</span>
         <span class="dot"></span>
         <span>2h 46m</span>
         <span class="dot"></span>

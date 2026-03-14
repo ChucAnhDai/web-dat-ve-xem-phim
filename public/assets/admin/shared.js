@@ -4,6 +4,42 @@
  */
 
 const _statusColors = {
+  completed:'green',
+  active:'green',
+  approved:'green',
+  now_showing:'green',
+  delivered:'green',
+  confirmed:'blue',
+  shipped:'blue',
+  coming_soon:'blue',
+  scheduled:'blue',
+  pending:'orange',
+  renovation:'orange',
+  maintenance:'orange',
+  cancelled:'red',
+  suspended:'red',
+  failed:'red',
+  disabled:'red',
+  blocked:'red',
+  sold_out:'red',
+  rejected:'red',
+  ended:'gray',
+  refunded:'purple',
+  draft:'gray',
+  archived:'gray',
+  hidden:'gray',
+  inactive:'gray',
+  verified:'green',
+  published:'green',
+  admin:'red',
+  staff:'gold',
+  customer:'gray',
+  success:'green',
+  low:'orange',
+  momo:'purple',
+  vnpay:'blue',
+  paypal:'blue',
+  cash:'green',
   'Completed':'green','Active':'green','Now Showing':'green','Delivered':'green',
   'Confirmed':'blue','Shipped':'blue','Coming Soon':'blue','Scheduled':'blue',
   'Pending':'orange','Renovation':'orange','Maintenance':'orange',
@@ -14,9 +50,263 @@ const _statusColors = {
   'Success':'green','Low':'orange','MoMo':'purple','VNPay':'blue','PayPal':'blue','Cash':'green',
 };
 
+const _statusLabels = {
+  draft: 'Draft',
+  active: 'Active',
+  inactive: 'Inactive',
+  coming_soon: 'Coming Soon',
+  now_showing: 'Now Showing',
+  ended: 'Ended',
+  archived: 'Archived',
+  pending: 'Pending',
+  approved: 'Approved',
+  rejected: 'Rejected',
+  sold_out: 'Sold Out',
+};
+
+const ADMIN_AUTH_STORAGE_KEY = 'cinemax_token';
+
+class AdminApiError extends Error {
+  constructor(message, status = 500, errors = {}, payload = null) {
+    super(message);
+    this.name = 'AdminApiError';
+    this.status = status;
+    this.errors = errors || {};
+    this.payload = payload;
+  }
+}
+
+function adminAppUrl(path) {
+  const basePath = typeof window.APP_BASE_PATH === 'string' ? window.APP_BASE_PATH : '';
+  const rawPath = String(path || '');
+  const normalizedPath = rawPath.startsWith('/') ? rawPath : `/${rawPath}`;
+  return `${basePath}${normalizedPath}`;
+}
+
+function getAdminAuthToken() {
+  try {
+    if (window.sessionStorage) {
+      const sessionToken = window.sessionStorage.getItem(ADMIN_AUTH_STORAGE_KEY);
+      if (sessionToken) return sessionToken;
+    }
+
+    return window.localStorage ? window.localStorage.getItem(ADMIN_AUTH_STORAGE_KEY) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function clearAdminClientAuthState() {
+  try {
+    window.localStorage?.removeItem(ADMIN_AUTH_STORAGE_KEY);
+    window.sessionStorage?.removeItem(ADMIN_AUTH_STORAGE_KEY);
+  } catch (error) {
+    // Ignore storage cleanup failures in locked-down browsers.
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeHtmlAttr(value) {
+  return escapeHtml(value).replace(/`/g, '&#96;');
+}
+
+function buildQueryString(params = {}) {
+  const searchParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value === null || value === undefined || value === '') return;
+
+    if (Array.isArray(value)) {
+      value.forEach(item => {
+        if (item !== null && item !== undefined && item !== '') {
+          searchParams.append(key, String(item));
+        }
+      });
+      return;
+    }
+
+    searchParams.append(key, String(value));
+  });
+
+  const query = searchParams.toString();
+  return query ? `?${query}` : '';
+}
+
+function firstApiErrorMessage(errors, fallback = 'Request failed.') {
+  if (!errors || typeof errors !== 'object') return fallback;
+
+  for (const messages of Object.values(errors)) {
+    if (Array.isArray(messages) && messages.length > 0) {
+      return String(messages[0]);
+    }
+  }
+
+  return fallback;
+}
+
+async function adminApiRequest(path, options = {}) {
+  const {
+    method = 'GET',
+    query = {},
+    body,
+    headers = {},
+    useStoredToken = false,
+  } = options;
+
+  const requestHeaders = { ...headers };
+  let requestBody = body;
+
+  if (body !== undefined && !(body instanceof FormData)) {
+    requestHeaders['Content-Type'] = requestHeaders['Content-Type'] || 'application/json';
+    requestBody = JSON.stringify(body);
+  }
+
+  const token = useStoredToken ? getAdminAuthToken() : null;
+  if (token) {
+    requestHeaders.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${adminAppUrl(path)}${buildQueryString(query)}`, {
+    method,
+    headers: requestHeaders,
+    body: requestBody,
+    credentials: 'same-origin',
+  });
+
+  const contentType = response.headers.get('content-type') || '';
+  let payload = null;
+
+  if (contentType.includes('application/json')) {
+    payload = await response.json();
+  } else {
+    const text = await response.text();
+    payload = text ? { message: text } : {};
+  }
+
+  if (!response.ok) {
+    throw new AdminApiError(
+      payload?.message || firstApiErrorMessage(payload?.errors, 'Request failed.'),
+      response.status,
+      payload?.errors || {},
+      payload
+    );
+  }
+
+  return payload || {};
+}
+
+function errorMessageFromException(error, fallback = 'Something went wrong.') {
+  if (error instanceof AdminApiError) {
+    return error.message || firstApiErrorMessage(error.errors, fallback);
+  }
+
+  if (error && typeof error.message === 'string' && error.message.trim() !== '') {
+    return error.message;
+  }
+
+  return fallback;
+}
+
+function setButtonBusy(button, isBusy, busyLabel = 'Processing...') {
+  if (!button) return;
+
+  if (isBusy) {
+    if (!button.dataset.originalLabel) {
+      button.dataset.originalLabel = button.textContent;
+    }
+    button.disabled = true;
+    button.textContent = busyLabel;
+    return;
+  }
+
+  button.disabled = false;
+  if (button.dataset.originalLabel) {
+    button.textContent = button.dataset.originalLabel;
+    delete button.dataset.originalLabel;
+  }
+}
+
+function clearFormErrors(container) {
+  if (!container) return;
+
+  container.querySelectorAll('.field-error').forEach(node => {
+    node.textContent = '';
+    node.hidden = true;
+  });
+
+  container.querySelectorAll('.input.error, .select.error, .textarea.error').forEach(node => {
+    node.classList.remove('error');
+    node.removeAttribute('aria-invalid');
+  });
+
+  const formAlert = container.querySelector('[data-form-alert]');
+  if (formAlert) {
+    formAlert.innerHTML = '';
+    formAlert.hidden = true;
+  }
+}
+
+function applyFormErrors(container, errors) {
+  clearFormErrors(container);
+
+  if (!container || !errors || typeof errors !== 'object') {
+    return;
+  }
+
+  const summaryMessages = [];
+
+  Object.entries(errors).forEach(([field, messages]) => {
+    if (!Array.isArray(messages) || messages.length === 0) return;
+
+    const fieldControl = container.querySelector(`[data-field-control="${field}"]`);
+    const fieldError = container.querySelector(`[data-field-error="${field}"]`);
+    const message = String(messages[0]);
+
+    if (fieldControl) {
+      fieldControl.classList.add('error');
+      fieldControl.setAttribute('aria-invalid', 'true');
+    }
+
+    if (fieldError) {
+      fieldError.textContent = message;
+      fieldError.hidden = false;
+    }
+
+    summaryMessages.push(message);
+  });
+
+  const formAlert = container.querySelector('[data-form-alert]');
+  if (formAlert && summaryMessages.length > 0) {
+    formAlert.innerHTML = summaryMessages.map(message => `<div>${escapeHtml(message)}</div>`).join('');
+    formAlert.hidden = false;
+  }
+}
+
+function humanizeStatus(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return 'Unknown';
+
+  const label = _statusLabels[raw] || _statusLabels[raw.toLowerCase()];
+  if (label) return label;
+
+  return raw
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
 function statusBadge(s) {
-  const c = _statusColors[s] || 'gray';
-  return `<span class="badge ${c}"><div class="badge-dot"></div>${s}</span>`;
+  const raw = String(s || '').trim();
+  const label = humanizeStatus(raw);
+  const c = _statusColors[raw] || _statusColors[raw.toLowerCase()] || _statusColors[label] || 'gray';
+  return `<span class="badge ${c}"><div class="badge-dot"></div>${label}</span>`;
 }
 
 function stars(r) {
@@ -62,6 +352,7 @@ let _modalConfig = {
   note: '',
   successMessage: 'Saved successfully!',
   onSave: null,
+  busyLabel: 'Saving...',
 };
 
 function _deriveModalSubmitLabel(title = '') {
@@ -122,6 +413,7 @@ function openModal(title, body, options = {}) {
     note: '',
     successMessage: 'Saved successfully!',
     onSave: null,
+    busyLabel: 'Saving...',
     ...options,
   };
 
@@ -147,9 +439,19 @@ function openModal(title, body, options = {}) {
 function closeModal() {
   document.getElementById('_modalOverlay')?.classList.remove('open');
 }
-function handleModalSave() {
+async function handleModalSave() {
   if (typeof _modalConfig.onSave === 'function') {
-    _modalConfig.onSave();
+    const saveButton = document.getElementById('_modalSaveBtn');
+
+    try {
+      setButtonBusy(saveButton, true, _modalConfig.busyLabel || 'Saving...');
+      await Promise.resolve(_modalConfig.onSave());
+    } catch (error) {
+      showToast(errorMessageFromException(error, 'Failed to save changes.'), 'error');
+    } finally {
+      setButtonBusy(saveButton, false);
+    }
+
     return;
   }
 
@@ -269,29 +571,62 @@ function buildPagination(infoText, totalPages = 3) {
 }
 
 function buildOptions(options, selectedValue = '') {
-  return options.map(option => `<option${option === selectedValue ? ' selected' : ''}>${option}</option>`).join('');
+  return options.map(option => {
+    const value = typeof option === 'string' ? option : option.value;
+    const label = typeof option === 'string' ? option : option.label;
+    const selected = String(value) === String(selectedValue) ? ' selected' : '';
+    return `<option value="${escapeHtmlAttr(value)}"${selected}>${escapeHtml(label)}</option>`;
+  }).join('');
+}
+
+function formatMovieDuration(minutes) {
+  const totalMinutes = Number(minutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return 'N/A';
+
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (!hours) return `${mins} min`;
+
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
+}
+
+function slugifyValue(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 }
 
 function movieFormBody(m = {}) {
   const categories = ['Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi', 'Animation', 'Romance', 'Thriller'];
-  const statuses = ['Coming Soon', 'Now Showing', 'Ended'];
+  const statuses = [
+    { value: 'draft', label: 'Draft' },
+    { value: 'coming_soon', label: 'Coming Soon' },
+    { value: 'now_showing', label: 'Now Showing' },
+    { value: 'ended', label: 'Ended' },
+    { value: 'archived', label: 'Archived' },
+  ];
+  const ageRatings = ['P', 'K', 'T13', 'T16', 'T18', 'PG-13', 'R'];
+  const slug = m.slug || slugifyValue(m.title || '');
+  m.rating = m.average_rating ?? m.rating ?? '';
   return `<div class="form-grid">
     <div class="field"><label>Movie Title</label><input class="input" placeholder="Enter title" value="${m.title||''}"></div>
-    <div class="field"><label>Category</label><select class="select">${buildOptions(categories, m.cat || 'Action')}</select></div>
-    <div class="field"><label>Duration (min)</label><input class="input" type="number" placeholder="120" value="${m.dur||''}"></div>
-    <div class="field"><label>Release Date</label><input class="input" type="date" value="${m.release||''}"></div>
-    <div class="field"><label>Rating (0–5)</label><input class="input" type="number" placeholder="0.0" min="0" max="5" step="0.1" value="${m.rating||''}"></div>
-    <div class="field"><label>Status</label><select class="select">${buildOptions(statuses, m.status || 'Coming Soon')}</select></div>
-    <div class="field"><label>Language</label><input class="input" placeholder="English, Vietnamese"></div>
-    <div class="field"><label>Trailer URL</label><input class="input" placeholder="https://youtube.com/..."></div>
-    <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Movie description...">${m.desc||''}</textarea></div>
-    <div class="field form-full"><label>Poster Image</label>
-      <div class="upload-zone" onclick="showToast('File picker opened','info')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <p>Drop file here or <span>browse</span></p>
-        <p style="font-size:11px;margin-top:4px;color:var(--text-dim);">PNG, JPG up to 5MB</p>
-      </div>
-    </div>
+    <div class="field"><label>Slug</label><input class="input" placeholder="movie-slug" value="${slug}"></div>
+    <div class="field"><label>Primary Category</label><select class="select">${buildOptions(categories, m.primary_category || 'Action')}</select></div>
+    <div class="field"><label>Status</label><select class="select">${buildOptions(statuses, m.status || 'draft')}</select></div>
+    <div class="field"><label>Duration (minutes)</label><input class="input" type="number" min="1" placeholder="120" value="${m.duration_minutes||''}"></div>
+    <div class="field"><label>Release Date</label><input class="input" type="date" value="${m.release_date||''}"></div>
+    <div class="field"><label>Average Rating (0-5)</label><input class="input" type="number" placeholder="0.0" min="0" max="5" step="0.1" value="${m.rating||''}"></div>
+    <div class="field"><label>Age Rating</label><select class="select">${buildOptions(ageRatings, m.age_rating || 'PG-13')}</select></div>
+    <div class="field"><label>Language</label><input class="input" placeholder="English, Vietnamese" value="${m.language||''}"></div>
+    <div class="field"><label>Director</label><input class="input" placeholder="Director name" value="${m.director||''}"></div>
+    <div class="field"><label>Writer</label><input class="input" placeholder="Writer name" value="${m.writer||''}"></div>
+    <div class="field"><label>Studio</label><input class="input" placeholder="Studio name" value="${m.studio||''}"></div>
+    <div class="field form-full"><label>Cast Summary</label><input class="input" placeholder="Lead cast, comma separated" value="${m.cast_text||''}"></div>
+    <div class="field"><label>Poster URL</label><input class="input" placeholder="https://cdn.example.com/poster.jpg" value="${m.poster_url||''}"></div>
+    <div class="field"><label>Trailer URL</label><input class="input" placeholder="https://youtube.com/watch?v=..." value="${m.trailer_url||''}"></div>
+    <div class="field form-full"><label>Summary</label><textarea class="textarea" placeholder="Movie summary...">${m.summary||''}</textarea><div class="helper-text">Additional posters, banners, and gallery art are managed in the Movie Images section.</div></div>
   </div>`;
 }
 

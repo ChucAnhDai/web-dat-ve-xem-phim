@@ -4,7 +4,7 @@ $sectionMeta = [
     'movies' => [
         'breadcrumb' => 'Movies',
         'title' => 'Movie Management',
-        'subtitle' => 'Manage your cinema movie catalog',
+        'subtitle' => 'Manage the movie catalog using schema-aligned metadata',
         'button' => 'Add Movie',
     ],
     'categories' => [
@@ -16,14 +16,14 @@ $sectionMeta = [
     'movie-images' => [
         'breadcrumb' => 'Movie Images',
         'title' => 'Movie Image Library',
-        'subtitle' => 'Manage posters, banners, and media assets',
-        'button' => 'Upload Image',
+        'subtitle' => 'Manage posters, banners, and gallery assets stored in movie_images',
+        'button' => 'Add Asset',
     ],
     'reviews' => [
         'breadcrumb' => 'Reviews',
         'title' => 'Review Moderation',
-        'subtitle' => 'Monitor ratings and moderate customer feedback',
-        'button' => 'Open Queue',
+        'subtitle' => 'Approve, reject, and control review visibility',
+        'button' => 'Moderate Pending',
     ],
 ];
 $sectionViews = [

@@ -17,8 +17,8 @@
     <h1 class="detail-title">Dune: Part Two</h1>
     <div class="detail-meta-row">
       <span class="rating-stars">★★★★★</span>
-      <span style="font-weight:700">8.9</span>
-      <span style="color:var(--text3)">/ 10</span>
+      <span style="font-weight:700">4.8</span>
+      <span style="color:var(--text3)">/ 5</span>
       <span class="dot"></span>
       <span>2h 46m</span>
       <span class="dot"></span>
@@ -104,7 +104,7 @@
   // This will be executed after app.js
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof movies !== 'undefined') {
-      document.getElementById('relatedMovies').innerHTML = movies.filter(m=>m.status==='now').slice(1,5).map(m=>renderMovieCard(m)).join('');
+      document.getElementById('relatedMovies').innerHTML = movies.filter(m=>m.status==='now_showing').slice(1,5).map(m=>renderMovieCard(m)).join('');
     }
     
     document.querySelectorAll('.date-tab').forEach(tab => {

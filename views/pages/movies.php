@@ -6,7 +6,7 @@
 <div class="filter-bar">
   <input type="text" class="search-input-full" placeholder="🔍 Search movies..." style="max-width:260px">
   <select class="filter-select">
-    <option>All Genres</option>
+    <option>All Categories</option>
     <option>Action</option>
     <option>Drama</option>
     <option>Comedy</option>
@@ -16,9 +16,9 @@
   </select>
   <select class="filter-select">
     <option>All Ratings</option>
-    <option>9+ Rating</option>
-    <option>8+ Rating</option>
-    <option>7+ Rating</option>
+    <option>4.5+ Rating</option>
+    <option>4.0+ Rating</option>
+    <option>3.5+ Rating</option>
   </select>
   <select class="filter-select">
     <option>Sort by</option>

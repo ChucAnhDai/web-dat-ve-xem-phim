@@ -80,6 +80,35 @@ class AuthControllerTest extends TestCase
         ], $response->payload);
     }
 
+    public function testAdminLoginReturnsValidationErrors(): void
+    {
+        $service = new FakeAuthService(['errors' => ['identifier' => ['Field is required.']]]);
+        $controller = new TestableAuthController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = ['password' => 'admin'];
+
+        $response = $controller->adminLogin(new Request(), new CapturingResponse());
+
+        $this->assertSame(422, $response->statusCode);
+        $this->assertSame(['errors' => ['identifier' => ['Field is required.']]], $response->payload);
+    }
+
+    public function testAdminLoginReturnsTokenOnSuccess(): void
+    {
+        $service = new FakeAuthService(['data' => ['token' => 'token', 'user' => ['id' => 1, 'role' => 'admin']]]);
+        $controller = new TestableAuthController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = ['identifier' => 'admin', 'password' => 'admin'];
+
+        $response = $controller->adminLogin(new Request(), new CapturingResponse());
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame('Admin login successful', $response->payload['message']);
+        $this->assertSame('token', $response->payload['data']['token']);
+    }
+
     public function testProfileRejectsMissingToken(): void
     {
         $service = new FakeAuthService(['data' => ['id' => 1]]);
@@ -150,6 +179,22 @@ class AuthControllerTest extends TestCase
         $this->assertSame(['message' => 'Logout successful'], $response->payload);
     }
 
+    public function testAdminLogoutReturnsSuccess(): void
+    {
+        $service = new FakeAuthService(['data' => ['message' => 'Logged out']]);
+        $controller = new TestableAuthController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['SCRIPT_NAME'] = '/web-dat-ve-xem-phim/public/index.php';
+        $_COOKIE['cinemax_admin_token'] = 'valid-token';
+
+        $response = new CapturingResponse();
+        $controller->adminLogout(new Request(), $response);
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame(['message' => 'Admin logout successful'], $response->payload);
+    }
+
     private function clearOutputBuffer(): void
     {
         while (ob_get_level() > 0) {
@@ -175,9 +220,19 @@ class TestableAuthController extends AuthController
         return parent::login($request, $response);
     }
 
+    public function adminLogin(Request $request, Response $response)
+    {
+        return parent::adminLogin($request, $response);
+    }
+
     public function profile(Request $request, Response $response)
     {
         return parent::profile($request, $response);
+    }
+
+    public function adminLogout(Request $request, Response $response)
+    {
+        return parent::adminLogout($request, $response);
     }
 }
 
@@ -204,12 +259,23 @@ class FakeAuthService extends AuthService
     {
         return $this->result;
     }
+
+    public function loginAdmin(array $data): array
+    {
+        return $this->result;
+    }
+
+    public function logout(string $token): array
+    {
+        return $this->result;
+    }
 }
 
 class CapturingResponse extends Response
 {
     public int $statusCode = 200;
     public array $payload = [];
+    public array $clearedCookies = [];
 
     public function setStatusCode(int $code): void
     {
@@ -220,5 +286,10 @@ class CapturingResponse extends Response
     {
         $this->setStatusCode($statusCode);
         $this->payload = $data;
+    }
+
+    public function clearCookie(string $name, array $options = []): void
+    {
+        $this->clearedCookies[$name] = $options;
     }
 }

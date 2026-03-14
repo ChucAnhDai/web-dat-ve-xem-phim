@@ -10,6 +10,8 @@ use Exception;
 
 class AuthService
 {
+    private const ADMIN_ROLE = 'admin';
+
     private UserRepository $users;
     private Auth $auth;
     private Logger $logger;
@@ -77,24 +79,12 @@ class AuthService
 
     public function login(array $data): array
     {
-        $errors = Validator::required($data, ['email', 'password']);
-        $email = strtolower(trim((string) ($data['email'] ?? '')));
-        $password = (string) ($data['password'] ?? '');
+        return $this->authenticate($data, 'email', null, 'Invalid credentials.');
+    }
 
-        if (!empty($errors)) {
-            return ['errors' => $errors];
-        }
-
-        $user = $this->users->findByEmail($email);
-        if (!$user || !password_verify($password, $user['password'])) {
-            $this->logger->error('User login failed', ['email' => $email]);
-            return ['errors' => ['credentials' => ['Invalid credentials.']]];
-        }
-
-        $token = $this->auth->generateToken(['user_id' => $user['id'], 'role' => $user['role']]);
-        $this->logger->info('User login', ['user_id' => $user['id']]);
-
-        return ['data' => ['token' => $token]];
+    public function loginAdmin(array $data): array
+    {
+        return $this->authenticate($data, 'identifier', [self::ADMIN_ROLE], 'Invalid admin credentials.');
     }
 
     public function logout(string $token): array
@@ -165,5 +155,53 @@ class AuthService
             $this->logger->error('Password update failed', ['user_id' => $userId, 'error' => $e->getMessage()]);
             return ['errors' => ['server' => ['Failed to update password.']]];
         }
+    }
+
+    private function authenticate(array $data, string $identifierField, ?array $allowedRoles, string $invalidMessage): array
+    {
+        $errors = Validator::required($data, [$identifierField, 'password']);
+        $identifier = strtolower(trim((string) ($data[$identifierField] ?? '')));
+        $password = (string) ($data['password'] ?? '');
+
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $user = $this->users->findByEmail($identifier);
+        if (!$user || !password_verify($password, $user['password'])) {
+            $this->logger->error('Authentication failed', [
+                'identifier' => $identifier,
+                'context' => $allowedRoles === [self::ADMIN_ROLE] ? 'admin' : 'user',
+            ]);
+            return ['errors' => ['credentials' => [$invalidMessage]]];
+        }
+
+        if ($allowedRoles !== null && !in_array($user['role'] ?? null, $allowedRoles, true)) {
+            $this->logger->error('Authentication denied due to role mismatch', [
+                'user_id' => $user['id'] ?? null,
+                'identifier' => $identifier,
+                'role' => $user['role'] ?? null,
+                'allowed_roles' => $allowedRoles,
+            ]);
+            return ['errors' => ['credentials' => [$invalidMessage]]];
+        }
+
+        $token = $this->auth->generateToken(['user_id' => $user['id'], 'role' => $user['role']]);
+        $this->logger->info('Authentication succeeded', [
+            'user_id' => $user['id'],
+            'context' => $allowedRoles === [self::ADMIN_ROLE] ? 'admin' : 'user',
+        ]);
+
+        return [
+            'data' => [
+                'token' => $token,
+                'user' => [
+                    'id' => (int) $user['id'],
+                    'name' => $user['name'] ?? null,
+                    'email' => $user['email'] ?? null,
+                    'role' => $user['role'] ?? null,
+                ],
+            ],
+        ];
     }
 }

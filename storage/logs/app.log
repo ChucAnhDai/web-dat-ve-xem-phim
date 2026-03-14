@@ -49,3 +49,16 @@
 [2026-03-13T17:12:04+01:00] ERROR: User login failed {"email":"sang@gmail.com"}
 [2026-03-13T17:12:09+01:00] INFO: User login {"user_id":2}
 [2026-03-14T06:21:09+01:00] ERROR: JWT verification failed {"error":"Token expired."}
+[2026-03-14T12:28:22+01:00] INFO: Default admin account created {"user_id":1,"email":"admin"}
+[2026-03-14T12:33:54+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T12:36:08+01:00] INFO: User logout {"user_id":"1"}
+[2026-03-14T12:36:10+01:00] ERROR: Authentication failed {"identifier":"admin1","context":"admin"}
+[2026-03-14T12:36:12+01:00] ERROR: Authentication failed {"identifier":"admin1","context":"admin"}
+[2026-03-14T12:36:12+01:00] ERROR: Authentication failed {"identifier":"admin1","context":"admin"}
+[2026-03-14T12:36:14+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T12:36:18+01:00] INFO: User logout {"user_id":"1"}
+[2026-03-14T12:36:26+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-14T12:42:33+01:00] INFO: Category created {"actor_id":1,"category_id":1}
+[2026-03-14T12:42:51+01:00] INFO: Movie created {"actor_id":1,"movie_id":1,"duration_ms":4.05}
+[2026-03-14T12:43:38+01:00] INFO: Movie updated {"actor_id":1,"movie_id":1,"duration_ms":10.98}
+[2026-03-14T13:07:33+01:00] INFO: Movie asset created {"actor_id":1,"asset_id":1}

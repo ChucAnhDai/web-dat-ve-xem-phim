@@ -29,35 +29,68 @@ CREATE TABLE user_roles (
 );
 
 -- ========================
--- MOVIE SYSTEM
+    -- MOVIE SYSTEM
 -- ========================
 
 CREATE TABLE movie_categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    description TEXT
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(120) NOT NULL UNIQUE,
+    description TEXT,
+    display_order INT DEFAULT 0,
+    is_active TINYINT(1) DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE movies (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    category_id INT,
-    title VARCHAR(255),
-    description TEXT,
-    duration INT,
+    primary_category_id INT NULL,
+    slug VARCHAR(255) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    summary TEXT,
+    duration_minutes INT NOT NULL,
     release_date DATE,
-    poster VARCHAR(255),
-    trailer VARCHAR(255),
-    rating DECIMAL(2,1),
-    status ENUM('coming','showing'),
+    poster_url VARCHAR(255),
+    trailer_url VARCHAR(255),
+    age_rating VARCHAR(20),
+    language VARCHAR(100),
+    director VARCHAR(255),
+    writer VARCHAR(255),
+    cast_text TEXT,
+    studio VARCHAR(255),
+    average_rating DECIMAL(3,2) DEFAULT 0.00,
+    review_count INT DEFAULT 0,
+    status ENUM('draft','coming_soon','now_showing','ended','archived') DEFAULT 'draft',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (category_id) REFERENCES movie_categories(id)
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_movies_status_release (status, release_date),
+    INDEX idx_movies_primary_category (primary_category_id),
+    FOREIGN KEY (primary_category_id) REFERENCES movie_categories(id)
+);
+
+CREATE TABLE movie_category_assignments (
+    movie_id INT NOT NULL,
+    category_id INT NOT NULL,
+    PRIMARY KEY (movie_id, category_id),
+    INDEX idx_movie_category_assignments_category (category_id),
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (category_id) REFERENCES movie_categories(id) ON DELETE CASCADE
 );
 
 CREATE TABLE movie_images (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    movie_id INT,
-    image VARCHAR(255),
-    FOREIGN KEY (movie_id) REFERENCES movies(id)
+    movie_id INT NOT NULL,
+    asset_type ENUM('poster','banner','gallery') DEFAULT 'gallery',
+    image_url VARCHAR(255) NOT NULL,
+    alt_text VARCHAR(255),
+    sort_order INT DEFAULT 0,
+    is_primary TINYINT(1) DEFAULT 0,
+    status ENUM('draft','active','archived') DEFAULT 'draft',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_movie_images_movie_status (movie_id, status, asset_type),
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE
 );
 
 CREATE TABLE cinemas (
@@ -116,11 +149,17 @@ CREATE TABLE ticket_details (
 
 CREATE TABLE movie_reviews (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    movie_id INT,
-    user_id INT,
-    rating INT,
+    movie_id INT NOT NULL,
+    user_id INT NOT NULL,
+    rating TINYINT UNSIGNED NOT NULL,
     comment TEXT,
+    status ENUM('pending','approved','rejected') DEFAULT 'pending',
+    is_visible TINYINT(1) DEFAULT 0,
+    moderation_note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_movie_reviews_movie_status (movie_id, status, is_visible),
+    INDEX idx_movie_reviews_user (user_id),
     FOREIGN KEY (movie_id) REFERENCES movies(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -249,3 +288,15 @@ CREATE TABLE notifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+-- ========================
+-- DEFAULT ADMIN
+-- ========================
+
+INSERT INTO users (name, email, password, phone, role)
+VALUES ('System Admin', 'admin', '$2y$10$3vfhhPHMopDOxtjV4PDAp.0j2Fu3waq.ylZugcb4p7t7w7bry9qOu', '0000000000', 'admin')
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    password = VALUES(password),
+    phone = VALUES(phone),
+    role = VALUES(role);

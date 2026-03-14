@@ -35,6 +35,17 @@ class AuthController
         return $response->json(['message' => 'Login successful', 'data' => $result['data']]);
     }
 
+    public function adminLogin(Request $request, Response $response)
+    {
+        $result = $this->service->loginAdmin($request->getBody());
+        if (isset($result['errors'])) {
+            $status = isset($result['errors']['identifier']) || isset($result['errors']['password']) ? 422 : 401;
+            return $response->json(['errors' => $result['errors']], $status);
+        }
+
+        return $response->json(['message' => 'Admin login successful', 'data' => $result['data']]);
+    }
+
     public function profile(Request $request, Response $response)
     {
         $token = $request->bearerToken();
@@ -59,6 +70,22 @@ class AuthController
         }
 
         return $response->json(['message' => 'Logout successful'], 200);
+    }
+
+    public function adminLogout(Request $request, Response $response)
+    {
+        $token = $request->bearerToken();
+        $result = $this->service->logout($token ?? '');
+
+        $response->clearCookie('cinemax_admin_token', [
+            'path' => $request->appBasePath() !== '' ? $request->appBasePath() : '/',
+        ]);
+
+        if (isset($result['errors'])) {
+            return $response->json(['errors' => $result['errors']], 401);
+        }
+
+        return $response->json(['message' => 'Admin logout successful'], 200);
     }
 
     public function updatePassword(Request $request, Response $response)

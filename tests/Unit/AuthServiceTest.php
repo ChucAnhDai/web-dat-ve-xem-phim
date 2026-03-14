@@ -163,6 +163,53 @@ class AuthServiceTest extends TestCase
         $this->assertSame(['user_id' => 1, 'role' => 'admin'], $auth->payload);
     }
 
+    public function testAdminLoginRejectsNonAdminUser(): void
+    {
+        $repo = new FakeUserRepository();
+        $repo->user = [
+            'id' => 4,
+            'email' => 'admin',
+            'name' => 'Normal User',
+            'password' => password_hash('admin', PASSWORD_BCRYPT),
+            'role' => 'user',
+        ];
+
+        $service = new AuthService($repo, new FakeAuth(), new FakeLogger());
+
+        $result = $service->loginAdmin([
+            'identifier' => 'admin',
+            'password' => 'admin',
+        ]);
+
+        $this->assertArrayHasKey('errors', $result);
+        $this->assertSame(['Invalid admin credentials.'], $result['errors']['credentials']);
+    }
+
+    public function testAdminLoginReturnsTokenForAdminAccount(): void
+    {
+        $repo = new FakeUserRepository();
+        $repo->user = [
+            'id' => 9,
+            'email' => 'admin',
+            'name' => 'System Admin',
+            'password' => password_hash('admin', PASSWORD_BCRYPT),
+            'role' => 'admin',
+        ];
+        $auth = new FakeAuth();
+
+        $service = new AuthService($repo, $auth, new FakeLogger());
+
+        $result = $service->loginAdmin([
+            'identifier' => 'admin',
+            'password' => 'admin',
+        ]);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame('fake-token', $result['data']['token']);
+        $this->assertSame('admin', $result['data']['user']['email']);
+        $this->assertSame(['user_id' => 9, 'role' => 'admin'], $auth->payload);
+    }
+
     public function testProfileReturnsUserDataWithoutPassword(): void
     {
         $repo = new FakeUserRepository();

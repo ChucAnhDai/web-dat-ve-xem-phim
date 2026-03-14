@@ -6,6 +6,19 @@ class Request
 {
     private array $attributes = [];
 
+    public function publicBasePath(): string
+    {
+        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
+        $publicBase = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
+
+        return $publicBase === '.' ? '' : $publicBase;
+    }
+
+    public function appBasePath(): string
+    {
+        return preg_replace('#/public$#', '', $this->publicBasePath()) ?: '';
+    }
+
     public function getPath(): string
     {
         if (isset($_GET['url'])) {
@@ -19,10 +32,8 @@ class Request
             $path = substr($path, 0, $position);
         }
 
-        $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
-        $publicBase = rtrim(str_replace('\\', '/', dirname($scriptName)), '/');
-        $publicBase = $publicBase === '.' ? '' : $publicBase;
-        $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
+        $publicBase = $this->publicBasePath();
+        $appBase = $this->appBasePath();
 
         foreach ([$publicBase, $appBase] as $basePath) {
             if ($basePath !== '' && ($path === $basePath || str_starts_with($path, $basePath . '/'))) {
@@ -39,30 +50,59 @@ class Request
 
     public function method(): string
     {
-        return strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+
+        if ($method === 'POST') {
+            $override = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ?? ($_POST['_method'] ?? null);
+            if (is_string($override) && $override !== '') {
+                $method = strtoupper($override);
+            }
+        }
+
+        return strtolower($method);
     }
 
     public function getBody(): array
     {
         $body = [];
-        if ($this->method() === 'get') {
+        $serverMethod = strtolower($_SERVER['REQUEST_METHOD'] ?? 'get');
+
+        if ($serverMethod === 'get') {
             foreach ($_GET as $key => $value) {
-                $body[$key] = filter_input(INPUT_GET, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+                $body[$key] = $this->sanitizeInputValue($value);
             }
         }
-        if ($this->method() === 'post') {
+        if ($serverMethod === 'post') {
             foreach ($_POST as $key => $value) {
-                $body[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+                $body[$key] = $this->sanitizeInputValue($value);
             }
         }
 
         $json = file_get_contents('php://input');
         $data = json_decode($json, true);
         if (is_array($data)) {
-            $body = array_merge($body, $data);
+            $body = array_merge($body, $this->sanitizeInputValue($data));
         }
 
         return $body;
+    }
+
+    private function sanitizeInputValue($value)
+    {
+        if (is_array($value)) {
+            $sanitized = [];
+            foreach ($value as $key => $item) {
+                $sanitized[$key] = $this->sanitizeInputValue($item);
+            }
+
+            return $sanitized;
+        }
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        return $value;
     }
 
     public function bearerToken(): ?string
@@ -76,7 +116,19 @@ class Request
             return trim(substr($header, 7));
         }
 
+        foreach (['cinemax_admin_token', 'cinemax_token'] as $cookieName) {
+            $cookieValue = $this->cookie($cookieName);
+            if (is_string($cookieValue) && trim($cookieValue) !== '') {
+                return trim($cookieValue);
+            }
+        }
+
         return null;
+    }
+
+    public function cookie(string $key, $default = null)
+    {
+        return $_COOKIE[$key] ?? $default;
     }
 
     public function setAttribute(string $key, $value): void
@@ -87,5 +139,22 @@ class Request
     public function getAttribute(string $key, $default = null)
     {
         return $this->attributes[$key] ?? $default;
+    }
+
+    public function setRouteParams(array $params): void
+    {
+        $this->attributes['routeParams'] = $params;
+    }
+
+    public function getRouteParams(): array
+    {
+        $params = $this->attributes['routeParams'] ?? [];
+
+        return is_array($params) ? $params : [];
+    }
+
+    public function getRouteParam(string $key, $default = null)
+    {
+        return $this->getRouteParams()[$key] ?? $default;
     }
 }

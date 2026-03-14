@@ -1,31 +1,36 @@
+<?php
+$identifierValue = $old['identifier'] ?? 'admin';
+$rememberValue = !empty($old['remember']);
+$credentialError = $errors['credentials'][0] ?? $errors['server'][0] ?? null;
+?>
 <div class="admin-auth-shell">
   <div class="admin-auth-showcase">
     <div class="admin-auth-badge">Admin Access</div>
     <h1 class="admin-auth-hero-title">Operate the entire CineShop control room from one secure entry point.</h1>
-    <p class="admin-auth-hero-copy">Review release pipelines, payments, users, and content scheduling before you step into the dashboard. This screen follows the admin module structure and is ready for real auth wiring next.</p>
+    <p class="admin-auth-hero-copy">Sign in with the provisioned admin account to manage movies, cinemas, payments, and customer operations from one protected workspace.</p>
 
     <div class="admin-auth-grid">
       <div class="admin-auth-surface">
-        <div class="admin-auth-surface-title">Shift Snapshot</div>
-        <div class="admin-auth-metric">42 live showtimes</div>
-        <div class="admin-auth-surface-copy">Operations, promotions, and finance stay aligned in a single admin surface.</div>
+        <div class="admin-auth-surface-title">Default Local Admin</div>
+        <div class="admin-auth-metric">admin / admin</div>
+        <div class="admin-auth-surface-copy">A local development admin account is provisioned so you can enter the dashboard immediately after database setup.</div>
       </div>
       <div class="admin-auth-surface">
         <div class="admin-auth-surface-title">Security Layer</div>
         <div class="admin-auth-list">
-          <span>Role-aware access</span>
-          <span>Password and recovery flow</span>
-          <span>Session device review</span>
+          <span>Admin-only role enforcement</span>
+          <span>JWT-backed admin cookie</span>
+          <span>Protected admin page routes</span>
         </div>
       </div>
     </div>
 
     <div class="admin-auth-status">
-      <div class="admin-auth-status-label">Recommended before sign in</div>
+      <div class="admin-auth-status-label">Current auth scope</div>
       <div class="meta-pills">
-        <span class="badge green">2FA ready</span>
-        <span class="badge blue">Audit logging</span>
-        <span class="badge gold">Night shift handoff</span>
+        <span class="badge green">Backend connected</span>
+        <span class="badge blue">Role protected</span>
+        <span class="badge gold">Movie Management ready</span>
       </div>
     </div>
   </div>
@@ -40,51 +45,58 @@
     </div>
 
     <div class="surface-card">
-      <div class="surface-card-title">Access Preview</div>
-      <div class="surface-card-copy">UI only for now. The form is structured for future backend integration without changing the admin route layout.</div>
+      <div class="surface-card-title">Local Development Credentials</div>
+      <div class="surface-card-copy">Use username <strong>admin</strong> and password <strong>admin</strong> for the pre-provisioned local administrator account.</div>
     </div>
 
-    <form class="admin-auth-form" onsubmit="window.location.href='<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin'; return false;">
+    <form class="admin-auth-form" action="<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin/login" method="POST" novalidate>
+      <?php if ($credentialError !== null): ?>
+        <div class="form-alert" style="margin-bottom:16px;">
+          <?php echo htmlspecialchars($credentialError, ENT_QUOTES, 'UTF-8'); ?>
+        </div>
+      <?php endif; ?>
+
       <div class="field">
-        <label>Work Email</label>
-        <input class="input" type="email" placeholder="admin@cineshop.com" value="admin@cineshop.com">
+        <label for="adminIdentifierInput">Username or Work Email</label>
+        <input
+          class="input<?php echo isset($errors['identifier']) ? ' error' : ''; ?>"
+          id="adminIdentifierInput"
+          type="text"
+          name="identifier"
+          placeholder="admin"
+          value="<?php echo htmlspecialchars($identifierValue, ENT_QUOTES, 'UTF-8'); ?>"
+          autocomplete="username"
+        >
+        <?php if (isset($errors['identifier'][0])): ?>
+          <div class="field-error"><?php echo htmlspecialchars($errors['identifier'][0], ENT_QUOTES, 'UTF-8'); ?></div>
+        <?php endif; ?>
       </div>
 
       <div class="field">
-        <label>Password</label>
+        <label for="adminPasswordInput">Password</label>
         <div class="admin-auth-password">
-          <input class="input" id="adminPasswordInput" type="password" placeholder="Enter your password" value="password-demo">
+          <input
+            class="input<?php echo isset($errors['password']) ? ' error' : ''; ?>"
+            id="adminPasswordInput"
+            type="password"
+            name="password"
+            placeholder="Enter your password"
+            value="admin"
+            autocomplete="current-password"
+          >
           <button class="admin-auth-toggle" type="button" onclick="toggleAdminPassword()">Show</button>
         </div>
-      </div>
-
-      <div class="form-grid">
-        <div class="field">
-          <label>Admin Role</label>
-          <select class="select">
-            <option selected>Super Admin</option>
-            <option>Operations Lead</option>
-            <option>Finance Manager</option>
-            <option>Support Lead</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Shift</label>
-          <select class="select">
-            <option selected>Morning Console</option>
-            <option>Afternoon Console</option>
-            <option>Night Console</option>
-            <option>Remote Review</option>
-          </select>
-        </div>
+        <?php if (isset($errors['password'][0])): ?>
+          <div class="field-error"><?php echo htmlspecialchars($errors['password'][0], ENT_QUOTES, 'UTF-8'); ?></div>
+        <?php endif; ?>
       </div>
 
       <div class="admin-auth-inline">
         <label class="check-option">
-          <input type="checkbox" checked>
-          <span>Remember this workstation</span>
+          <input type="checkbox" name="remember" value="1"<?php echo $rememberValue ? ' checked' : ''; ?>>
+          <span>Remember this workstation for 24 hours</span>
         </label>
-        <span class="admin-auth-link">Admin access preview</span>
+        <span class="admin-auth-link">Admin-only session</span>
       </div>
 
       <button class="btn btn-primary" type="submit" style="width:100%;">Enter Dashboard</button>
@@ -92,12 +104,18 @@
     </form>
 
     <div class="admin-auth-footer-note">
-      Use this page as the admin auth shell. Hook the form to real login logic later without moving files out of the `views/admin` structure.
+      This admin form posts directly to the backend and stores the admin session in a protected cookie for server-rendered dashboard routes.
     </div>
   </div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (typeof clearAdminClientAuthState === 'function') {
+    clearAdminClientAuthState();
+  }
+});
+
 function toggleAdminPassword() {
   const input = document.getElementById('adminPasswordInput');
   const button = document.querySelector('.admin-auth-toggle');

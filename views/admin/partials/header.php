@@ -1,3 +1,10 @@
+<?php
+$adminUser = $adminUser ?? null;
+$adminName = trim((string) ($adminUser['name'] ?? 'Admin User'));
+$adminEmail = trim((string) ($adminUser['email'] ?? 'admin'));
+$adminInitials = strtoupper(substr(preg_replace('/[^A-Z0-9]/i', '', $adminName), 0, 2));
+$adminInitials = $adminInitials !== '' ? $adminInitials : 'AD';
+?>
 <header class="header">
   <button class="header-toggle" onclick="toggleSidebar()">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -39,13 +46,13 @@
     </button>
 
     <div style="position:relative;">
-      <div class="avatar" id="avatarBtn" onclick="document.getElementById('profileDrop').classList.toggle('open')">AD</div>
+      <div class="avatar" id="avatarBtn" onclick="document.getElementById('profileDrop').classList.toggle('open')"><?php echo htmlspecialchars($adminInitials, ENT_QUOTES, 'UTF-8'); ?></div>
       <div class="profile-drop" id="profileDrop">
         <div class="profile-drop-info">
-          <div class="profile-drop-avatar">AD</div>
+          <div class="profile-drop-avatar"><?php echo htmlspecialchars($adminInitials, ENT_QUOTES, 'UTF-8'); ?></div>
           <div>
-            <div style="font-weight:700;font-size:13px;color:var(--text);">Admin User</div>
-            <div style="font-size:11px;color:var(--text-muted);">admin@cineshop.com</div>
+            <div style="font-weight:700;font-size:13px;color:var(--text);"><?php echo htmlspecialchars($adminName, ENT_QUOTES, 'UTF-8'); ?></div>
+            <div style="font-size:11px;color:var(--text-muted);"><?php echo htmlspecialchars($adminEmail, ENT_QUOTES, 'UTF-8'); ?></div>
           </div>
         </div>
         <div class="profile-drop-sep"></div>
@@ -58,7 +65,7 @@
           Settings
         </a>
         <div class="profile-drop-sep"></div>
-        <a href="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/index.php?url=admin/login" class="profile-drop-item" style="color:var(--red);">
+        <a href="<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin/logout" class="profile-drop-item" style="color:var(--red);" onclick="if (typeof clearAdminClientAuthState === 'function') clearAdminClientAuthState();">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sign Out
         </a>

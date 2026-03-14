@@ -22,17 +22,24 @@ const routeMap = {
 };
 
 const movies = [
-  { id: 1, title: 'Dune: Part Two', genre: 'Sci-Fi', rating: 8.9, duration: '2h 46m', poster: 'https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', status: 'now' },
-  { id: 2, title: 'Inside Out 2', genre: 'Animation', rating: 7.8, duration: '1h 40m', poster: 'https://image.tmdb.org/t/p/w300/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg', status: 'now' },
-  { id: 3, title: 'Oppenheimer', genre: 'Drama', rating: 8.3, duration: '3h 0m', poster: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', status: 'now' },
-  { id: 4, title: 'Deadpool & Wolverine', genre: 'Action', rating: 7.9, duration: '2h 7m', poster: 'https://image.tmdb.org/t/p/w300/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg', status: 'now' },
-  { id: 5, title: 'Kingdom of the Planet of the Apes', genre: 'Sci-Fi', rating: 7.1, duration: '2h 25m', poster: 'https://image.tmdb.org/t/p/w300/gKkl37BQuKTanygYQG1pyYgLVgf.jpg', status: 'now' },
-  { id: 6, title: 'The Substance', genre: 'Horror', rating: 7.5, duration: '2h 21m', poster: 'https://image.tmdb.org/t/p/w300/lqoMzCcZYEFK729d6qzt349fB4o.jpg', status: 'now' },
-  { id: 7, title: 'A Quiet Place: Day One', genre: 'Horror', rating: 7.1, duration: '1h 39m', poster: 'https://image.tmdb.org/t/p/w300/hukkWxOuHIhNBCaYxhpqxDwbULC.jpg', status: 'coming' },
-  { id: 8, title: 'Alien: Romulus', genre: 'Horror', rating: 7.0, duration: '1h 59m', poster: 'https://image.tmdb.org/t/p/w300/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg', status: 'coming' },
-  { id: 9, title: 'Gladiator II', genre: 'Action', rating: 7.2, duration: '2h 28m', poster: 'https://image.tmdb.org/t/p/w300/2cxhvwyE0RtuekvA5STUA9sMvPv.jpg', status: 'coming' },
-  { id: 10, title: 'Furiosa', genre: 'Action', rating: 7.8, duration: '2h 28m', poster: 'https://image.tmdb.org/t/p/w300/iADOJ8Zymht2JPMoy3R7xceZprc.jpg', status: 'coming' }
+  { id: 1, slug: 'dune-part-two', title: 'Dune: Part Two', primary_category: 'Sci-Fi', average_rating: 4.8, duration_minutes: 166, poster_url: 'https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', release_date: '2024-03-01', status: 'now_showing' },
+  { id: 2, slug: 'inside-out-2', title: 'Inside Out 2', primary_category: 'Animation', average_rating: 4.3, duration_minutes: 100, poster_url: 'https://image.tmdb.org/t/p/w300/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg', release_date: '2024-06-14', status: 'now_showing' },
+  { id: 3, slug: 'oppenheimer', title: 'Oppenheimer', primary_category: 'Drama', average_rating: 4.6, duration_minutes: 180, poster_url: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', release_date: '2023-07-21', status: 'now_showing' },
+  { id: 4, slug: 'deadpool-wolverine', title: 'Deadpool & Wolverine', primary_category: 'Action', average_rating: 4.4, duration_minutes: 127, poster_url: 'https://image.tmdb.org/t/p/w300/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg', release_date: '2024-07-26', status: 'now_showing' },
+  { id: 5, slug: 'kingdom-of-the-planet-of-the-apes', title: 'Kingdom of the Planet of the Apes', primary_category: 'Sci-Fi', average_rating: 4.1, duration_minutes: 145, poster_url: 'https://image.tmdb.org/t/p/w300/gKkl37BQuKTanygYQG1pyYgLVgf.jpg', release_date: '2024-05-10', status: 'now_showing' },
+  { id: 6, slug: 'the-substance', title: 'The Substance', primary_category: 'Horror', average_rating: 4.2, duration_minutes: 141, poster_url: 'https://image.tmdb.org/t/p/w300/lqoMzCcZYEFK729d6qzt349fB4o.jpg', release_date: '2024-09-20', status: 'now_showing' },
+  { id: 7, slug: 'a-quiet-place-day-one', title: 'A Quiet Place: Day One', primary_category: 'Horror', average_rating: 4.0, duration_minutes: 99, poster_url: 'https://image.tmdb.org/t/p/w300/hukkWxOuHIhNBCaYxhpqxDwbULC.jpg', release_date: '2024-06-28', status: 'coming_soon' },
+  { id: 8, slug: 'alien-romulus', title: 'Alien: Romulus', primary_category: 'Horror', average_rating: 4.0, duration_minutes: 119, poster_url: 'https://image.tmdb.org/t/p/w300/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg', release_date: '2024-08-16', status: 'coming_soon' },
+  { id: 9, slug: 'gladiator-ii', title: 'Gladiator II', primary_category: 'Action', average_rating: 4.1, duration_minutes: 148, poster_url: 'https://image.tmdb.org/t/p/w300/2cxhvwyE0RtuekvA5STUA9sMvPv.jpg', release_date: '2024-11-22', status: 'coming_soon' },
+  { id: 10, slug: 'furiosa', title: 'Furiosa', primary_category: 'Action', average_rating: 4.4, duration_minutes: 148, poster_url: 'https://image.tmdb.org/t/p/w300/iADOJ8Zymht2JPMoy3R7xceZprc.jpg', release_date: '2024-05-24', status: 'coming_soon' }
 ];
+
+movies.forEach(movie => {
+  movie.genre = movie.primary_category;
+  movie.rating = movie.average_rating;
+  movie.duration = formatMovieDuration(movie.duration_minutes);
+  movie.poster = movie.poster_url;
+});
 
 const products = [
   { id: 1, name: 'Classic Popcorn Combo', cat: 'combo', price: 12.99, oldPrice: 16.99, img: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?auto=format&fit=crop&w=900&q=80', emoji: '🍿' },
@@ -102,6 +109,17 @@ function formatDateLabel(value) {
     month: 'short',
     year: 'numeric'
   }).format(date);
+}
+
+function formatMovieDuration(minutes) {
+  const totalMinutes = Number(minutes || 0);
+  if (!Number.isFinite(totalMinutes) || totalMinutes <= 0) return 'N/A';
+
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (!hours) return `${mins}m`;
+
+  return mins ? `${hours}h ${mins}m` : `${hours}h`;
 }
 
 function getInitials(name) {
@@ -553,8 +571,8 @@ function renderMovieCard(movie) {
   return `
     <div class="card movie-card" onclick="navigateTo('movie-detail')">
       <div class="movie-poster">
-        <img src="${movie.poster}" alt="${movie.title}" loading="lazy" onerror="this.parentNode.style.background='var(--bg4)'">
-        <div class="genre-badge">${movie.genre}</div>
+        <img src="${movie.poster_url}" alt="${movie.title}" loading="lazy" onerror="this.parentNode.style.background='var(--bg4)'">
+        <div class="genre-badge">${movie.primary_category}</div>
         <div class="rating-badge">⭐ ${movie.rating}</div>
         <div class="movie-poster-overlay">
           <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();navigateTo('seat-selection')">🎫 Book</button>
@@ -597,8 +615,8 @@ function renderProductCard(product) {
 }
 
 function populateGrids() {
-  const nowShowing = movies.filter(movie => movie.status === 'now').slice(0, 5);
-  const comingSoon = movies.filter(movie => movie.status === 'coming').slice(0, 5);
+  const nowShowing = movies.filter(movie => movie.status === 'now_showing').slice(0, 5);
+  const comingSoon = movies.filter(movie => movie.status === 'coming_soon').slice(0, 5);
 
   const nowShowingGrid = document.getElementById('nowShowingGrid');
   const comingSoonGrid = document.getElementById('comingSoonGrid');
