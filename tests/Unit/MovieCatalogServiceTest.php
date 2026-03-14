@@ -76,7 +76,7 @@ class MovieCatalogServiceTest extends TestCase
         $this->assertSame('My Boo 2', $result['data']['items'][0]['title']);
         $this->assertSame('kinh-di', $result['data']['filters']['category_id']);
         $this->assertSame(4.3, $result['data']['items'][0]['average_rating']);
-        $this->assertSame('https://img.ophim.live/uploads/movies/my-boo-2-poster.jpg', $result['data']['items'][0]['poster_url']);
+        $this->assertSame('https://img.ophim.live/uploads/movies/my-boo-2-thumb.jpg', $result['data']['items'][0]['poster_url']);
         $this->assertCount(2, $result['data']['categories']);
         $this->assertSame('ophim', $result['data']['source']['provider']);
     }
@@ -249,6 +249,8 @@ class MovieCatalogServiceTest extends TestCase
         $this->assertSame(200, $result['status']);
         $this->assertSame('Tội Phạm 101', $result['data']['movie']['title']);
         $this->assertSame(['Hình Sự'], $result['data']['movie']['category_names']);
+        $this->assertSame('https://img.ophim.live/uploads/movies/toi-pham-101-thumb.jpg', $result['data']['movie']['poster_url']);
+        $this->assertSame('https://image.tmdb.org/t/p/w1280/abc.jpg', $result['data']['movie']['banner_url']);
         $this->assertSame('https://image.tmdb.org/t/p/w1280/abc.jpg', $result['data']['gallery'][0]['image_url']);
         $this->assertSame('https://youtube.com/watch?v=xyz', $result['data']['movie']['trailer_url']);
         $this->assertSame([], $result['data']['showtimes']);

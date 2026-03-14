@@ -339,7 +339,7 @@ class MovieCatalogService
             'summary' => $this->buildCatalogSummary($item),
             'duration_minutes' => $this->parseDurationMinutes($item['time'] ?? null),
             'release_date' => $this->releaseDateFromYear($item['year'] ?? null),
-            'poster_url' => $this->buildMovieAssetUrl($cdnBase, $item['poster_url'] ?? null),
+            'poster_url' => $this->buildPreferredPosterUrl($cdnBase, $item),
             'age_rating' => $item['quality'] ?? null,
             'language' => $item['lang'] ?? null,
             'average_rating' => $this->normalizeRating($item),
@@ -351,7 +351,7 @@ class MovieCatalogService
     private function mapMovieDetail(array $item, ?string $cdnBase, array $gallery): array
     {
         $movie = $this->mapCatalogMovie($item, $cdnBase, $this->inferStatus($item));
-        $movie['banner_url'] = $this->extractBannerUrl($gallery) ?: $this->buildMovieAssetUrl($cdnBase, $item['thumb_url'] ?? null);
+        $movie['banner_url'] = $this->extractBannerUrl($gallery) ?: $this->buildPreferredBannerUrl($cdnBase, $item);
         $movie['trailer_url'] = $item['trailer_url'] ?? null;
         $movie['director'] = $this->joinStrings($item['director'] ?? []);
         $movie['writer'] = null;
@@ -364,6 +364,8 @@ class MovieCatalogService
 
     private function mapLocalCatalogMovie(array $row): array
     {
+        $posterUrl = $this->normalizePublicPosterUrl($row['poster_url'] ?? null);
+
         return [
             'id' => (int) ($row['id'] ?? 0),
             'primary_category_id' => (int) ($row['primary_category_id'] ?? 0),
@@ -373,7 +375,7 @@ class MovieCatalogService
             'summary' => $row['summary'] ?? null,
             'duration_minutes' => (int) ($row['duration_minutes'] ?? 0),
             'release_date' => $row['release_date'] ?? null,
-            'poster_url' => $row['poster_url'] ?? null,
+            'poster_url' => $posterUrl,
             'age_rating' => $row['age_rating'] ?? null,
             'language' => $row['language'] ?? null,
             'average_rating' => round((float) ($row['average_rating'] ?? 0), 2),
@@ -384,6 +386,9 @@ class MovieCatalogService
 
     private function mapLocalMovieDetail(array $row): array
     {
+        $rawPosterUrl = $row['poster_url'] ?? null;
+        $posterUrl = $this->normalizePublicPosterUrl($rawPosterUrl);
+
         return [
             'id' => (int) ($row['id'] ?? 0),
             'primary_category_id' => (int) ($row['primary_category_id'] ?? 0),
@@ -393,8 +398,8 @@ class MovieCatalogService
             'summary' => $row['summary'] ?? null,
             'duration_minutes' => (int) ($row['duration_minutes'] ?? 0),
             'release_date' => $row['release_date'] ?? null,
-            'poster_url' => $row['poster_url'] ?? null,
-            'banner_url' => $row['banner_url'] ?? null,
+            'poster_url' => $posterUrl,
+            'banner_url' => $this->normalizePublicBannerUrl($row['banner_url'] ?? null, $rawPosterUrl),
             'trailer_url' => $row['trailer_url'] ?? null,
             'age_rating' => $row['age_rating'] ?? null,
             'language' => $row['language'] ?? null,
@@ -795,6 +800,16 @@ class MovieCatalogService
         return $cdnBase . '/' . ltrim($normalized, '/');
     }
 
+    private function buildPreferredPosterUrl(?string $cdnBase, array $item): ?string
+    {
+        return $this->buildMovieAssetUrl($cdnBase, $item['thumb_url'] ?? $item['poster_url'] ?? null);
+    }
+
+    private function buildPreferredBannerUrl(?string $cdnBase, array $item): ?string
+    {
+        return $this->buildMovieAssetUrl($cdnBase, $item['poster_url'] ?? $item['thumb_url'] ?? null);
+    }
+
     private function extractBannerUrl(array $gallery): ?string
     {
         foreach ($gallery as $asset) {
@@ -804,6 +819,40 @@ class MovieCatalogService
         }
 
         return null;
+    }
+
+    private function normalizePublicPosterUrl(?string $posterUrl): ?string
+    {
+        $cleanedUrl = trim((string) ($posterUrl ?? ''));
+        if ($cleanedUrl === '') {
+            return null;
+        }
+
+        if (!$this->isLikelyOphimMovieAsset($cleanedUrl)) {
+            return $cleanedUrl;
+        }
+
+        return (string) preg_replace('/-poster(\.[a-z0-9]+)$/i', '-thumb$1', $cleanedUrl, 1);
+    }
+
+    private function normalizePublicBannerUrl(?string $bannerUrl, ?string $fallbackPosterUrl = null): ?string
+    {
+        $cleanedBannerUrl = trim((string) ($bannerUrl ?? ''));
+        if ($cleanedBannerUrl !== '') {
+            return $cleanedBannerUrl;
+        }
+
+        $cleanedPosterUrl = trim((string) ($fallbackPosterUrl ?? ''));
+        if ($cleanedPosterUrl === '' || !$this->isLikelyOphimMovieAsset($cleanedPosterUrl)) {
+            return $cleanedPosterUrl !== '' ? $cleanedPosterUrl : null;
+        }
+
+        return $cleanedPosterUrl;
+    }
+
+    private function isLikelyOphimMovieAsset(string $url): bool
+    {
+        return str_contains($url, '/uploads/movies/') && preg_match('/-poster\.[a-z0-9]+$/i', $url) === 1;
     }
 
     private function extractPrimaryCategory(array $item): array

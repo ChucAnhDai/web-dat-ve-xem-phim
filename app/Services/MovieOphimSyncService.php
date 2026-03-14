@@ -270,6 +270,8 @@ class MovieOphimSyncService
     {
         $cdnBase = $this->extractCdnBase($detailData);
         $categoryPayloads = $this->extractCategories($item);
+        $posterUrl = $this->buildPreferredPosterUrl($cdnBase, $item);
+        $bannerUrl = $this->buildPreferredBannerUrl($cdnBase, $item);
         $movieData = [
             'primary_category_id' => 0,
             'slug' => trim((string) ($item['slug'] ?? '')),
@@ -277,7 +279,7 @@ class MovieOphimSyncService
             'summary' => $this->normalizeSummary($item['content'] ?? null),
             'duration_minutes' => $this->parseDurationMinutes($item['time'] ?? null),
             'release_date' => $this->releaseDateFromYear($item['year'] ?? null),
-            'poster_url' => $this->buildMovieAssetUrl($cdnBase, $item['poster_url'] ?? null),
+            'poster_url' => $posterUrl,
             'trailer_url' => $this->nullableString($item['trailer_url'] ?? null),
             'age_rating' => null,
             'language' => $this->nullableString($item['lang'] ?? null),
@@ -290,7 +292,7 @@ class MovieOphimSyncService
             'status' => $this->resolveImportStatus($payload['status_override'] ?? null, $item),
         ];
 
-        $assets = $this->buildAssets($movieData['title'], $movieData['poster_url'], $imagesPayload);
+        $assets = $this->buildAssets($movieData['title'], $posterUrl, $bannerUrl, $imagesPayload);
 
         return [
             'movie' => $movieData,
@@ -347,7 +349,7 @@ class MovieOphimSyncService
         return [$fallbackId];
     }
 
-    private function buildAssets(string $title, ?string $posterUrl, array $imagesPayload): array
+    private function buildAssets(string $title, ?string $posterUrl, ?string $bannerUrl, array $imagesPayload): array
     {
         $assets = [];
 
@@ -400,6 +402,15 @@ class MovieOphimSyncService
                     'status' => 'active',
                 ];
             }
+        } elseif ($bannerUrl !== null) {
+            $assets[] = [
+                'asset_type' => 'banner',
+                'image_url' => $bannerUrl,
+                'alt_text' => trim($title . ' banner'),
+                'sort_order' => 1,
+                'is_primary' => 1,
+                'status' => 'active',
+            ];
         }
 
         return $assets;
@@ -565,6 +576,16 @@ class MovieOphimSyncService
         }
 
         return $cdnBase . '/' . $normalizedPath;
+    }
+
+    private function buildPreferredPosterUrl(?string $cdnBase, array $item): ?string
+    {
+        return $this->buildMovieAssetUrl($cdnBase, $item['thumb_url'] ?? $item['poster_url'] ?? null);
+    }
+
+    private function buildPreferredBannerUrl(?string $cdnBase, array $item): ?string
+    {
+        return $this->buildMovieAssetUrl($cdnBase, $item['poster_url'] ?? $item['thumb_url'] ?? null);
     }
 
     private function buildTmdbImageUrl(array $sizeMap, ?string $filePath, string $preferredSize): ?string

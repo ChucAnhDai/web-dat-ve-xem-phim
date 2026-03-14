@@ -292,6 +292,7 @@ class MovieManagementServiceIntegrationTest extends TestCase
                             'origin_name' => 'Imported Movie Original',
                             'content' => '<p>Imported from OPhim.</p>',
                             'poster_url' => 'imported-poster.jpg',
+                            'thumb_url' => 'imported-thumb.jpg',
                             'trailer_url' => 'https://youtube.com/watch?v=demo',
                             'time' => '181 phut',
                             'episode_current' => 'Full',
@@ -350,7 +351,7 @@ class MovieManagementServiceIntegrationTest extends TestCase
         $this->assertSame('Imported Movie', $movieRow['title']);
         $this->assertSame('coming_soon', $movieRow['status']);
         $this->assertSame(181, (int) $movieRow['duration_minutes']);
-        $this->assertSame('https://img.ophim.live/uploads/movies/imported-poster.jpg', $movieRow['poster_url']);
+        $this->assertSame('https://img.ophim.live/uploads/movies/imported-thumb.jpg', $movieRow['poster_url']);
         $this->assertSame(4.2, (float) $movieRow['average_rating']);
         $this->assertNotFalse($mysteryCategory);
         $this->assertCount(2, $assignmentRows);
