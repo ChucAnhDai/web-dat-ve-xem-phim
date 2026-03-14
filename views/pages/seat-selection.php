@@ -1,5 +1,12 @@
+<?php
+$selectedMovieSlug = trim((string) ($_GET['slug'] ?? ''));
+$backToMovieDetail = $selectedMovieSlug !== ''
+    ? $publicBase . '/movie-detail?slug=' . rawurlencode($selectedMovieSlug)
+    : $publicBase . '/movies';
+?>
+
 <div style="margin-bottom:16px">
-  <a href="<?php echo $publicBase; ?>/movie-detail" class="btn btn-ghost btn-sm">← Back to Showtimes</a>
+  <a href="<?php echo htmlspecialchars($backToMovieDetail, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-ghost btn-sm">← Back to Showtimes</a>
 </div>
 
 <div class="page-header">
@@ -39,7 +46,7 @@
     <div class="summary-row total"><label>Total</label><span id="seatTotal" style="color:var(--red)">$0.00</span></div>
     <div style="margin-top:16px">
       <button class="btn btn-primary btn-full btn-lg" onclick="proceedCheckout()">Proceed to Checkout →</button>
-      <a href="<?php echo $publicBase; ?>/movie-detail" class="btn btn-ghost btn-full btn-sm" style="margin-top:8px;display:flex">← Back to Showtimes</a>
+      <a href="<?php echo htmlspecialchars($backToMovieDetail, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-ghost btn-full btn-sm" style="margin-top:8px;display:flex">← Back to Showtimes</a>
     </div>
   </div>
 </div>

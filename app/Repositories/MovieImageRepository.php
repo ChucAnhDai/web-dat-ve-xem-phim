@@ -88,6 +88,39 @@ class MovieImageRepository
         return $row ?: null;
     }
 
+    public function listActiveAssetsForMovie(int $movieId, ?string $assetType = null): array
+    {
+        $sql = "
+            SELECT
+                id,
+                movie_id,
+                asset_type,
+                image_url,
+                alt_text,
+                sort_order,
+                is_primary,
+                status,
+                created_at,
+                updated_at
+            FROM movie_images
+            WHERE movie_id = :movie_id
+              AND status = 'active'
+        ";
+        $params = ['movie_id' => $movieId];
+
+        if ($assetType !== null) {
+            $sql .= ' AND asset_type = :asset_type';
+            $params['asset_type'] = $assetType;
+        }
+
+        $sql .= ' ORDER BY is_primary DESC, sort_order ASC, id ASC';
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+
+        return $stmt->fetchAll() ?: [];
+    }
+
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(

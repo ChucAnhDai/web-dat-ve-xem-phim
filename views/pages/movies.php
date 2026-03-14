@@ -4,32 +4,33 @@
 </div>
 
 <div class="filter-bar">
-  <input type="text" class="search-input-full" placeholder="🔍 Search movies..." style="max-width:260px">
-  <select class="filter-select">
-    <option>All Categories</option>
-    <option>Action</option>
-    <option>Drama</option>
-    <option>Comedy</option>
-    <option>Horror</option>
-    <option>Sci-Fi</option>
-    <option>Romance</option>
+  <input id="movieCatalogSearchInput" type="text" class="search-input-full" placeholder="Search movies..." style="max-width:260px">
+  <select id="movieCatalogCategoryFilter" class="filter-select">
+    <option value="">All Categories</option>
   </select>
-  <select class="filter-select">
-    <option>All Ratings</option>
-    <option>4.5+ Rating</option>
-    <option>4.0+ Rating</option>
-    <option>3.5+ Rating</option>
+  <select id="movieCatalogRatingFilter" class="filter-select">
+    <option value="">All Ratings</option>
+    <option value="4.5">4.5+ Rating</option>
+    <option value="4.0">4.0+ Rating</option>
+    <option value="3.5">3.5+ Rating</option>
   </select>
-  <select class="filter-select">
-    <option>Sort by</option>
-    <option>Most Popular</option>
-    <option>Newest</option>
-    <option>Rating</option>
+  <select id="movieCatalogSortFilter" class="filter-select">
+    <option value="popular">Most Popular</option>
+    <option value="newest">Newest</option>
+    <option value="rating">Rating</option>
   </select>
-  <div style="margin-left:auto;display:flex;gap:6px">
-    <div class="filter-chip active">Now Showing</div>
-    <div class="filter-chip">Coming Soon</div>
+  <div id="movieCatalogStatusGroup" style="margin-left:auto;display:flex;gap:6px">
+    <button class="filter-chip active" type="button" data-status="now_showing">Now Showing</button>
+    <button class="filter-chip" type="button" data-status="coming_soon">Coming Soon</button>
   </div>
 </div>
 
+<div class="catalog-meta">
+  <span id="movieCatalogCount">0 movies</span>
+  <span id="movieCatalogRequestStatus" class="catalog-request-status">Ready</span>
+</div>
+
 <div class="movies-grid" id="allMoviesGrid"></div>
+<div id="movieCatalogPagination" class="catalog-pagination"></div>
+
+<script src="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/assets/js/movie-catalog.js"></script>

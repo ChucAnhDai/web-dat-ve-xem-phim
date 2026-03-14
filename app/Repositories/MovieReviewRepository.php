@@ -79,6 +79,31 @@ class MovieReviewRepository
         return $row ?: null;
     }
 
+    public function listApprovedVisibleForMovie(int $movieId, int $limit = 5): array
+    {
+        $limit = max(1, min($limit, 20));
+        $stmt = $this->db->prepare("
+            SELECT
+                r.id,
+                r.movie_id,
+                r.user_id,
+                r.rating,
+                r.comment,
+                r.created_at,
+                u.name AS user_name
+            FROM movie_reviews r
+            INNER JOIN users u ON u.id = r.user_id
+            WHERE r.movie_id = :movie_id
+              AND r.status = 'approved'
+              AND r.is_visible = 1
+            ORDER BY r.updated_at DESC, r.id DESC
+            LIMIT {$limit}
+        ");
+        $stmt->execute(['movie_id' => $movieId]);
+
+        return $stmt->fetchAll() ?: [];
+    }
+
     public function updateModeration(int $id, array $data): bool
     {
         $stmt = $this->db->prepare(

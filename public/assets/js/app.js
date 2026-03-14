@@ -568,14 +568,21 @@ async function handleLogout() {
 }
 
 function renderMovieCard(movie) {
+  const detailUrl = movie?.slug
+    ? appUrl(`/movie-detail?slug=${encodeURIComponent(movie.slug)}`)
+    : appUrl('/movies');
+  const bookUrl = movie?.status === 'now_showing'
+    ? detailUrl
+    : appUrl('/movies');
+
   return `
-    <div class="card movie-card" onclick="navigateTo('movie-detail')">
+    <div class="card movie-card" onclick="window.location.href='${detailUrl}'">
       <div class="movie-poster">
         <img src="${movie.poster_url}" alt="${movie.title}" loading="lazy" onerror="this.parentNode.style.background='var(--bg4)'">
         <div class="genre-badge">${movie.primary_category}</div>
         <div class="rating-badge">⭐ ${movie.rating}</div>
         <div class="movie-poster-overlay">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();navigateTo('seat-selection')">🎫 Book</button>
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();window.location.href='${bookUrl}'">🎫 Book</button>
           <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">+ Watchlist</button>
         </div>
       </div>
@@ -588,8 +595,8 @@ function renderMovieCard(movie) {
         </div>
       </div>
       <div class="movie-actions">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();navigateTo('movie-detail')">Details</button>
-        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="event.stopPropagation();navigateTo('seat-selection')">Book</button>
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();window.location.href='${detailUrl}'">Details</button>
+        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="event.stopPropagation();window.location.href='${bookUrl}'">Book</button>
       </div>
     </div>
   `;
@@ -617,6 +624,7 @@ function renderProductCard(product) {
 function populateGrids() {
   const nowShowing = movies.filter(movie => movie.status === 'now_showing').slice(0, 5);
   const comingSoon = movies.filter(movie => movie.status === 'coming_soon').slice(0, 5);
+  const activePage = document.body?.dataset?.activePage || '';
 
   const nowShowingGrid = document.getElementById('nowShowingGrid');
   const comingSoonGrid = document.getElementById('comingSoonGrid');
@@ -628,7 +636,7 @@ function populateGrids() {
   if (nowShowingGrid) nowShowingGrid.innerHTML = nowShowing.map(renderMovieCard).join('');
   if (comingSoonGrid) comingSoonGrid.innerHTML = comingSoon.map(renderMovieCard).join('');
   if (popularProductsGrid) popularProductsGrid.innerHTML = products.slice(0, 4).map(renderProductCard).join('');
-  if (allMoviesGrid) allMoviesGrid.innerHTML = movies.map(renderMovieCard).join('');
+  if (allMoviesGrid && activePage !== 'movies') allMoviesGrid.innerHTML = movies.map(renderMovieCard).join('');
   if (shopGrid) shopGrid.innerHTML = products.map(renderProductCard).join('');
   if (relatedProductsGrid) relatedProductsGrid.innerHTML = products.slice(0, 4).map(renderProductCard).join('');
 }

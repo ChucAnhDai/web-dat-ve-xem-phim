@@ -66,6 +66,26 @@ class MovieCategoryRepository
         ];
     }
 
+    public function listPublicOptions(): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                c.id,
+                c.name,
+                c.slug
+            FROM movie_categories c
+            INNER JOIN movies m
+                ON m.primary_category_id = c.id
+               AND m.status IN ('now_showing', 'coming_soon')
+            WHERE c.is_active = 1
+            GROUP BY c.id, c.name, c.slug, c.display_order
+            ORDER BY c.display_order ASC, c.name ASC
+        ");
+        $stmt->execute();
+
+        return $stmt->fetchAll() ?: [];
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM movie_categories WHERE id = :id LIMIT 1');

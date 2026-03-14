@@ -17,7 +17,7 @@
       </div>
       <p class="hero-desc">Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.</p>
       <div class="hero-actions">
-        <button class="btn btn-primary btn-lg" onclick="navigateTo('movie-detail')">🎬 Book Ticket</button>
+        <button class="btn btn-primary btn-lg" onclick="navigateTo('movies')">🎬 Book Ticket</button>
         <button class="btn btn-secondary btn-lg">▶ Watch Trailer</button>
       </div>
     </div>
