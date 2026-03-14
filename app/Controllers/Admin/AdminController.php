@@ -16,6 +16,15 @@ class AdminController
         ]);
     }
 
+    private function renderAuthPage(Response $response, string $view, string $title, string $activePage): void
+    {
+        $response->view($view, [
+            'title' => $title,
+            'layout' => 'admin/layouts/auth',
+            'activePage' => $activePage,
+        ]);
+    }
+
     private function resolveActivePage(Request $request, string $defaultPage, array $allowedPages = []): string
     {
         $body = $request->getBody();
@@ -40,6 +49,16 @@ class AdminController
         ];
 
         $this->renderPage($response, 'admin/pages/dashboard/index', $titles[$activePage] ?? $titles['dashboard'], $activePage);
+    }
+
+    public function showLogin(Request $request, Response $response): void
+    {
+        $this->renderAuthPage($response, 'admin/auth/login', 'Admin Login - CineShop Admin', 'admin-login');
+    }
+
+    public function showLogout(Request $request, Response $response): void
+    {
+        $this->renderAuthPage($response, 'admin/auth/logout', 'Admin Logout - CineShop Admin', 'admin-logout');
     }
 
     public function showMovies(Request $request, Response $response): void
