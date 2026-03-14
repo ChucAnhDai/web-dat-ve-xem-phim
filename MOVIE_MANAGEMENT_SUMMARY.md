@@ -1,5 +1,23 @@
 # Movie Management Summary
 
+## 0. Cap nhat hom nay (2026-03-14)
+
+Hom nay da tiep tuc mo rong module `Movie Management` sang phia user UI va flow dat ve read-only:
+
+- Noi trang user `/movies` vao public API that
+- Noi trang user `/movie-detail` vao du lieu that
+- Them tim kiem phim qua OPhim endpoint `/v1/api/tim-kiem`
+- Chi cho phep user xem `trailer`, khong expose source xem phim qua public API
+- Them block `Available Showtimes` trong movie detail de di sang chon ghe
+- Noi trang `/seat-selection` vao seat-map API that theo `showtime_id`
+- Seed local sample showtimes/seats de demo flow dat ve tu movie detail
+- Tinh chinh UI user:
+  - grid `/movies` hien thi 6 phim mot hang tren desktop
+  - card phim hien poster dung ti le
+  - sua mapping anh OPhim: dung `thumb_url` lam poster doc, `poster_url` lam banner ngang
+  - sua loi khoang den thua trong card poster
+  - trailer block duoc toi uu lai cho gon hon
+
 ## 1. Muc tieu da thuc hien
 
 Da chuan hoa va trien khai module `Movie Management` theo huong backend truoc, admin UI noi API sau:
@@ -16,6 +34,9 @@ Da chuan hoa va trien khai module `Movie Management` theo huong backend truoc, a
 - Bo sung admin auth/login/logout de bao ve admin pages va admin API
 - Bo sung validation, transaction, logging, error handling, test artifacts
 - Noi public user movie pages vao OPhim-backed API de user doc catalog/detail that
+- Bo sung tim kiem phim user-side qua OPhim search API
+- Bo sung local showtime/seat-map read APIs de di tu movie detail sang seat selection
+- Khoa public movie detail theo huong `trailer-only` cho user
 
 ## 2. Schema du lieu da chuan hoa
 
@@ -166,20 +187,28 @@ Da cap nhat:
 - `public/assets/js/app.js`
 - `public/assets/js/movie-catalog.js`
 - `public/assets/js/movie-detail.js`
+- `public/assets/js/seat-selection.js`
 - `views/pages/home.php`
 - `views/pages/movies.php`
 - `views/pages/movie-detail.php`
+- `views/pages/seat-selection.php`
 
 Noi dung:
 
-- Trang `/movies` va `/movie-detail` da doc du lieu that qua OPhim-backed public API
+- Trang `/movies` da doc du lieu that qua public API, ho tro filter/search/pagination
+- Trang `/movie-detail` da doc du lieu that qua public API
+- Trang `/seat-selection` da doc seat-map that theo `showtime_id`
 - Local endpoints cong khai giu on dinh contract FE:
   - `GET /api/movies`
   - `GET /api/movies/{slug}`
+  - `GET /api/showtimes/{id}/seat-map`
 - Catalog user map status theo OPhim:
   - `phim-chieu-rap` -> `now_showing`
   - `phim-sap-chieu` -> `coming_soon`
-- Movie detail user render gallery, trailer, playback groups tu du lieu OPhim
+- Movie detail user render trailer, gallery, related movies, va local showtimes de dat ve
+- Public movie detail khong con expose `playback_groups`; user chi xem duoc trailer
+- Search tren `/movies` da di qua OPhim `/tim-kiem` khi co keyword hop le
+- Catalog card user da dung anh poster doc tu `thumb_url`; banner/detail dung anh ngang phu hop
 
 ## 4. Backend Phase 1 da trien khai
 
@@ -404,6 +433,37 @@ Trang thai:
 - Ca 3 tab tren da fetch data that tu admin API
 - `Reviews` la tab con lai chua noi backend that
 
+### 5.7 Public read APIs cho user movie catalog va booking flow
+
+Da them/cap nhat:
+
+- `app/Clients/OphimClient.php`
+- `app/Controllers/Api/MovieCatalogController.php`
+- `app/Controllers/Api/ShowtimeCatalogController.php`
+- `app/Repositories/SeatRepository.php`
+- `app/Repositories/ShowtimeRepository.php`
+- `app/Services/MovieCatalogService.php`
+- `app/Services/ShowtimeCatalogService.php`
+- `app/Validators/MovieCatalogValidator.php`
+- `scripts/ensure_sample_showtimes.php`
+
+Noi dung:
+
+- Public catalog `/api/movies` ho tro:
+  - list phim
+  - filter category
+  - filter rating
+  - sort
+  - status `now_showing/coming_soon`
+  - search keyword qua OPhim `/tim-kiem`
+- Public detail `/api/movies/{slug}` uu tien local movie neu admin da co movie local; fallback OPhim khi can
+- Public detail chi tra `trailer_url`, gallery, related movies, showtimes; khong tra source xem phim
+- `GET /api/showtimes/{id}/seat-map` tra:
+  - thong tin showtime
+  - seat map theo room
+  - summary so ghe/trang thai
+- Seed script `ensure_sample_showtimes.php` da duoc tao de cap showtimes/rooms/seats mau cho local
+
 ## 6. Logging, bao mat, tinh nhat quan
 
 ### 6.1 Logging
@@ -486,12 +546,15 @@ Ngoai ra da bo sung them test lien quan admin auth:
 - `tests/Feature/AdminAuthControllerTest.php`
 - `tests/Unit/AdminPageMiddlewareTest.php`
 - `tests/Unit/DefaultAdminProvisioningServiceTest.php`
+- `tests/Feature/MovieCatalogControllerTest.php`
+- `tests/Feature/ShowtimeCatalogControllerTest.php`
 
 ### 7.3 Integration tests
 
 Da them:
 
 - `tests/Integration/MovieManagementServiceIntegrationTest.php`
+- `tests/Integration/MovieCatalogServiceIntegrationTest.php`
 
 Kiem tra:
 
@@ -503,6 +566,10 @@ Kiem tra:
 - Moderate review cap nhat review va summary movie
 - OPhim import update local movie, tao category moi, replace assignments, archive asset cu va sync asset moi
 - OPhim batch import tao nhieu movie local tu list endpoint
+- Public movie catalog map data OPhim thanh contract user-side
+- Public movie detail uu tien local movie khi co local override
+- Public search goi dung OPhim search endpoint
+- Showtime seat-map service/controller tra dung contract cho user booking flow
 
 ## 8. Verification da thuc hien
 
@@ -519,6 +586,9 @@ Da syntax check thanh cong JS bang:
 - `node --check public/assets/admin/movie-management-categories.js`
 - `node --check public/assets/admin/movie-management-movie-images.js`
 - `node --check public/assets/js/app.js`
+- `node --check public/assets/js/movie-catalog.js`
+- `node --check public/assets/js/movie-detail.js`
+- `node --check public/assets/js/seat-selection.js`
 
 ### 8.2 Da chay smoke test bang PHP CLI
 
@@ -534,6 +604,11 @@ Da verify thanh cong:
 - Router support `PUT` + route param `{id}`
 - Admin login + import OPhim + list movie sau import qua HTTP endpoint that
 - Admin login + batch sync OPhim list + tang total movie trong DB that
+- Public `/api/movies` tra data that cho user catalog
+- Public `/api/movies/{slug}` tra movie detail that va da khoa source xem phim
+- Public `/api/showtimes/{id}/seat-map` tra seat map that
+- Script `scripts/ensure_sample_showtimes.php` da tao showtime local demo
+- Fix mapping poster OPhim tren public catalog (`thumb_url` cho card phim)
 
 ### 8.3 Han che hien tai khi run test
 
@@ -554,6 +629,9 @@ Tuy nhien:
 
 - `app/Controllers/Admin/AdminAuthController.php`
 - `app/Controllers/Admin/MovieManagementController.php`
+- `app/Controllers/Api/MovieCatalogController.php`
+- `app/Controllers/Api/ShowtimeCatalogController.php`
+- `app/Clients/OphimClient.php`
 - `app/Middlewares/AdminMiddleware.php`
 - `app/Middlewares/AdminPageMiddleware.php`
 - `app/Repositories/Concerns/PaginatesQueries.php`
@@ -562,22 +640,33 @@ Tuy nhien:
 - `app/Repositories/MovieImageRepository.php`
 - `app/Repositories/MovieRepository.php`
 - `app/Repositories/MovieReviewRepository.php`
+- `app/Repositories/SeatRepository.php`
+- `app/Repositories/ShowtimeRepository.php`
 - `app/Services/DefaultAdminProvisioningService.php`
+- `app/Services/MovieCatalogService.php`
 - `app/Services/MovieManagementService.php`
 - `app/Services/MovieOphimSyncService.php`
+- `app/Services/ShowtimeCatalogService.php`
 - `app/Support/Slugger.php`
+- `app/Validators/MovieCatalogValidator.php`
 - `app/Validators/MovieManagementValidator.php`
 - `scripts/ensure_default_admin.php`
+- `scripts/ensure_sample_showtimes.php`
 
 ### 9.2 File test moi
 
 - `tests/Feature/AdminAuthControllerTest.php`
+- `tests/Feature/MovieCatalogControllerTest.php`
 - `tests/Feature/MovieManagementControllerTest.php`
+- `tests/Feature/ShowtimeCatalogControllerTest.php`
+- `tests/Integration/MovieCatalogServiceIntegrationTest.php`
 - `tests/Integration/MovieManagementServiceIntegrationTest.php`
 - `tests/Unit/AdminPageMiddlewareTest.php`
 - `tests/Unit/DefaultAdminProvisioningServiceTest.php`
+- `tests/Unit/MovieCatalogServiceTest.php`
 - `tests/Unit/MovieManagementServiceTest.php`
 - `tests/Unit/MovieManagementValidatorTest.php`
+- `tests/Unit/ShowtimeCatalogServiceTest.php`
 
 ### 9.3 File da cap nhat
 
@@ -594,6 +683,9 @@ Tuy nhien:
 - `public/assets/admin/shared.css`
 - `public/assets/admin/shared.js`
 - `public/assets/js/app.js`
+- `public/assets/js/movie-catalog.js`
+- `public/assets/js/movie-detail.js`
+- `public/assets/js/seat-selection.js`
 - `public/index.php`
 - `views/admin/auth/login.php`
 - `views/admin/pages/movies/index.php`
@@ -605,6 +697,8 @@ Tuy nhien:
 - `views/pages/home.php`
 - `views/pages/movie-detail.php`
 - `views/pages/movies.php`
+- `views/pages/seat-selection.php`
+- `views/layouts/main.php`
 
 ## 10. Phan chua lam tiep
 
@@ -616,6 +710,10 @@ Trang thai hien tai:
 - `Categories`: da xong backend + admin UI that
 - `Movie Images`: da xong backend + admin UI that
 - `Reviews`: backend da co, admin UI chua noi API that
+- User `/movies`: da xong catalog/search/filter/pagination
+- User `/movie-detail`: da xong detail/trailer/gallery/showtimes
+- User `/seat-selection`: da xong seat-map read flow
+- User booking/checkout transaction that: chua xong, moi dung o muc read/select chuyen trang
 
 Con lai:
 
@@ -623,6 +721,7 @@ Con lai:
 - Upload file that / media storage that cho movie assets
 - Dong bo/import category-asset nang cao tu OPhim neu can batch sync
 - User review API cong khai neu can mo review that ben user
+- Noi `checkout`/booking transaction that theo `showtime_id + seats`
 - Test end-to-end
 - Observability nang cao
 
@@ -638,5 +737,6 @@ Con lai:
 `Phase 4`:
 
 - Hoan thien `Reviews` admin UI
+- Noi `checkout` va luu don dat ve that
 - Can nhac them batch import/sync tu OPhim cho admin
 - Neu can dat muc tieu dong nhat nguon du lieu, thiet ke quy trinh user doc tu local DB sau khi admin import
