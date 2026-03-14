@@ -52,17 +52,54 @@ const productImagesData = [
 ];
 
 function productImageFormBody(image = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Asset Name</label><input class="input" placeholder="Popcorn Combo Hero" value="${image.asset || ''}"></div>
-    <div class="field"><label>Type</label><select class="select"><option>Thumbnail</option><option>Gallery</option><option>Banner</option><option>Lifestyle</option></select></div>
-    <div class="field"><label>Product</label><input class="input" placeholder="Linked product" value="${image.product || ''}"></div>
-    <div class="field"><label>Status</label><select class="select"><option>Published</option><option>Draft</option><option>Archived</option></select></div>
-    <div class="field form-full"><label>Upload File</label><div class="upload-zone" onclick="showToast('File picker opened','info')"><p>Drop file here or <span>browse</span></p><p style="font-size:11px;margin-top:4px;color:var(--text-dim);">PNG, JPG up to 5MB</p></div></div>
+  const type = image.type || 'Thumbnail';
+  const status = image.status || 'Draft';
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Asset Delivery</div>
+      <div class="surface-card-copy">Organize thumbnails, banners, and lifestyle shots so each product has a clear visual role before real uploads are wired in.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Asset Name</label><input class="input" placeholder="Popcorn Combo Hero" value="${image.asset || ''}"></div>
+      <div class="field"><label>Product</label><input class="input" placeholder="Linked product" value="${image.product || ''}"></div>
+      <div class="field"><label>Type</label><select class="select">${buildOptions(['Thumbnail', 'Gallery', 'Banner', 'Lifestyle'], type)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Published', 'Draft', 'Archived'], status)}</select></div>
+      <div class="field"><label>Resolution</label><input class="input" placeholder="2400x1200" value="${image.resolution || ''}"></div>
+      <div class="field"><label>File Size</label><input class="input" placeholder="1.8 MB" value="${image.size || ''}"></div>
+      <div class="field"><label>Alt Text</label><input class="input" placeholder="Describe the image for accessibility" value="${image.alt || ''}"></div>
+      <div class="field"><label>Campaign Surface</label><select class="select">${buildOptions(['Product page', 'Shop hero', 'Combo upsell', 'Homepage rail'], image.surface || 'Product page')}</select></div>
+      <div class="field form-full"><label>Upload File</label><div class="upload-zone" onclick="showToast('File picker opened','info')"><p>Drop file here or <span>browse</span></p><p style="font-size:11px;margin-top:4px;color:var(--text-dim);">PNG, JPG up to 5MB</p></div></div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${image.asset || 'Product asset preview'}</div>
+          <div class="preview-banner-copy">${image.product || 'Link the asset to a product so merch, kiosk, and combo pages can reuse it consistently.'}</div>
+          <div class="meta-pills">
+            <span class="badge blue">${type}</span>
+            <span class="badge ${status === 'Archived' ? 'gray' : status === 'Draft' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge gold">${image.resolution || 'Pending size'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openProductImageModal(title, image = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, productImageFormBody(image), {
+    description: isEdit
+      ? 'Update asset metadata, product linkage, and publishing state for this media item.'
+      : 'Stage a new product image asset and preview how it will be categorized in the media library.',
+    note: 'UI preview only. Asset uploads are not persisted yet.',
+    submitLabel: isEdit ? 'Update Asset' : 'Upload Asset',
+    successMessage: isEdit ? 'Asset preview updated!' : 'Asset preview staged!',
+  });
+}
+
 function handleProductSectionAction() {
-  openModal('Upload Product Image', productImageFormBody());
+  openProductImageModal('Upload Product Image');
 }
 
 function renderProductImages(data) {
@@ -78,7 +115,7 @@ function renderProductImages(data) {
       <td>${statusBadge(image.status)}</td>
       <td><div class="actions-row">
         <button class="action-btn view" title="Preview" onclick="showToast('Previewing ${image.asset}','info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Asset', productImageFormBody({asset:'${image.asset}',product:'${image.product}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openProductImageModal('Edit Asset', {asset:'${image.asset}',product:'${image.product}',type:'${image.type}',resolution:'${image.resolution}',size:'${image.size}',status:'${image.status}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       </div></td>
     </tr>`).join('');
   document.getElementById('productImagesPagination').innerHTML = buildPagination(`Showing ${startItem}-${data.length} of ${data.length} assets`, Math.max(1, Math.ceil(data.length / 10)));

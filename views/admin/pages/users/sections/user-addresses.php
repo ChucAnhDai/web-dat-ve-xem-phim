@@ -38,18 +38,65 @@ const userAddressesData = [
 ];
 
 function addressFormBody(address = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>User</label><input class="input" placeholder="User name" value="${address.user || ''}"></div>
-    <div class="field"><label>Label</label><select class="select"><option>Home</option><option>Office</option><option>Pickup</option></select></div>
-    <div class="field form-full"><label>Address</label><input class="input" placeholder="Street address" value="${address.address || ''}"></div>
-    <div class="field"><label>City</label><input class="input" placeholder="City" value="${address.city || ''}"></div>
-    <div class="field"><label>Phone</label><input class="input" placeholder="Phone number" value="${address.phone || ''}"></div>
-    <div class="field"><label>Status</label><select class="select"><option>Verified</option><option>Pending</option><option>Blocked</option></select></div>
+  const label = address.label || 'Home';
+  const status = address.status || 'Verified';
+  const flags = address.flags || [address.primary === 'Primary' ? 'Default address' : '', label === 'Pickup' ? 'Pickup enabled' : ''].filter(Boolean);
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Address Book Entry</div>
+      <div class="surface-card-copy">Shape delivery labels, verification state, and pickup behavior so support teams can preview the full address experience before persistence.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>User</label><input class="input" placeholder="User name" value="${address.user || ''}"></div>
+      <div class="field"><label>Label</label><select class="select">${buildOptions(['Home', 'Office', 'Pickup'], label)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Verified', 'Pending', 'Blocked'], status)}</select></div>
+      <div class="field"><label>City</label><select class="select">${buildOptions(['Ho Chi Minh', 'Hanoi', 'Da Nang', 'Can Tho', 'Hai Phong'], address.city || 'Ho Chi Minh')}</select></div>
+      <div class="field"><label>District / Area</label><input class="input" placeholder="District 1" value="${address.area || ''}"></div>
+      <div class="field"><label>Phone</label><input class="input" placeholder="Phone number" value="${address.phone || ''}"></div>
+      <div class="field form-full"><label>Address</label><input class="input" placeholder="Street address" value="${address.address || ''}"></div>
+      <div class="field"><label>Landmark</label><input class="input" placeholder="Building, counter, or floor" value="${address.landmark || ''}"></div>
+      <div class="field"><label>Postal Code</label><input class="input" placeholder="700000" value="${address.postal || ''}"></div>
+      <div class="field"><label>Recipient Note</label><input class="input" placeholder="Leave at counter / call on arrival" value="${address.note || ''}"></div>
+      <div class="field form-full"><label>Address Flags</label>
+        <div class="check-grid">
+          ${['Default address', 'Invoice ready', 'Pickup enabled', 'Weekend delivery', 'Gift order profile', 'Needs verification'].map(flag => `
+            <label class="check-option">
+              <input type="checkbox"${flags.includes(flag) ? ' checked' : ''}>
+              <span>${flag}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${address.user || 'User address preview'} · ${label}</div>
+          <div class="preview-banner-copy">${address.address || 'Fill in the street, pickup point, or office location to preview how this address reads in admin.'}</div>
+          <div class="meta-pills">
+            <span class="badge blue">${address.city || 'City'}</span>
+            <span class="badge ${status === 'Blocked' ? 'red' : status === 'Pending' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge gray">${address.primary || 'Secondary'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openAddressModal(title, address = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, addressFormBody(address), {
+    description: isEdit
+      ? 'Adjust verification status, delivery details, and pickup flags for this saved address.'
+      : 'Create a new saved address entry with delivery and pickup preferences.',
+    note: 'UI preview only. Address data is not persisted yet.',
+    submitLabel: isEdit ? 'Update Address' : 'Create Address',
+    successMessage: isEdit ? 'Address preview updated!' : 'Address preview staged!',
+  });
+}
+
 function handleUserSectionAction() {
-  openModal('Add Address', addressFormBody());
+  openAddressModal('Add Address');
 }
 
 function renderAddresses(data) {
@@ -63,7 +110,7 @@ function renderAddresses(data) {
       <td><span class="badge ${address.primary === 'Primary' ? 'blue' : 'gray'}">${address.primary}</span></td>
       <td>${statusBadge(address.status)}</td>
       <td><div class="actions-row">
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Address', addressFormBody({user:'${address.user}',address:'${address.address}',city:'${address.city}',phone:'${address.phone}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openAddressModal('Edit Address', {user:'${address.user}',label:'${address.label}',address:'${address.address}',city:'${address.city}',phone:'${address.phone}',primary:'${address.primary}',status:'${address.status}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       </div></td>
     </tr>`).join('');
 }

@@ -83,7 +83,7 @@ function renderMovies(data) {
         <button class="action-btn view" title="View" onclick="showToast('Viewing ${m.title}','info')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Movie', movieFormBody({title:'${m.title}',cat:'${m.cat}',dur:'${m.dur}',release:'${m.release}',rating:${m.rating}}))">
+        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Movie', movieFormBody({title:'${m.title}',cat:'${m.cat}',dur:'${m.dur}',release:'${m.release}',rating:${m.rating},status:'${m.status}'}))">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         <button class="action-btn del" title="Delete" onclick="showToast('${m.title} deleted','error')">

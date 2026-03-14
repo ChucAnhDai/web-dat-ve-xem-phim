@@ -37,6 +37,38 @@
 
 <script>
 function handleDashboardSectionAction() {
-  showToast('System settings saved', 'success');
+  const body = `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Control Center Preview</div>
+      <div class="surface-card-copy">Adjust site-wide defaults for booking, support, and integrations in a single staging form before wiring persistence.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Site Name</label><input class="input" value="CineShop Admin"></div>
+      <div class="field"><label>Timezone</label><select class="select">${buildOptions(['Asia/Saigon', 'Asia/Bangkok', 'UTC'], 'Asia/Saigon')}</select></div>
+      <div class="field"><label>Support Email</label><input class="input" value="support@cineshop.com"></div>
+      <div class="field"><label>Currency</label><select class="select">${buildOptions(['USD', 'VND'], 'USD')}</select></div>
+      <div class="field"><label>Seat Hold (min)</label><input class="input" value="10"></div>
+      <div class="field"><label>Refund Window (hours)</label><input class="input" value="24"></div>
+      <div class="field"><label>Max Seats / Order</label><input class="input" value="10"></div>
+      <div class="field"><label>Auto Release</label><select class="select">${buildOptions(['Enabled', 'Disabled'], 'Enabled')}</select></div>
+      <div class="field form-full"><label>Integration Alerts</label>
+        <div class="check-grid">
+          ${['Gateway sync warnings', 'Storage quota alerts', 'Mail queue alerts', 'Settlement anomalies', 'Booking release issues', 'Staff login alerts'].map(item => `
+            <label class="check-option">
+              <input type="checkbox" checked>
+              <span>${item}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+
+  openModal('Save Settings', body, {
+    description: 'Review the global platform defaults and integration alerting rules before saving settings.',
+    note: 'UI preview only. System settings are not persisted yet.',
+    submitLabel: 'Save Settings',
+    successMessage: 'System settings preview updated!',
+  });
 }
 </script>

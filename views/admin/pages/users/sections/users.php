@@ -42,13 +42,48 @@ const usersData = [
 ];
 
 function userFormBody(user = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Full Name</label><input class="input" placeholder="Full name" value="${user.name || ''}"></div>
-    <div class="field"><label>Email</label><input class="input" type="email" placeholder="email@example.com" value="${user.email || ''}"></div>
-    <div class="field"><label>Phone</label><input class="input" placeholder="+84 ..." value="${user.phone || ''}"></div>
-    <div class="field"><label>Role</label><select class="select"><option>Customer</option><option>Staff</option><option>Admin</option></select></div>
-    <div class="field"><label>Status</label><select class="select"><option>Active</option><option>Suspended</option><option>Pending</option></select></div>
-    <div class="field"><label>Password</label><input class="input" type="password" placeholder="Set new password"></div>
+  const role = user.role || 'Customer';
+  const status = user.status || 'Active';
+  const preferences = user.preferences || ['Email alerts', 'Order updates'];
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Account Setup</div>
+      <div class="surface-card-copy">Stage account access, communication preferences, and loyalty context so staff can preview a full customer or admin profile without backend save yet.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input class="input" placeholder="Full name" value="${user.name || ''}"></div>
+      <div class="field"><label>Email</label><input class="input" type="email" placeholder="email@example.com" value="${user.email || ''}"></div>
+      <div class="field"><label>Phone</label><input class="input" placeholder="+84 ..." value="${user.phone || ''}"></div>
+      <div class="field"><label>Role</label><select class="select">${buildOptions(['Customer', 'Staff', 'Admin'], role)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Suspended', 'Pending'], status)}</select></div>
+      <div class="field"><label>Password</label><input class="input" type="password" placeholder="Set new password"></div>
+      <div class="field"><label>Loyalty Tier</label><select class="select">${buildOptions(['Standard', 'Silver', 'Gold', 'VIP'], user.tier || 'Standard')}</select></div>
+      <div class="field"><label>Joined Date</label><input class="input" type="date" value="${user.joined || ''}"></div>
+      <div class="field"><label>Preferred City</label><select class="select">${buildOptions(['Ho Chi Minh', 'Hanoi', 'Da Nang', 'Can Tho', 'Hai Phong'], user.city || 'Ho Chi Minh')}</select></div>
+      <div class="field"><label>Notes</label><input class="input" placeholder="Member note or staff context" value="${user.note || ''}"></div>
+      <div class="field form-full"><label>Communication Preferences</label>
+        <div class="check-grid">
+          ${['Email alerts', 'SMS alerts', 'Order updates', 'Marketing news', 'Review reminders', 'Admin announcements'].map(item => `
+            <label class="check-option">
+              <input type="checkbox"${preferences.includes(item) ? ' checked' : ''}>
+              <span>${item}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${user.name || 'New user profile'}</div>
+          <div class="preview-banner-copy">${user.email || 'Add the primary email and profile context so support teams can quickly understand this account.'}</div>
+          <div class="meta-pills">
+            <span class="badge ${role === 'Admin' ? 'red' : role === 'Staff' ? 'gold' : 'gray'}">${role}</span>
+            <span class="badge ${status === 'Suspended' ? 'red' : status === 'Pending' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge blue">${user.tier || 'Standard'} tier</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -58,8 +93,20 @@ function viewUser(name) {
   openModal('User Profile', `<div style="display:flex;gap:16px;align-items:center;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);"><div style="width:60px;height:60px;border-radius:12px;background:${user.color}22;color:${user.color};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">${user.name.charAt(0)}</div><div><div style="font-size:18px;font-weight:700;">${user.name}</div><div style="font-size:13px;color:var(--text-muted);">Joined ${user.joined}</div><div style="margin-top:6px;">${statusBadge(user.role)} ${statusBadge(user.status)}</div></div></div><div class="form-grid"><div class="field"><label>Email</label><input class="input" value="${user.email}" readonly></div><div class="field"><label>Phone</label><input class="input" value="${user.phone}" readonly></div><div class="field"><label>Total Orders</label><input class="input" value="${user.orders} orders" readonly></div><div class="field"><label>Reviews</label><input class="input" value="${user.reviews}" readonly></div></div>`);
 }
 
+function openUserModal(title, user = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, userFormBody(user), {
+    description: isEdit
+      ? 'Update profile access, notification preferences, and account status for this user.'
+      : 'Create a new user profile with access level, contact details, and communication settings.',
+    note: 'UI preview only. User records are not persisted yet.',
+    submitLabel: isEdit ? 'Update User' : 'Create User',
+    successMessage: isEdit ? 'User preview updated!' : 'User preview staged!',
+  });
+}
+
 function handleUserSectionAction() {
-  openModal('Add New User', userFormBody());
+  openUserModal('Add New User');
 }
 
 function renderUsers(data) {
@@ -76,7 +123,7 @@ function renderUsers(data) {
       <td class="td-muted">${user.joined}</td>
       <td><div class="actions-row">
         <button class="action-btn view" title="View" onclick="viewUser('${user.name}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit User', userFormBody({name:'${user.name}',email:'${user.email}',phone:'${user.phone}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openUserModal('Edit User', {name:'${user.name}',email:'${user.email}',phone:'${user.phone}',role:'${user.role}',status:'${user.status}',joined:'${user.joined}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
         <button class="action-btn del" title="Suspend" onclick="showToast('User suspended','warning')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
       </div></td>
     </tr>`).join('');

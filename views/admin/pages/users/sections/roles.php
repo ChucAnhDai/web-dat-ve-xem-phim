@@ -50,18 +50,71 @@ const rolesData = [
   {name:'Support',color:'blue',desc:'Can review tickets, orders, and address issues.',users:5,permissions:['Read','Manage Orders','View Reports'],status:'Pending'},
 ];
 
+function buildRoleColorOptions(selectedColor = 'blue') {
+  return [
+    {label:'Red', value:'red'},
+    {label:'Gold', value:'gold'},
+    {label:'Blue', value:'blue'},
+    {label:'Gray', value:'gray'},
+  ].map(color => `<option value="${color.value}"${color.value === selectedColor ? ' selected' : ''}>${color.label}</option>`).join('');
+}
+
 function roleFormBody(role = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Role Name</label><input class="input" placeholder="Moderator" value="${role.name || ''}"></div>
-    <div class="field"><label>Color</label><select class="select"><option>Red</option><option>Gold</option><option>Blue</option><option>Gray</option></select></div>
-    <div class="field"><label>Status</label><select class="select"><option>Active</option><option>Pending</option><option>Cancelled</option></select></div>
-    <div class="field form-full"><label>Description</label><input class="input" placeholder="Role description" value="${role.desc || ''}"></div>
-    <div class="field form-full"><label>Permissions</label><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">${['Read','Write','Delete','Manage Users','Manage Movies','Manage Orders','Manage Payments','View Reports'].map(permission => `<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" style="accent-color:var(--red);">${permission}</label>`).join('')}</div></div>
+  const color = role.color || 'blue';
+  const status = role.status || 'Active';
+  const selectedPermissions = role.permissions || ['Read', 'Write', 'View Reports'];
+  const permissions = ['Read', 'Write', 'Delete', 'Manage Users', 'Manage Movies', 'Manage Orders', 'Manage Payments', 'View Reports', 'Book', 'Purchase', 'Review'];
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Role Blueprint</div>
+      <div class="surface-card-copy">Preview access boundaries, responsibility scope, and permission bundles so admin teams can shape roles before wiring actual policy enforcement.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Role Name</label><input class="input" placeholder="Moderator" value="${role.name || ''}"></div>
+      <div class="field"><label>Color</label><select class="select">${buildRoleColorOptions(color)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Pending', 'Cancelled'], status)}</select></div>
+      <div class="field"><label>Scope</label><select class="select">${buildOptions(['Global', 'Operations', 'Storefront', 'Support'], role.scope || 'Operations')}</select></div>
+      <div class="field form-full"><label>Description</label><input class="input" placeholder="Role description" value="${role.desc || ''}"></div>
+      <div class="field form-full"><label>Permissions</label>
+        <div class="check-grid">
+          ${permissions.map(permission => `
+            <label class="check-option">
+              <input type="checkbox"${selectedPermissions.includes(permission) ? ' checked' : ''}>
+              <span>${permission}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${role.name || 'Role preview'}</div>
+          <div class="preview-banner-copy">${role.desc || 'Describe the responsibility boundary for this role so permission choices feel intentional.'}</div>
+          <div class="meta-pills">
+            <span class="badge ${color}">${color}</span>
+            <span class="badge ${status === 'Cancelled' ? 'red' : status === 'Pending' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge blue">${selectedPermissions.length} permissions</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openRoleModal(title, role = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, roleFormBody(role), {
+    description: isEdit
+      ? 'Adjust access scope, permission packs, and lifecycle state for this admin role.'
+      : 'Create a new role with a clear access blueprint and reusable permission set.',
+    note: 'UI preview only. Role policies are not persisted yet.',
+    submitLabel: isEdit ? 'Update Role' : 'Create Role',
+    successMessage: isEdit ? 'Role preview updated!' : 'Role preview staged!',
+  });
+}
+
 function handleUserSectionAction() {
-  openModal('Add Role', roleFormBody());
+  openRoleModal('Add Role');
 }
 
 function renderRoleSummary() {
@@ -81,7 +134,7 @@ function renderRoles(data) {
       <td><div style="display:flex;gap:4px;flex-wrap:wrap;">${role.permissions.map(permission => `<span class="badge blue">${permission}</span>`).join('')}</div></td>
       <td>${statusBadge(role.status)}</td>
       <td><div class="actions-row">
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Role', roleFormBody({name:'${role.name}',desc:'${role.desc}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openRoleModal('Edit Role', rolesData.find(item => item.name === '${role.name}'))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       </div></td>
     </tr>`).join('');
 }

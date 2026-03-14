@@ -33,15 +33,59 @@ const bannerData = [
 ];
 
 function bannerFormBody(banner = {}) {
-  return `<div class="form-grid"><div class="field"><label>Banner Name</label><input class="input" placeholder="Hero Slider 01" value="${banner.name || ''}"></div><div class="field"><label>Placement</label><select class="select"><option>Homepage Hero</option><option>Homepage Grid</option><option>Checkout Promo</option><option>Shop Hero</option></select></div><div class="field"><label>Status</label><select class="select"><option>Active</option><option>Scheduled</option><option>Draft</option></select></div><div class="field form-full"><label>Campaign</label><input class="input" placeholder="Campaign name" value="${banner.campaign || ''}"></div><div class="field"><label>Start Date</label><input class="input" type="date"></div><div class="field"><label>End Date</label><input class="input" type="date"></div></div>`;
+  const placement = banner.placement || 'Homepage Hero';
+  const status = banner.status || 'Draft';
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Campaign Placement</div>
+      <div class="surface-card-copy">Prepare the banner creative, rollout window, and placement priority for homepage, checkout, or shop slots.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Banner Name</label><input class="input" placeholder="Hero Slider 01" value="${banner.name || ''}"></div>
+      <div class="field"><label>Placement</label><select class="select">${buildOptions(['Homepage Hero', 'Homepage Grid', 'Checkout Promo', 'Shop Hero', 'Members Area'], placement)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Scheduled', 'Draft'], status)}</select></div>
+      <div class="field"><label>Priority Slot</label><select class="select">${buildOptions(['Primary', 'Secondary', 'Support', 'Experimental'], banner.priority || 'Primary')}</select></div>
+      <div class="field form-full"><label>Campaign</label><input class="input" placeholder="Campaign name" value="${banner.campaign || ''}"></div>
+      <div class="field"><label>Start Date</label><input class="input" type="date" value="${banner.start || ''}"></div>
+      <div class="field"><label>End Date</label><input class="input" type="date" value="${banner.end || ''}"></div>
+      <div class="field"><label>CTA Label</label><input class="input" placeholder="Book now" value="${banner.cta || ''}"></div>
+      <div class="field"><label>Destination</label><select class="select">${buildOptions(['Movie Detail', 'Promotion Landing', 'Shop Collection', 'Membership Page'], banner.destination || 'Promotion Landing')}</select></div>
+      <div class="field form-full"><label>Copy Note</label><textarea class="textarea" placeholder="Short supporting copy for the banner...">${banner.copy || ''}</textarea></div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${banner.name || 'Banner preview'}</div>
+          <div class="preview-banner-copy">${banner.campaign || 'Attach a campaign and short message so the hero area feels intentional before backend wiring.'}</div>
+          <div class="meta-pills">
+            <span class="badge blue">${placement}</span>
+            <span class="badge ${status === 'Draft' ? 'gray' : status === 'Scheduled' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge gold">${banner.priority || 'Primary'} slot</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openBannerModal(title, banner = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, bannerFormBody(banner), {
+    description: isEdit
+      ? 'Adjust placement, schedule, and rollout copy for this banner slot.'
+      : 'Create a new campaign banner and stage how it appears across the admin storefront.',
+    note: 'UI preview only. Banner content is not persisted yet.',
+    submitLabel: isEdit ? 'Update Banner' : 'Create Banner',
+    successMessage: isEdit ? 'Banner preview updated!' : 'Banner preview staged!',
+  });
 }
 
 function handleDashboardSectionAction() {
-  openModal('Add Banner', bannerFormBody());
+  openBannerModal('Add Banner');
 }
 
 function renderBanners(data) {
-  document.getElementById('bannerBody').innerHTML = data.map(banner => `<tr><td><div style="display:flex;align-items:center;gap:10px;"><div class="poster-img-placeholder">${banner.code}</div><div class="td-bold">${banner.name}</div></div></td><td class="td-muted">${banner.placement}</td><td class="td-muted">${banner.campaign}</td><td class="td-muted">${banner.schedule}</td><td>${statusBadge(banner.status)}</td><td><div class="actions-row"><button class="action-btn edit" title="Edit" onclick="openModal('Edit Banner', bannerFormBody({name:'${banner.name}',campaign:'${banner.campaign}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>`).join('');
+  document.getElementById('bannerBody').innerHTML = data.map(banner => `<tr><td><div style="display:flex;align-items:center;gap:10px;"><div class="poster-img-placeholder">${banner.code}</div><div class="td-bold">${banner.name}</div></div></td><td class="td-muted">${banner.placement}</td><td class="td-muted">${banner.campaign}</td><td class="td-muted">${banner.schedule}</td><td>${statusBadge(banner.status)}</td><td><div class="actions-row"><button class="action-btn edit" title="Edit" onclick="openBannerModal('Edit Banner', {name:'${banner.name}',placement:'${banner.placement}',campaign:'${banner.campaign}',status:'${banner.status}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>`).join('');
 }
 
 function filterBanners(q) {

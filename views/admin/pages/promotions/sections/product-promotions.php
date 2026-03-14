@@ -38,16 +38,54 @@ const productPromotionsData = [
 ];
 
 function assignPromoFormBody(assignment = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Product</label><input class="input" placeholder="Large Popcorn Combo" value="${assignment.product || ''}"></div>
-    <div class="field"><label>Promotion</label><input class="input" placeholder="SUMMER25" value="${assignment.code || ''}"></div>
-    <div class="field"><label>Valid From</label><input class="input" type="date"></div>
-    <div class="field"><label>Valid Until</label><input class="input" type="date" value="${assignment.until || ''}"></div>
+  const status = assignment.status || 'Active';
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Product Offer Mapping</div>
+      <div class="surface-card-copy">Attach promotions to individual products, tune campaign timing, and preview savings before actual pricing rules are connected.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Product</label><input class="input" placeholder="Large Popcorn Combo" value="${assignment.product || ''}"></div>
+      <div class="field"><label>Promotion</label><input class="input" placeholder="SUMMER25" value="${assignment.code || ''}"></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Coming Soon', 'Ended'], status)}</select></div>
+      <div class="field"><label>Priority</label><select class="select">${buildOptions(['Primary', 'Secondary', 'Fallback'], assignment.priority || 'Primary')}</select></div>
+      <div class="field"><label>Valid From</label><input class="input" type="date" value="${assignment.from || ''}"></div>
+      <div class="field"><label>Valid Until</label><input class="input" type="date" value="${assignment.until || ''}"></div>
+      <div class="field"><label>Original Price</label><input class="input" placeholder="$8.50" value="${assignment.orig || ''}"></div>
+      <div class="field"><label>Discounted Price</label><input class="input" placeholder="$6.37" value="${assignment.disc || ''}"></div>
+      <div class="field"><label>Savings Copy</label><input class="input" placeholder="$2.13" value="${assignment.save || ''}"></div>
+      <div class="field"><label>Display Surface</label><select class="select">${buildOptions(['Snack shop grid', 'Combo upsell', 'Checkout cross-sell', 'Homepage campaign'], assignment.surface || 'Snack shop grid')}</select></div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${assignment.product || 'Product promotion preview'}</div>
+          <div class="preview-banner-copy">${assignment.code || 'PROMO'} lowers the item from ${assignment.orig || 'original price'} to ${assignment.disc || 'discounted price'} before backend pricing sync.</div>
+          <div class="meta-pills">
+            <span class="badge gold">${assignment.code || 'CODE'}</span>
+            <span class="badge ${status === 'Ended' ? 'gray' : status === 'Coming Soon' ? 'blue' : 'green'}">${status}</span>
+            <span class="badge red">${assignment.save || 'Savings'}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openPromotionAssignmentModal(title, assignment = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, assignPromoFormBody(assignment), {
+    description: isEdit
+      ? 'Update timing, savings, and storefront priority for this product-level promotion.'
+      : 'Assign a promotion to a product and preview the price drop across the storefront.',
+    note: 'UI preview only. Product promotion assignments are not persisted yet.',
+    submitLabel: isEdit ? 'Update Assignment' : 'Assign Promotion',
+    successMessage: isEdit ? 'Assignment preview updated!' : 'Assignment preview staged!',
+  });
+}
+
 function handlePromotionSectionAction() {
-  openModal('Assign Promotion', assignPromoFormBody());
+  openPromotionAssignmentModal('Assign Promotion');
 }
 
 function renderProductPromotions(data) {
@@ -61,7 +99,7 @@ function renderProductPromotions(data) {
       <td class="td-muted">${item.until}</td>
       <td>${statusBadge(item.status)}</td>
       <td><div class="actions-row">
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Assignment', assignPromoFormBody({product:'${item.product}',code:'${item.code}',until:'${item.until}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openPromotionAssignmentModal('Edit Assignment', {product:'${item.product}',code:'${item.code}',orig:'${item.orig}',disc:'${item.disc}',save:'${item.save}',until:'${item.until}',status:'${item.status}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
         <button class="action-btn del" title="Remove" onclick="showToast('Promo removed','error')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
       </div></td>
     </tr>`).join('');

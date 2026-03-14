@@ -33,15 +33,58 @@ const notificationsData = [
 ];
 
 function notificationFormBody(notification = {}) {
-  return `<div class="form-grid"><div class="field"><label>Title</label><input class="input" placeholder="Weekend promo blast" value="${notification.title || ''}"></div><div class="field"><label>Channel</label><select class="select"><option>Push</option><option>Email</option><option>Push + Email</option><option>In-app</option></select></div><div class="field"><label>Audience</label><input class="input" placeholder="All users" value="${notification.audience || ''}"></div><div class="field"><label>Status</label><select class="select"><option>Draft</option><option>Scheduled</option><option>Sent</option></select></div><div class="field form-full"><label>Message</label><textarea class="textarea" placeholder="Notification body"></textarea></div></div>`;
+  const channel = notification.channel || 'Push + Email';
+  const status = notification.status || 'Draft';
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Audience Delivery</div>
+      <div class="surface-card-copy">Stage the message, target audience, and timing before wiring real delivery logic.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Title</label><input class="input" placeholder="Weekend promo blast" value="${notification.title || ''}"></div>
+      <div class="field"><label>Channel</label><select class="select">${buildOptions(['Push', 'Email', 'Push + Email', 'In-app', 'Push + Banner'], channel)}</select></div>
+      <div class="field"><label>Audience</label><input class="input" placeholder="All users" value="${notification.audience || ''}"></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Draft', 'Scheduled', 'Sent'], status)}</select></div>
+      <div class="field"><label>Schedule Date</label><input class="input" type="date" value="${notification.date || ''}"></div>
+      <div class="field"><label>Schedule Time</label><input class="input" type="time" value="${notification.time || ''}"></div>
+      <div class="field"><label>Priority</label><select class="select">${buildOptions(['Standard', 'High Visibility', 'Critical'], notification.priority || 'Standard')}</select></div>
+      <div class="field"><label>Fallback CTA</label><input class="input" placeholder="View offer" value="${notification.cta || ''}"></div>
+      <div class="field form-full"><label>Message</label><textarea class="textarea" placeholder="Notification body">${notification.message || ''}</textarea></div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${notification.title || 'Notification preview'}</div>
+          <div class="preview-banner-copy">${notification.message || 'Use a concise message that works well across push, email, and in-app layouts.'}</div>
+          <div class="meta-pills">
+            <span class="badge blue">${channel}</span>
+            <span class="badge gray">${notification.audience || 'Audience not set'}</span>
+            <span class="badge ${status === 'Sent' ? 'green' : status === 'Scheduled' ? 'orange' : 'gray'}">${status}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openNotificationModal(title, notification = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, notificationFormBody(notification), {
+    description: isEdit
+      ? 'Update message copy, audience targeting, and send timing for this notification.'
+      : 'Compose a new notice and preview its tone before connecting real delivery.',
+    note: 'UI preview only. Notifications are not sent from this prototype.',
+    submitLabel: isEdit ? 'Update Notice' : 'Create Notice',
+    successMessage: isEdit ? 'Notification preview updated!' : 'Notification preview staged!',
+  });
 }
 
 function handleDashboardSectionAction() {
-  openModal('Compose Notification', notificationFormBody());
+  openNotificationModal('Compose Notification');
 }
 
 function renderNotifications(data) {
-  document.getElementById('notificationsBody').innerHTML = data.map(item => `<tr><td><div class="td-bold">${item.title}</div></td><td class="td-muted">${item.channel}</td><td class="td-muted">${item.audience}</td><td class="td-muted">${item.scheduled}</td><td>${statusBadge(item.status)}</td><td><div class="actions-row"><button class="action-btn edit" title="Edit" onclick="openModal('Edit Notification', notificationFormBody({title:'${item.title}',audience:'${item.audience}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>`).join('');
+  document.getElementById('notificationsBody').innerHTML = data.map(item => `<tr><td><div class="td-bold">${item.title}</div></td><td class="td-muted">${item.channel}</td><td class="td-muted">${item.audience}</td><td class="td-muted">${item.scheduled}</td><td>${statusBadge(item.status)}</td><td><div class="actions-row"><button class="action-btn edit" title="Edit" onclick="openNotificationModal('Edit Notification', {title:'${item.title}',channel:'${item.channel}',audience:'${item.audience}',status:'${item.status}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td></tr>`).join('');
 }
 
 function filterNotifications(q) {

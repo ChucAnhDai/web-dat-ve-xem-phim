@@ -70,21 +70,71 @@ const cinemaRecords = [
 ];
 
 function cinemaFormBody(cinema = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Cinema Name</label><input class="input" placeholder="CineShop ..." value="${cinema.name || ''}"></div>
-    <div class="field"><label>City</label><select class="select"><option>Ho Chi Minh</option><option>Hanoi</option><option>Da Nang</option><option>Can Tho</option><option>Hai Phong</option></select></div>
-    <div class="field form-full"><label>Address</label><input class="input" placeholder="Full address" value="${cinema.addr || ''}"></div>
-    <div class="field"><label>Phone</label><input class="input" placeholder="+84 ..." value="${cinema.phone || ''}"></div>
-    <div class="field"><label>Manager Name</label><input class="input" placeholder="Manager full name" value="${cinema.manager || ''}"></div>
-    <div class="field"><label>Latitude</label><input class="input" placeholder="10.7769" value="${cinema.lat || ''}"></div>
-    <div class="field"><label>Longitude</label><input class="input" placeholder="106.7009" value="${cinema.lng || ''}"></div>
-    <div class="field"><label>Status</label><select class="select"><option>Active</option><option>Renovation</option><option>Closed</option></select></div>
-    <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Cinema description...">${cinema.desc || ''}</textarea></div>
+  const city = cinema.city || 'Ho Chi Minh';
+  const status = cinema.status || 'Active';
+  const experience = cinema.experience || 'Flagship';
+  const features = cinema.features || ['Parking', 'Premium lounge', 'Online pickup'];
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Location Launch Setup</div>
+      <div class="surface-card-copy">Shape how each cinema appears in the network map, which manager owns it, and which guest conveniences are highlighted before backend wiring.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Cinema Name</label><input class="input" placeholder="CineShop ..." value="${cinema.name || ''}"></div>
+      <div class="field"><label>City</label><select class="select">${buildOptions(['Ho Chi Minh', 'Hanoi', 'Da Nang', 'Can Tho', 'Hai Phong'], city)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Renovation', 'Closed'], status)}</select></div>
+      <div class="field"><label>Experience Tier</label><select class="select">${buildOptions(['Flagship', 'Regional Hub', 'Neighborhood', 'Pop-up'], experience)}</select></div>
+      <div class="field"><label>Manager Name</label><input class="input" placeholder="Manager full name" value="${cinema.manager || ''}"></div>
+      <div class="field"><label>Support Phone</label><input class="input" placeholder="+84 ..." value="${cinema.phone || ''}"></div>
+      <div class="field"><label>Rooms</label><input class="input" type="number" placeholder="8" value="${cinema.rooms || ''}"></div>
+      <div class="field"><label>Total Seats</label><input class="input" type="number" placeholder="1240" value="${cinema.seats || ''}"></div>
+      <div class="field"><label>Operating Hours</label><input class="input" placeholder="09:00 - 23:30" value="${cinema.hours || '09:00 - 23:30'}"></div>
+      <div class="field"><label>Launch Priority</label><select class="select">${buildOptions(['Immediate', 'This Week', 'This Month', 'Planning'], cinema.priority || 'Immediate')}</select></div>
+      <div class="field form-full"><label>Address</label><input class="input" placeholder="Full address" value="${cinema.addr || ''}"></div>
+      <div class="field"><label>Latitude</label><input class="input" placeholder="10.7769" value="${cinema.lat || ''}"></div>
+      <div class="field"><label>Longitude</label><input class="input" placeholder="106.7009" value="${cinema.lng || ''}"></div>
+      <div class="field form-full"><label>Guest Experience</label>
+        <div class="check-grid">
+          ${['Parking', 'Premium lounge', 'Online pickup', 'Wheelchair access', 'Kids zone', 'Late-night service'].map(feature => `
+            <label class="check-option">
+              <input type="checkbox"${features.includes(feature) ? ' checked' : ''}>
+              <span>${feature}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field form-full"><label>Location Note</label><textarea class="textarea" placeholder="Brief note for launch, renovation, or guest guidance...">${cinema.desc || ''}</textarea></div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${cinema.name || 'New cinema location'}</div>
+          <div class="preview-banner-copy">${cinema.addr || 'Add the street address and guest-facing note so the location card feels complete in admin previews.'}</div>
+          <div class="meta-pills">
+            <span class="badge blue">${city}</span>
+            <span class="badge ${status === 'Closed' ? 'red' : status === 'Renovation' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge gold">${cinema.rooms || '--'} rooms</span>
+            <span class="badge gray">${cinema.seats || '--'} seats</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openCinemaModal(title, cinema = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, cinemaFormBody(cinema), {
+    description: isEdit
+      ? 'Update the city, operations profile, and guest-facing amenities for this location.'
+      : 'Create a new cinema profile with launch details, seating capacity, and operational notes.',
+    note: 'UI preview only. Cinema information is not persisted yet.',
+    submitLabel: isEdit ? 'Update Cinema' : 'Create Cinema',
+    successMessage: isEdit ? 'Cinema preview updated!' : 'Cinema preview staged!',
+  });
+}
+
 function handleCinemaSectionAction() {
-  openModal('Add Cinema', cinemaFormBody());
+  openCinemaModal('Add Cinema');
 }
 
 function renderCinemas(data) {
@@ -102,7 +152,7 @@ function renderCinemas(data) {
         <button class="action-btn view" title="View" onclick="showToast('Viewing ${cinema.name}','info')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Cinema', cinemaFormBody({name:'${cinema.name}',addr:'${cinema.addr}',manager:'${cinema.manager}'}))">
+        <button class="action-btn edit" title="Edit" onclick="openCinemaModal('Edit Cinema', {name:'${cinema.name}',city:'${cinema.city}',addr:'${cinema.addr}',manager:'${cinema.manager}',rooms:'${cinema.rooms}',seats:'${cinema.seats}',status:'${cinema.status}'})">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         <button class="action-btn gold" title="Rooms" onclick="window.location.href='<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin/cinemas?section=rooms'">

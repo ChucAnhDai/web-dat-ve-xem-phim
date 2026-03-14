@@ -18,21 +18,67 @@ const promotionsData = [
 ];
 
 function promoFormBody(promo = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Promotion Title</label><input class="input" placeholder="Summer Cinema Blast" value="${promo.title || ''}"></div>
-    <div class="field"><label>Promo Code</label><input class="input" placeholder="SUMMER25" style="text-transform:uppercase;font-family:monospace;" value="${promo.code || ''}"></div>
-    <div class="field"><label>Discount Type</label><select class="select"><option>Percentage (%)</option><option>Fixed Amount ($)</option></select></div>
-    <div class="field"><label>Discount Value</label><input class="input" type="number" placeholder="25" value="${promo.disc || ''}"></div>
-    <div class="field"><label>Applies To</label><select class="select"><option>All</option><option>Cinema Tickets</option><option>Shop Products</option></select></div>
-    <div class="field"><label>Max Uses</label><input class="input" type="number" placeholder="Unlimited"></div>
-    <div class="field"><label>Start Date</label><input class="input" type="date" value="${promo.start || ''}"></div>
-    <div class="field"><label>End Date</label><input class="input" type="date" value="${promo.end || ''}"></div>
-    <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Promotion description"></textarea></div>
+  const appliesTo = promo.type || 'All';
+  const status = promo.status || 'Draft';
+  const channels = promo.channels || ['Homepage slot', 'Checkout banner'];
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Campaign Offer Setup</div>
+      <div class="surface-card-copy">Configure the discount mechanics, campaign window, and storefront surfaces so each promo feels launch-ready in the admin preview.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Promotion Title</label><input class="input" placeholder="Summer Cinema Blast" value="${promo.title || ''}"></div>
+      <div class="field"><label>Promo Code</label><input class="input" placeholder="SUMMER25" style="text-transform:uppercase;font-family:monospace;" value="${promo.code || ''}"></div>
+      <div class="field"><label>Discount Type</label><select class="select">${buildOptions(['Percentage (%)', 'Fixed Amount ($)'], promo.discountType || 'Percentage (%)')}</select></div>
+      <div class="field"><label>Discount Value</label><input class="input" type="number" placeholder="25" value="${promo.disc || ''}"></div>
+      <div class="field"><label>Applies To</label><select class="select">${buildOptions(['All', 'Cinema', 'Shop'], appliesTo)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Draft', 'Active', 'Coming Soon', 'Ended'], status)}</select></div>
+      <div class="field"><label>Max Uses</label><input class="input" type="number" placeholder="Unlimited" value="${promo.maxUses || ''}"></div>
+      <div class="field"><label>Minimum Spend</label><input class="input" placeholder="$0" value="${promo.minimum || ''}"></div>
+      <div class="field"><label>Start Date</label><input class="input" type="date" value="${promo.start || ''}"></div>
+      <div class="field"><label>End Date</label><input class="input" type="date" value="${promo.end || ''}"></div>
+      <div class="field"><label>Audience</label><select class="select">${buildOptions(['All guests', 'Members only', 'Students', 'First purchase'], promo.audience || 'All guests')}</select></div>
+      <div class="field form-full"><label>Promotion Surfaces</label>
+        <div class="check-grid">
+          ${['Homepage slot', 'Checkout banner', 'Membership hub', 'Movie detail page', 'Snack shop grid', 'Email campaign'].map(channel => `
+            <label class="check-option">
+              <input type="checkbox"${channels.includes(channel) ? ' checked' : ''}>
+              <span>${channel}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Promotion description">${promo.description || ''}</textarea></div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${promo.title || 'Promotion preview'}</div>
+          <div class="preview-banner-copy">${promo.code || 'PROMO'} · ${promo.disc || '--'} ${promo.discountType === 'Fixed Amount ($)' ? 'USD' : '%'} off for ${appliesTo.toLowerCase()} orders.</div>
+          <div class="meta-pills">
+            <span class="badge gold">${promo.code || 'CODE'}</span>
+            <span class="badge blue">${appliesTo}</span>
+            <span class="badge ${status === 'Ended' ? 'gray' : status === 'Coming Soon' ? 'blue' : status === 'Draft' ? 'orange' : 'green'}">${status}</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openPromotionModal(title, promo = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, promoFormBody(promo), {
+    description: isEdit
+      ? 'Update the campaign window, discount setup, and rollout surfaces for this promotion.'
+      : 'Create a new promotion and preview how it should launch across cinema and shop touchpoints.',
+    note: 'UI preview only. Promotion settings are not persisted yet.',
+    submitLabel: isEdit ? 'Update Promotion' : 'Create Promotion',
+    successMessage: isEdit ? 'Promotion preview updated!' : 'Promotion preview staged!',
+  });
+}
+
 function handlePromotionSectionAction() {
-  openModal('New Promotion', promoFormBody());
+  openPromotionModal('New Promotion');
 }
 
 function renderPromotions() {
@@ -49,7 +95,7 @@ function renderPromotions() {
       </div>
       <div class="promo-dates">${promo.start} - ${promo.end} / ${promo.used.toLocaleString()} used</div>
       <div class="promo-actions">
-        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="openModal('Edit Promotion', promoFormBody({title:'${promo.title}',code:'${promo.code}',disc:${promo.disc},start:'${promo.start}',end:'${promo.end}'}))">Edit</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1;" onclick="openPromotionModal('Edit Promotion', {title:'${promo.title}',code:'${promo.code}',disc:${promo.disc},type:'${promo.type}',start:'${promo.start}',end:'${promo.end}',status:'${promo.status}'})">Edit</button>
         <button class="btn btn-ghost btn-sm" onclick="showToast('${promo.code} copied','success')">Copy</button>
         <button class="btn btn-ghost btn-sm" onclick="showToast('${promo.code} archived','warning')">Hide</button>
       </div>

@@ -46,16 +46,62 @@ const productCategoriesData = [
 ];
 
 function productCategoryFormBody(category = {}) {
-  return `<div class="form-grid">
-    <div class="field"><label>Category Name</label><input class="input" placeholder="Snacks" value="${category.name || ''}"></div>
-    <div class="field"><label>Display</label><select class="select"><option>Featured</option><option>Standard</option><option>Hidden</option></select></div>
-    <div class="field"><label>Status</label><select class="select"><option>Active</option><option>Pending</option><option>Cancelled</option></select></div>
-    <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Category description">${category.desc || ''}</textarea></div>
+  const display = category.display || 'Standard';
+  const status = category.status || 'Active';
+  const channels = category.channels || ['POS counter', 'Mobile app'];
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Collection Setup</div>
+      <div class="surface-card-copy">Define how this product category is merchandised across the kiosk, mobile app, and combo upsell surfaces.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Category Name</label><input class="input" placeholder="Snacks" value="${category.name || ''}"></div>
+      <div class="field"><label>Display</label><select class="select">${buildOptions(['Featured', 'Standard', 'Hidden'], display)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Pending', 'Cancelled'], status)}</select></div>
+      <div class="field"><label>Sort Order</label><input class="input" type="number" placeholder="10" value="${category.sort || ''}"></div>
+      <div class="field"><label>Collection Slug</label><input class="input" placeholder="snacks" value="${category.slug || ''}"></div>
+      <div class="field"><label>Icon Label</label><input class="input" placeholder="POP" value="${category.icon || ''}"></div>
+      <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Category description">${category.desc || ''}</textarea></div>
+      <div class="field form-full"><label>Discovery Surfaces</label>
+        <div class="check-grid">
+          ${['POS counter', 'Mobile app', 'Combo builder', 'Homepage promo rail', 'Order upsell', 'Self-checkout'].map(channel => `
+            <label class="check-option">
+              <input type="checkbox"${channels.includes(channel) ? ' checked' : ''}>
+              <span>${channel}</span>
+            </label>`).join('')}
+        </div>
+      </div>
+      <div class="field form-full"><label>Preview</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${category.name || 'New product category'}</div>
+          <div class="preview-banner-copy">${category.desc || 'Write a short description to explain how the category should feel in shop navigation and checkout upsell.'}</div>
+          <div class="meta-pills">
+            <span class="badge ${display === 'Featured' ? 'gold' : display === 'Hidden' ? 'gray' : 'blue'}">${display}</span>
+            <span class="badge ${status === 'Cancelled' ? 'red' : status === 'Pending' ? 'orange' : 'green'}">${status}</span>
+            <span class="badge gray">${category.products || 0} products</span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>`;
 }
 
+function openProductCategoryModal(title, category = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, productCategoryFormBody(category), {
+    description: isEdit
+      ? 'Adjust merchandising visibility, copy, and discovery surfaces for this product collection.'
+      : 'Create a new product category and preview where it should appear in the snack shop journey.',
+    note: 'UI preview only. Category settings are not persisted yet.',
+    submitLabel: isEdit ? 'Update Category' : 'Create Category',
+    successMessage: isEdit ? 'Category preview updated!' : 'Category preview staged!',
+  });
+}
+
 function handleProductSectionAction() {
-  openModal('Add Category', productCategoryFormBody());
+  openProductCategoryModal('Add Category');
 }
 
 function renderProductCategories(data) {
@@ -70,7 +116,7 @@ function renderProductCategories(data) {
       <td>${statusBadge(category.status)}</td>
       <td><div class="actions-row">
         <button class="action-btn view" title="View" onclick="showToast('Viewing ${category.name}','info')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button class="action-btn edit" title="Edit" onclick="openModal('Edit Category', productCategoryFormBody({name:'${category.name}',desc:'${category.desc}'}))"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openProductCategoryModal('Edit Category', {name:'${category.name}',desc:'${category.desc}',display:'${category.display}',status:'${category.status}',products:'${category.products}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
       </div></td>
     </tr>`).join('');
   document.getElementById('productCategoriesPagination').innerHTML = buildPagination(`Showing ${startItem}-${data.length} of ${data.length} categories`, Math.max(1, Math.ceil(data.length / 10)));

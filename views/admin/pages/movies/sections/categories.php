@@ -61,8 +61,68 @@ const movieCategoriesData = [
   {name:'Classics',desc:'Reissues and anniversary special screenings.',movies:13,featured:'Hidden',updated:'2026-02-25',status:'Cancelled'},
 ];
 
+function movieCategorySurfaceOption(title, copy, checked = true) {
+  return `<label class="check-option">
+    <input type="checkbox"${checked ? ' checked' : ''}>
+    <span><strong>${title}</strong><small>${copy}</small></span>
+  </label>`;
+}
+
+function movieCategoryFormBody(category = {}) {
+  const slug = category.slug || (category.name || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const featured = category.featured || 'Standard';
+  const status = category.status || 'Active';
+  const movieCount = category.movies || 0;
+
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Discovery Setup</div>
+      <div class="surface-card-copy">Shape how this genre appears in filters, curated shelves, and landing page modules before wiring backend logic.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Category Name</label><input class="input" placeholder="Action" value="${category.name || ''}"></div>
+      <div class="field"><label>Slug</label><input class="input" placeholder="action" value="${slug}"></div>
+      <div class="field"><label>Display Priority</label><select class="select">${buildOptions(['Featured', 'Standard', 'Hidden'], featured)}</select></div>
+      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Pending', 'Cancelled'], status)}</select></div>
+      <div class="field"><label>Accent Theme</label><select class="select">${buildOptions(['Red Spotlight', 'Gold Premium', 'Blue Focus', 'Neutral Slate'], category.theme || 'Red Spotlight')}</select></div>
+      <div class="field"><label>Hero Label</label><input class="input" placeholder="Weekend crowd-pleasers" value="${category.hero || ''}"></div>
+      <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Write a short description for the genre card...">${category.desc || ''}</textarea><div class="helper-text">This copy is reused in admin previews and customer-facing genre summaries.</div></div>
+      <div class="field form-full"><label>Discovery Surfaces</label><div class="check-grid">
+        ${movieCategorySurfaceOption('Catalog filters', 'Show this category in the public movie filter bar.', true)}
+        ${movieCategorySurfaceOption('Homepage highlights', 'Allow editors to pin this genre into hero rails.', featured === 'Featured')}
+        ${movieCategorySurfaceOption('Member recommendations', 'Use this tag in personalized carousels.', status !== 'Cancelled')}
+        ${movieCategorySurfaceOption('Campaign landing pages', 'Expose the genre in campaign templates.', featured !== 'Hidden')}
+      </div></div>
+      <div class="field form-full"><label>Preview Card</label>
+        <div class="preview-banner">
+          <div class="preview-banner-title">${category.name || 'New Category Preview'}</div>
+          <div class="preview-banner-copy">${category.desc || 'Use this preview to shape the tone of the genre block before backend integration.'}</div>
+          <div class="meta-pills">
+            <span class="badge ${featured === 'Featured' ? 'gold' : featured === 'Hidden' ? 'gray' : 'blue'}">${featured}</span>
+            <span class="badge gray">${movieCount} titles linked</span>
+            <span class="badge ${status === 'Cancelled' ? 'red' : status === 'Pending' ? 'orange' : 'green'}">${status}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function openMovieCategoryModal(title, category = {}) {
+  const isEdit = /^Edit/i.test(title);
+  openModal(title, movieCategoryFormBody(category), {
+    description: isEdit
+      ? 'Refine the genre card, merchandising priority, and filter visibility for this category.'
+      : 'Add a new movie category and prepare the way it appears across the catalog.',
+    note: 'UI preview only. Category settings are not persisted yet.',
+    submitLabel: isEdit ? 'Update Category' : 'Create Category',
+    successMessage: isEdit ? 'Category preview updated!' : 'Category preview staged!',
+  });
+}
+
 function handleMovieSectionAction() {
-  showToast('Open category form','info');
+  openMovieCategoryModal('Add Category');
 }
 
 function renderMovieCategories(data) {
@@ -78,7 +138,7 @@ function renderMovieCategories(data) {
         <button class="action-btn view" title="View" onclick="showToast('Viewing ${c.name}','info')">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-        <button class="action-btn edit" title="Edit" onclick="showToast('Edit ${c.name}','info')">
+        <button class="action-btn edit" title="Edit" onclick="openMovieCategoryModal('Edit Category', {name:'${c.name}',desc:'${c.desc}',featured:'${c.featured}',status:'${c.status}',movies:${c.movies}})">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         <button class="action-btn del" title="Hide" onclick="showToast('${c.name} updated','warning')">

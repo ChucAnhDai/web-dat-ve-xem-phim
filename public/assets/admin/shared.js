@@ -5,10 +5,11 @@
 
 const _statusColors = {
   'Completed':'green','Active':'green','Now Showing':'green','Delivered':'green',
-  'Confirmed':'blue','Shipped':'blue','Coming Soon':'blue',
+  'Confirmed':'blue','Shipped':'blue','Coming Soon':'blue','Scheduled':'blue',
   'Pending':'orange','Renovation':'orange','Maintenance':'orange',
-  'Cancelled':'red','Suspended':'red','Failed':'red',
-  'Ended':'gray','Refunded':'purple',
+  'Cancelled':'red','Suspended':'red','Failed':'red','Disabled':'red','Blocked':'red','Sold Out':'red',
+  'Ended':'gray','Refunded':'purple','Draft':'gray','Archived':'gray','Hidden':'gray',
+  'Verified':'green','Published':'green',
   'Admin':'red','Staff':'gold','Customer':'gray',
   'Success':'green','Low':'orange','MoMo':'purple','VNPay':'blue','PayPal':'blue','Cash':'green',
 };
@@ -54,6 +55,35 @@ function showToast(message, type = 'info') {
   }, 3500);
 }
 
+let _modalConfig = {
+  submitLabel: 'Save Changes',
+  cancelLabel: 'Cancel',
+  description: '',
+  note: '',
+  successMessage: 'Saved successfully!',
+  onSave: null,
+};
+
+function _deriveModalSubmitLabel(title = '') {
+  const rules = [
+    [/^Add New (.+)$/i, 'Create $1'],
+    [/^Add (.+)$/i, 'Create $1'],
+    [/^New (.+)$/i, 'Create $1'],
+    [/^Compose (.+)$/i, 'Create $1'],
+    [/^Upload (.+)$/i, 'Upload $1'],
+    [/^Assign (.+)$/i, 'Assign $1'],
+    [/^Edit (.+)$/i, 'Update $1'],
+    [/^Moderate (.+)$/i, 'Apply $1'],
+  ];
+
+  for (const [pattern, template] of rules) {
+    const match = title.match(pattern);
+    if (match) return template.replace('$1', match[1]);
+  }
+
+  return 'Save Changes';
+}
+
 function _ensureModal() {
   if (document.getElementById('_modalOverlay')) return;
   const el = document.createElement('div');
@@ -62,33 +92,69 @@ function _ensureModal() {
   el.innerHTML = `
     <div class="modal">
       <div class="modal-header">
-        <div class="modal-title" id="_modalTitle">Modal</div>
+        <div class="modal-header-copy">
+          <div class="modal-title" id="_modalTitle">Modal</div>
+          <div class="modal-description" id="_modalDescription" hidden></div>
+        </div>
         <button class="modal-close" onclick="closeModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
       <div class="modal-body" id="_modalBody"></div>
       <div class="modal-footer">
-        <button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>
-        <button class="btn btn-primary btn-sm" onclick="handleModalSave()">Save Changes</button>
+        <div class="modal-footer-note" id="_modalNote" hidden></div>
+        <div class="modal-footer-actions">
+          <button class="btn btn-ghost btn-sm" id="_modalCancelBtn" onclick="closeModal()">Cancel</button>
+          <button class="btn btn-primary btn-sm" id="_modalSaveBtn" onclick="handleModalSave()">Save Changes</button>
+        </div>
       </div>
     </div>`;
   el.addEventListener('click', e => { if (e.target === el) closeModal(); });
   document.body.appendChild(el);
 }
 
-function openModal(title, body) {
+function openModal(title, body, options = {}) {
   _ensureModal();
+  _modalConfig = {
+    submitLabel: _deriveModalSubmitLabel(title),
+    cancelLabel: 'Cancel',
+    description: '',
+    note: '',
+    successMessage: 'Saved successfully!',
+    onSave: null,
+    ...options,
+  };
+
   document.getElementById('_modalTitle').textContent = title;
   document.getElementById('_modalBody').innerHTML = body;
+  document.getElementById('_modalCancelBtn').textContent = _modalConfig.cancelLabel;
+  document.getElementById('_modalSaveBtn').textContent = _modalConfig.submitLabel;
+
+  const description = document.getElementById('_modalDescription');
+  if (description) {
+    description.textContent = _modalConfig.description;
+    description.hidden = !_modalConfig.description;
+  }
+
+  const note = document.getElementById('_modalNote');
+  if (note) {
+    note.textContent = _modalConfig.note;
+    note.hidden = !_modalConfig.note;
+  }
+
   document.getElementById('_modalOverlay').classList.add('open');
 }
 function closeModal() {
   document.getElementById('_modalOverlay')?.classList.remove('open');
 }
 function handleModalSave() {
+  if (typeof _modalConfig.onSave === 'function') {
+    _modalConfig.onSave();
+    return;
+  }
+
   closeModal();
-  showToast('Saved successfully!', 'success');
+  showToast(_modalConfig.successMessage || 'Saved successfully!', 'success');
 }
 
 let _sidebarCollapsed = false;
@@ -202,14 +268,20 @@ function buildPagination(infoText, totalPages = 3) {
   </div>`;
 }
 
+function buildOptions(options, selectedValue = '') {
+  return options.map(option => `<option${option === selectedValue ? ' selected' : ''}>${option}</option>`).join('');
+}
+
 function movieFormBody(m = {}) {
+  const categories = ['Action', 'Drama', 'Comedy', 'Horror', 'Sci-Fi', 'Animation', 'Romance', 'Thriller'];
+  const statuses = ['Coming Soon', 'Now Showing', 'Ended'];
   return `<div class="form-grid">
     <div class="field"><label>Movie Title</label><input class="input" placeholder="Enter title" value="${m.title||''}"></div>
-    <div class="field"><label>Category</label><select class="select"><option>Action</option><option>Drama</option><option>Comedy</option><option>Horror</option><option>Sci-Fi</option><option>Animation</option><option>Romance</option><option>Thriller</option></select></div>
+    <div class="field"><label>Category</label><select class="select">${buildOptions(categories, m.cat || 'Action')}</select></div>
     <div class="field"><label>Duration (min)</label><input class="input" type="number" placeholder="120" value="${m.dur||''}"></div>
     <div class="field"><label>Release Date</label><input class="input" type="date" value="${m.release||''}"></div>
     <div class="field"><label>Rating (0–5)</label><input class="input" type="number" placeholder="0.0" min="0" max="5" step="0.1" value="${m.rating||''}"></div>
-    <div class="field"><label>Status</label><select class="select"><option>Coming Soon</option><option>Now Showing</option><option>Ended</option></select></div>
+    <div class="field"><label>Status</label><select class="select">${buildOptions(statuses, m.status || 'Coming Soon')}</select></div>
     <div class="field"><label>Language</label><input class="input" placeholder="English, Vietnamese"></div>
     <div class="field"><label>Trailer URL</label><input class="input" placeholder="https://youtube.com/..."></div>
     <div class="field form-full"><label>Description</label><textarea class="textarea" placeholder="Movie description...">${m.desc||''}</textarea></div>
@@ -224,9 +296,10 @@ function movieFormBody(m = {}) {
 }
 
 function productFormBody(p = {}) {
+  const categories = ['Snacks', 'Beverages', 'Merchandise', 'Combos'];
   return `<div class="form-grid">
     <div class="field"><label>Product Name</label><input class="input" placeholder="Enter name" value="${p.name||''}"></div>
-    <div class="field"><label>Category</label><select class="select"><option>Snacks</option><option>Beverages</option><option>Merchandise</option><option>Combos</option></select></div>
+    <div class="field"><label>Category</label><select class="select">${buildOptions(categories, p.cat || 'Snacks')}</select></div>
     <div class="field"><label>Price ($)</label><input class="input" type="number" placeholder="0.00" value="${p.price||''}"></div>
     <div class="field"><label>Stock Qty</label><input class="input" type="number" placeholder="0" value="${p.stock||''}"></div>
     <div class="field"><label>Brand</label><input class="input" placeholder="Brand name" value="${p.brand||''}"></div>

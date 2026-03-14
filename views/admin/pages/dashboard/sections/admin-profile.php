@@ -44,10 +44,35 @@
 
 <script>
 function adminProfileFormBody() {
-  return `<div class="form-grid"><div class="field"><label>Full Name</label><input class="input" value="Le Admin"></div><div class="field"><label>Email</label><input class="input" value="admin@cineshop.com"></div><div class="field"><label>Phone</label><input class="input" value="0923456789"></div><div class="field"><label>Timezone</label><input class="input" value="Asia/Saigon"></div></div>`;
+  return `<div style="display:flex;flex-direction:column;gap:18px;">
+    <div class="surface-card">
+      <div class="surface-card-title">Profile Preferences</div>
+      <div class="surface-card-copy">Keep the admin identity card, notification preferences, and security recovery details aligned before backend saving is connected.</div>
+    </div>
+
+    <div class="form-grid">
+      <div class="field"><label>Full Name</label><input class="input" value="Le Admin"></div>
+      <div class="field"><label>Email</label><input class="input" value="admin@cineshop.com"></div>
+      <div class="field"><label>Phone</label><input class="input" value="0923456789"></div>
+      <div class="field"><label>Timezone</label><select class="select">${buildOptions(['Asia/Saigon', 'Asia/Bangkok', 'Asia/Tokyo', 'UTC'], 'Asia/Saigon')}</select></div>
+      <div class="field"><label>Recovery Email</label><input class="input" value="security@cineshop.com"></div>
+      <div class="field"><label>Two-Factor Auth</label><select class="select">${buildOptions(['Enabled', 'Backup Codes Only', 'Disabled'], 'Enabled')}</select></div>
+      <div class="field form-full"><label>Admin Bio</label><textarea class="textarea" placeholder="Short admin bio">Oversees platform operations, promotions, and payment configuration across the cinema system.</textarea></div>
+      <div class="field form-full"><label>Notification Preferences</label><div class="check-grid">
+        <label class="check-option"><input type="checkbox" checked><span><strong>Critical outages</strong><small>Receive alerts for booking, payment, and API downtime.</small></span></label>
+        <label class="check-option"><input type="checkbox" checked><span><strong>Daily revenue digest</strong><small>Get a snapshot of bookings, refunds, and conversion trends.</small></span></label>
+        <label class="check-option"><input type="checkbox"><span><strong>Campaign reminders</strong><small>Receive reminders before banners and promotions expire.</small></span></label>
+      </div></div>
+    </div>
+  </div>`;
 }
 
 function handleDashboardSectionAction() {
-  openModal('Edit Profile', adminProfileFormBody());
+  openModal('Edit Profile', adminProfileFormBody(), {
+    description: 'Update account details, recovery settings, and admin notification preferences.',
+    note: 'UI preview only. Profile changes are not persisted yet.',
+    submitLabel: 'Update Profile',
+    successMessage: 'Profile preview updated!',
+  });
 }
 </script>
