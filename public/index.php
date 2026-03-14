@@ -36,7 +36,6 @@ $app->router->get('/checkout', [WebController::class, 'showCheckoutPage']);
 
 // Admin routes
 $app->router->get('/admin/login', [AdminController::class, 'showLogin']);
-$app->router->get('/admin/logout', [AdminController::class, 'showLogout']);
 $app->router->get('/admin', [AdminController::class, 'showDashboard']);
 $app->router->get('/admin/dashboard', [AdminController::class, 'showDashboard']);
 $app->router->get('/admin/movies', [AdminController::class, 'showMovies']);

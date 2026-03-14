@@ -56,11 +56,6 @@ class AdminController
         $this->renderAuthPage($response, 'admin/auth/login', 'Admin Login - CineShop Admin', 'admin-login');
     }
 
-    public function showLogout(Request $request, Response $response): void
-    {
-        $this->renderAuthPage($response, 'admin/auth/logout', 'Admin Logout - CineShop Admin', 'admin-logout');
-    }
-
     public function showMovies(Request $request, Response $response): void
     {
         $activePage = $this->resolveActivePage($request, 'movies', ['movies', 'categories', 'movie-images', 'reviews']);

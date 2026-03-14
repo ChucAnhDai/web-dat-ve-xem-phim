@@ -32,7 +32,7 @@
 
   <div class="admin-auth-card">
     <div class="admin-auth-brand">
-      <a href="<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin/login" class="admin-auth-mark">CS</a>
+      <a href="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/index.php?url=admin/login" class="admin-auth-mark">CS</a>
       <div>
         <div class="admin-auth-title">CineShop Admin</div>
         <div class="admin-auth-subtitle">Sign in to continue</div>
@@ -84,7 +84,7 @@
           <input type="checkbox" checked>
           <span>Remember this workstation</span>
         </label>
-        <a href="<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin/logout" class="admin-auth-link">Review sign-out flow</a>
+        <span class="admin-auth-link">Admin access preview</span>
       </div>
 
       <button class="btn btn-primary" type="submit" style="width:100%;">Enter Dashboard</button>

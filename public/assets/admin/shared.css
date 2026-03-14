@@ -592,11 +592,6 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   gap: 12px;
 }
 
-.admin-auth-shell-logout .admin-auth-showcase {
-  background:
-    linear-gradient(180deg, rgba(201, 168, 76, 0.18), rgba(17, 17, 20, 0.94) 42%),
-    linear-gradient(135deg, rgba(255, 255, 255, 0.02), transparent);
-}
 
 /* ===== PROGRESS ===== */
 .progress-bar { height: 4px; border-radius: 99px; background: var(--bg3); overflow: hidden; margin-top: 6px; }

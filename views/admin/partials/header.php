@@ -58,7 +58,7 @@
           Settings
         </a>
         <div class="profile-drop-sep"></div>
-        <a href="<?php echo htmlspecialchars($appBase); ?>/admin/logout" class="profile-drop-item" style="color:var(--red);">
+        <a href="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/index.php?url=admin/login" class="profile-drop-item" style="color:var(--red);">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sign Out
         </a>

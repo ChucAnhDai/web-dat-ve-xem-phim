@@ -197,7 +197,7 @@
         <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="handleDashboardSectionAction()">Edit Profile</button>
         <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="showToast('Backup codes preview opened','info')">View Backup Codes</button>
         <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="showToast('Role assignment preview opened','info')">Review Role Scope</button>
-        <a class="btn btn-ghost" href="<?php echo htmlspecialchars($appBase, ENT_QUOTES, 'UTF-8'); ?>/admin/logout" style="justify-content:flex-start;">Sign Out Flow</a>
+        <a class="btn btn-ghost" href="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/index.php?url=admin/login" style="justify-content:flex-start;">Sign Out</a>
       </div>
     </div>
 
