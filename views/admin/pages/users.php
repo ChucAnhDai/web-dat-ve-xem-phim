@@ -1,98 +1,83 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Users — CineShop Admin</title>
-<link rel="stylesheet" href="shared.css">
-</head>
-<body>
-<div class="layout">
-    <div id="sidebarMount"></div>
-<div class="main-wrap" id="mainWrap">
-        <div id="headerMount"></div>
 <div class="page">
-      <div class="page-header">
-        <div>
-          <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>User Management</span></div>
-          <h1 class="page-title">User Management</h1>
-          <p class="page-sub">Manage platform users, roles and permissions</p>
-        </div>
-        <button class="btn btn-primary" onclick="openModal('Add New User', userFormBody())">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add User
-        </button>
-      </div>
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>User Management</span></div>
+      <h1 class="page-title">User Management</h1>
+      <p class="page-sub">Manage platform users, roles and permissions</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('Add New User', userFormBody())">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add User
+    </button>
+  </div>
 
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
-        <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">14,872</div><div class="stat-label">Total Users</div></div>
-        <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">14,210</div><div class="stat-label">Active</div></div>
-        <div class="stat-card red" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">340</div><div class="stat-label">Suspended</div></div>
-        <div class="stat-card gold" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">+340</div><div class="stat-label">New This Week</div></div>
-      </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">14,872</div><div class="stat-label">Total Users</div></div>
+    <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">14,210</div><div class="stat-label">Active</div></div>
+    <div class="stat-card red" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">340</div><div class="stat-label">Suspended</div></div>
+    <div class="stat-card gold" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">+340</div><div class="stat-label">New This Week</div></div>
+  </div>
 
-      <div class="card">
-        <div class="toolbar">
-          <div class="toolbar-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search name, email, phone..." oninput="filterUsers(this.value)">
-          </div>
-          <select class="select-filter" onchange="filterUsers()"><option>All Roles</option><option>Admin</option><option>Staff</option><option>Customer</option></select>
-          <select class="select-filter"><option>All Status</option><option>Active</option><option>Suspended</option><option>Pending</option></select>
-          <div class="toolbar-right">
-            <span style="font-size:12px;color:var(--text-dim);" id="userCount">14,872 users</span>
-            <button class="btn btn-ghost btn-sm" onclick="showToast('Exported','success')">Export</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>User</th><th>Email</th><th>Phone</th><th>Role</th><th>Orders</th><th>Reviews</th><th>Status</th><th>Joined</th><th>Actions</th>
-            </tr></thead>
-            <tbody id="usersBody"></tbody>
-          </table>
-        </div>
-        <div id="usersPagination"></div>
+  <div class="card">
+    <div class="toolbar">
+      <div class="toolbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search name, email, phone..." oninput="filterUsers(this.value)">
       </div>
+      <select class="select-filter" onchange="filterUsers()"><option>All Roles</option><option>Admin</option><option>Staff</option><option>Customer</option></select>
+      <select class="select-filter"><option>All Status</option><option>Active</option><option>Suspended</option><option>Pending</option></select>
+      <div class="toolbar-right">
+        <span style="font-size:12px;color:var(--text-dim);" id="userCount">14,872 users</span>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Exported','success')">Export</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>User</th><th>Email</th><th>Phone</th><th>Role</th><th>Orders</th><th>Reviews</th><th>Status</th><th>Joined</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="usersBody"></tbody>
+      </table>
+    </div>
+    <div id="usersPagination"></div>
+  </div>
 
-      <!-- ROLES TABLE -->
-      <div class="card" style="margin-top:20px;">
-        <div class="card-header">
-          <div><div class="card-title">Roles & Permissions</div><div class="card-sub">Manage access control</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('Add Role', roleFormBody())">Add Role</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Role</th><th>Description</th><th>Users</th><th>Permissions</th><th>Actions</th></tr></thead>
-            <tbody>
-              <tr>
-                <td><span class="badge red">Admin</span></td>
-                <td class="td-muted">Full system access</td>
-                <td style="font-weight:700;">3</td>
-                <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge blue">Read</span><span class="badge blue">Write</span><span class="badge blue">Delete</span><span class="badge blue">Manage</span></div></td>
-                <td><div class="actions-row"><button class="action-btn edit" onclick="openModal('Edit Role', roleFormBody())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
-              </tr>
-              <tr>
-                <td><span class="badge gold">Staff</span></td>
-                <td class="td-muted">Limited management access</td>
-                <td style="font-weight:700;">18</td>
-                <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge blue">Read</span><span class="badge blue">Write</span></div></td>
-                <td><div class="actions-row"><button class="action-btn edit" onclick="openModal('Edit Role', roleFormBody())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
-              </tr>
-              <tr>
-                <td><span class="badge gray">Customer</span></td>
-                <td class="td-muted">Standard user access</td>
-                <td style="font-weight:700;">14,851</td>
-                <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge gray">Book</span><span class="badge gray">Purchase</span><span class="badge gray">Review</span></div></td>
-                <td><div class="actions-row"><button class="action-btn edit" onclick="openModal('Edit Role', roleFormBody())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <div class="card" style="margin-top:20px;">
+    <div class="card-header">
+      <div><div class="card-title">Roles & Permissions</div><div class="card-sub">Manage access control</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('Add Role', roleFormBody())">Add Role</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Role</th><th>Description</th><th>Users</th><th>Permissions</th><th>Actions</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><span class="badge red">Admin</span></td>
+            <td class="td-muted">Full system access</td>
+            <td style="font-weight:700;">3</td>
+            <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge blue">Read</span><span class="badge blue">Write</span><span class="badge blue">Delete</span><span class="badge blue">Manage</span></div></td>
+            <td><div class="actions-row"><button class="action-btn edit" onclick="openModal('Edit Role', roleFormBody())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+          </tr>
+          <tr>
+            <td><span class="badge gold">Staff</span></td>
+            <td class="td-muted">Limited management access</td>
+            <td style="font-weight:700;">18</td>
+            <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge blue">Read</span><span class="badge blue">Write</span></div></td>
+            <td><div class="actions-row"><button class="action-btn edit" onclick="openModal('Edit Role', roleFormBody())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+          </tr>
+          <tr>
+            <td><span class="badge gray">Customer</span></td>
+            <td class="td-muted">Standard user access</td>
+            <td style="font-weight:700;">14,851</td>
+            <td><div style="display:flex;gap:4px;flex-wrap:wrap;"><span class="badge gray">Book</span><span class="badge gray">Purchase</span><span class="badge gray">Review</span></div></td>
+            <td><div class="actions-row"><button class="action-btn edit" onclick="openModal('Edit Role', roleFormBody())"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></div></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
-<script src="shared.js"></script>
+
 <script>
 const usersData = [
   {name:'Nguyen Van A',email:'nguyenvana@gmail.com',phone:'0901234567',role:'Customer',orders:14,reviews:8,status:'Active',joined:'2024-03-12',color:'#3B82F6'},
@@ -193,10 +178,6 @@ function roleFormBody() {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-
   renderUsers(usersData);
 });
 </script>
-    <div id="footerMount"></div>
-</body>
-</html>

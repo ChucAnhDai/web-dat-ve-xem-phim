@@ -1,117 +1,100 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Showtimes — CineShop Admin</title>
-<link rel="stylesheet" href="shared.css">
-</head>
-<body>
-<div class="layout">
-    <div id="sidebarMount"></div>
-<div class="main-wrap" id="mainWrap">
-        <div id="headerMount"></div>
 <div class="page">
-      <div class="page-header">
-        <div>
-          <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Showtimes</span></div>
-          <h1 class="page-title">Showtime Management</h1>
-          <p class="page-sub">Schedule and manage movie showtimes</p>
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Showtimes</span></div>
+      <h1 class="page-title">Showtime Management</h1>
+      <p class="page-sub">Schedule and manage movie showtimes</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('Add Showtime', showtimeFormBody())">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Showtime
+    </button>
+  </div>
+
+  <div class="grid-main-side">
+    <div style="display:flex;flex-direction:column;gap:20px;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📅 March 2026</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Previous month','info')">‹ Prev</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('Next month','info')">Next ›</button>
+          </div>
         </div>
-        <button class="btn btn-primary" onclick="openModal('Add Showtime', showtimeFormBody())">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Showtime
-        </button>
+        <div class="card-body">
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
       </div>
 
-      <div class="grid-main-side">
-        <div style="display:flex;flex-direction:column;gap:20px;">
-          <!-- CALENDAR -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">📅 March 2026</div>
-              <div style="display:flex;gap:8px;">
-                <button class="btn btn-ghost btn-sm" onclick="showToast('Previous month','info')">‹ Prev</button>
-                <button class="btn btn-ghost btn-sm" onclick="showToast('Next month','info')">Next ›</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="cal-grid" id="calGrid"></div>
-            </div>
-          </div>
-
-          <!-- SHOWTIMES TABLE -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title">All Showtimes</div>
-              <div class="toolbar-search" style="margin:0;">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-                <input type="text" placeholder="Filter showtimes...">
-              </div>
-            </div>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Movie</th><th>Cinema</th><th>Room</th><th>Date</th><th>Time</th><th>Price</th><th>Booked</th><th>Status</th><th>Actions</th></tr></thead>
-                <tbody id="showtimesBody"></tbody>
-              </table>
-            </div>
-            <div id="showPagination"></div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">All Showtimes</div>
+          <div class="toolbar-search" style="margin:0;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+            <input type="text" placeholder="Filter showtimes...">
           </div>
         </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Movie</th><th>Cinema</th><th>Room</th><th>Date</th><th>Time</th><th>Price</th><th>Booked</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="showtimesBody"></tbody>
+          </table>
+        </div>
+        <div id="showPagination"></div>
+      </div>
+    </div>
 
-        <!-- SIDE PANEL -->
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="card">
-            <div class="card-header"><div class="card-title">Today's Summary</div></div>
-            <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:14px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:13px;color:var(--text-muted);">Total Showtimes</span>
-                  <span style="font-weight:700;font-size:20px;">42</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:13px;color:var(--text-muted);">Seats Available</span>
-                  <span style="font-weight:700;font-size:20px;color:var(--green);">2,140</span>
-                </div>
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-size:13px;color:var(--text-muted);">Seats Booked</span>
-                  <span style="font-weight:700;font-size:20px;color:var(--red);">1,294</span>
-                </div>
-                <div>
-                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                    <span style="font-size:13px;color:var(--text-muted);">Occupancy</span>
-                    <span style="font-weight:700;color:var(--gold);">60.7%</span>
-                  </div>
-                  <div class="progress-bar"><div class="progress-fill" style="width:60.7%;background:var(--gold);"></div></div>
-                </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Today's Summary</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;color:var(--text-muted);">Total Showtimes</span>
+              <span style="font-weight:700;font-size:20px;">42</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;color:var(--text-muted);">Seats Available</span>
+              <span style="font-weight:700;font-size:20px;color:var(--green);">2,140</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:13px;color:var(--text-muted);">Seats Booked</span>
+              <span style="font-weight:700;font-size:20px;color:var(--red);">1,294</span>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+                <span style="font-size:13px;color:var(--text-muted);">Occupancy</span>
+                <span style="font-weight:700;color:var(--gold);">60.7%</span>
               </div>
+              <div class="progress-bar"><div class="progress-fill" style="width:60.7%;background:var(--gold);"></div></div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <div class="card">
-            <div class="card-header"><div class="card-title">Most Booked Today</div></div>
-            <div class="card-body no-pad" id="mostBooked"></div>
-          </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Most Booked Today</div></div>
+        <div class="card-body no-pad" id="mostBooked"></div>
+      </div>
 
-          <div class="card">
-            <div class="card-header"><div class="card-title">Quick Add</div></div>
-            <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:12px;">
-                <div class="field"><label>Movie</label><select class="select"><option>Avengers: Doomsday</option><option>Cosmic Voyage II</option><option>The Last Breath</option></select></div>
-                <div class="field"><label>Cinema</label><select class="select"><option>CineShop Galaxy</option><option>CineShop Premier</option></select></div>
-                <div class="field"><label>Room</label><select class="select"><option>Room 1</option><option>Room 2</option><option>Room 3</option></select></div>
-                <div class="field"><label>Date</label><input class="input" type="date" value="2026-03-12"></div>
-                <div class="field"><label>Start Time</label><input class="input" type="time" value="19:00"></div>
-                <div class="field"><label>Ticket Price ($)</label><input class="input" type="number" value="7.00" step="0.50"></div>
-                <button class="btn btn-primary" style="width:100%;" onclick="showToast('Showtime added!','success')">Add Showtime</button>
-              </div>
-            </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Quick Add</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="field"><label>Movie</label><select class="select"><option>Avengers: Doomsday</option><option>Cosmic Voyage II</option><option>The Last Breath</option></select></div>
+            <div class="field"><label>Cinema</label><select class="select"><option>CineShop Galaxy</option><option>CineShop Premier</option></select></div>
+            <div class="field"><label>Room</label><select class="select"><option>Room 1</option><option>Room 2</option><option>Room 3</option></select></div>
+            <div class="field"><label>Date</label><input class="input" type="date" value="2026-03-12"></div>
+            <div class="field"><label>Start Time</label><input class="input" type="time" value="19:00"></div>
+            <div class="field"><label>Ticket Price ($)</label><input class="input" type="number" value="7.00" step="0.50"></div>
+            <button class="btn btn-primary" style="width:100%;" onclick="showToast('Showtime added!','success')">Add Showtime</button>
           </div>
         </div>
       </div>
     </div>
   </div>
 </div>
-<script src="shared.js"></script>
+
 <script>
 const showtimesData = [
   {movie:'🦸 Avengers: Doomsday',cinema:'Galaxy',room:'Room 1',date:'Mar 12',time:'14:30',price:'$7.00',booked:148,cap:180,status:'Active'},
@@ -137,9 +120,6 @@ function showtimeFormBody() {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-
-
-  // Calendar
   const calEl = document.getElementById('calGrid');
   const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
   const events = [3,7,8,9,12,14,15,16,19,21,22,25,26,28];
@@ -150,7 +130,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }
   calEl.innerHTML = html;
 
-  // Showtimes table
   document.getElementById('showtimesBody').innerHTML = showtimesData.map(s=>{
     const pct = Math.round((s.booked/s.cap)*100);
     return `<tr>
@@ -173,7 +152,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }).join('');
   document.getElementById('showPagination').innerHTML = buildPagination(`Showing 1–${showtimesData.length} of ${showtimesData.length} showtimes`);
 
-  // Most booked
   const mb = [{e:'🦸',title:'Avengers: Doomsday',time:'19:00',pct:100},{e:'🚀',title:'Cosmic Voyage II',time:'17:30',pct:78},{e:'🎭',title:'The Last Breath',time:'15:00',pct:62}];
   document.getElementById('mostBooked').innerHTML = mb.map(d=>`
     <div style="padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.03);">
@@ -189,6 +167,3 @@ document.addEventListener('DOMContentLoaded', function(){
     </div>`).join('');
 });
 </script>
-    <div id="footerMount"></div>
-</body>
-</html>

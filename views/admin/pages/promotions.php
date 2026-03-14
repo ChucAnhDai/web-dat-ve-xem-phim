@@ -1,56 +1,39 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Promotions — CineShop Admin</title>
-<link rel="stylesheet" href="shared.css">
-</head>
-<body>
-<div class="layout">
-    <div id="sidebarMount"></div>
-<div class="main-wrap" id="mainWrap">
-        <div id="headerMount"></div>
 <div class="page">
-      <div class="page-header">
-        <div>
-          <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Promotions</span></div>
-          <h1 class="page-title">Promotions</h1>
-          <p class="page-sub">Create and manage discount campaigns</p>
-        </div>
-        <button class="btn btn-gold" onclick="openModal('New Promotion', promoFormBody())">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Promotion
-        </button>
-      </div>
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Promotions</span></div>
+      <h1 class="page-title">Promotions</h1>
+      <p class="page-sub">Create and manage discount campaigns</p>
+    </div>
+    <button class="btn btn-gold" onclick="openModal('New Promotion', promoFormBody())">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Promotion
+    </button>
+  </div>
 
-      <!-- STATS -->
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
-        <div class="stat-card gold" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;color:var(--gold);">18</div><div class="stat-label">Active Promos</div></div>
-        <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">6</div><div class="stat-label">Upcoming</div></div>
-        <div class="stat-card gray" style="padding:16px;background:var(--bg2);border:1px solid var(--border);"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">24</div><div class="stat-label">Expired</div></div>
-        <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">8,920</div><div class="stat-label">Total Used</div></div>
-      </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px;">
+    <div class="stat-card gold" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;color:var(--gold);">18</div><div class="stat-label">Active Promos</div></div>
+    <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">6</div><div class="stat-label">Upcoming</div></div>
+    <div class="stat-card gray" style="padding:16px;background:var(--bg2);border:1px solid var(--border);"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">24</div><div class="stat-label">Expired</div></div>
+    <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">8,920</div><div class="stat-label">Total Used</div></div>
+  </div>
 
-      <!-- PROMO CARDS GRID -->
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px;" id="promoGrid"></div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px;" id="promoGrid"></div>
 
-      <!-- PRODUCT PROMOTIONS -->
-      <div class="card">
-        <div class="card-header">
-          <div><div class="card-title">Product Promotions</div><div class="card-sub">Assign promotions to specific products</div></div>
-          <button class="btn btn-ghost btn-sm" onclick="openModal('Assign Promotion', assignPromoFormBody())">Assign Promotion</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Product</th><th>Promo Code</th><th>Original Price</th><th>Discounted</th><th>Savings</th><th>Valid Until</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody id="productPromosBody"></tbody>
-          </table>
-        </div>
-      </div>
+  <div class="card">
+    <div class="card-header">
+      <div><div class="card-title">Product Promotions</div><div class="card-sub">Assign promotions to specific products</div></div>
+      <button class="btn btn-ghost btn-sm" onclick="openModal('Assign Promotion', assignPromoFormBody())">Assign Promotion</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Product</th><th>Promo Code</th><th>Original Price</th><th>Discounted</th><th>Savings</th><th>Valid Until</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="productPromosBody"></tbody>
+      </table>
     </div>
   </div>
 </div>
-<script src="shared.js"></script>
+
 <script>
 const promos = [
   {title:'Summer Cinema Blast',code:'SUMMER25',disc:25,type:'Cinema',start:'Mar 1',end:'Mar 31',used:4218,status:'Active'},
@@ -94,7 +77,6 @@ function assignPromoFormBody() {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-
   document.getElementById('promoGrid').innerHTML = promos.map(p=>`
     <div class="promo-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
@@ -130,6 +112,3 @@ document.addEventListener('DOMContentLoaded', function(){
     </tr>`).join('');
 });
 </script>
-    <div id="footerMount"></div>
-</body>
-</html>

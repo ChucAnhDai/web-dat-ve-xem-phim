@@ -1,66 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Products — CineShop Admin</title>
-<link rel="stylesheet" href="shared.css">
-</head>
-<body>
-<div class="layout">
-    <div id="sidebarMount"></div>
-<div class="main-wrap" id="mainWrap">
-        <div id="headerMount"></div>
 <div class="page">
-      <div class="page-header">
-        <div>
-          <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Shop</span><span class="sep">›</span><span>Products</span></div>
-          <h1 class="page-title">Product Management</h1>
-          <p class="page-sub">Manage your online shop inventory</p>
-        </div>
-        <button class="btn btn-primary" onclick="openModal('Add New Product', productFormBody())">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Add Product
-        </button>
-      </div>
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Shop</span><span class="sep">›</span><span>Products</span></div>
+      <h1 class="page-title">Product Management</h1>
+      <p class="page-sub">Manage your online shop inventory</p>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('Add New Product', productFormBody())">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Product
+    </button>
+  </div>
 
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-        <div class="stat-card blue" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">142</div><div class="stat-label">Total Products</div></div>
-        <div class="stat-card green" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">118</div><div class="stat-label">In Stock</div></div>
-        <div class="stat-card orange" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">16</div><div class="stat-label">Low Stock</div></div>
-        <div class="stat-card red" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">8</div><div class="stat-label">Out of Stock</div></div>
-      </div>
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
+    <div class="stat-card blue" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">142</div><div class="stat-label">Total Products</div></div>
+    <div class="stat-card green" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">118</div><div class="stat-label">In Stock</div></div>
+    <div class="stat-card orange" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">16</div><div class="stat-label">Low Stock</div></div>
+    <div class="stat-card red" style="padding:16px;"><div style="font-size:24px;font-family:'Bebas Neue',sans-serif;">8</div><div class="stat-label">Out of Stock</div></div>
+  </div>
 
-      <div class="card">
-        <div class="toolbar">
-          <div class="toolbar-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search products..." oninput="filterProducts(this.value)">
-          </div>
-          <select class="select-filter" onchange="filterProducts()">
-            <option>All Categories</option><option>Snacks</option><option>Beverages</option><option>Merchandise</option><option>Combos</option>
-          </select>
-          <select class="select-filter">
-            <option>All Stock</option><option>In Stock</option><option>Low Stock</option><option>Out of Stock</option>
-          </select>
-          <div class="toolbar-right">
-            <span style="font-size:12px;color:var(--text-dim);" id="productCount">142 products</span>
-            <button class="btn btn-ghost btn-sm" onclick="showToast('Exported','success')">Export</button>
-          </div>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Brand</th><th>Weight</th><th>Created</th><th>Actions</th>
-            </tr></thead>
-            <tbody id="productsBody"></tbody>
-          </table>
-        </div>
-        <div id="productsPagination"></div>
+  <div class="card">
+    <div class="toolbar">
+      <div class="toolbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search products..." oninput="filterProducts(this.value)">
+      </div>
+      <select class="select-filter" onchange="filterProducts()">
+        <option>All Categories</option><option>Snacks</option><option>Beverages</option><option>Merchandise</option><option>Combos</option>
+      </select>
+      <select class="select-filter">
+        <option>All Stock</option><option>In Stock</option><option>Low Stock</option><option>Out of Stock</option>
+      </select>
+      <div class="toolbar-right">
+        <span style="font-size:12px;color:var(--text-dim);" id="productCount">142 products</span>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Exported','success')">Export</button>
       </div>
     </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Brand</th><th>Weight</th><th>Created</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="productsBody"></tbody>
+      </table>
+    </div>
+    <div id="productsPagination"></div>
   </div>
 </div>
-<script src="shared.js"></script>
+
 <script>
 const productsData = [
   {name:'Large Popcorn Combo',cat:'Snacks',price:8.50,stock:240,brand:'CineShop',weight:'380g',date:'2025-11-01',emoji:'🍿',lvl:'high'},
@@ -125,10 +111,6 @@ function productFormBody(p={}) {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-
   renderProducts(productsData);
 });
 </script>
-    <div id="footerMount"></div>
-</body>
-</html>

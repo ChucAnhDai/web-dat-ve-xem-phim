@@ -1,58 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ticket Orders — CineShop Admin</title>
-<link rel="stylesheet" href="shared.css">
-</head>
-<body>
-<div class="layout">
-    <div id="sidebarMount"></div>
-<div class="main-wrap" id="mainWrap">
-        <div id="headerMount"></div>
 <div class="page">
-      <div class="page-header">
-        <div>
-          <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Ticket Orders</span></div>
-          <h1 class="page-title">Ticket Orders</h1>
-          <p class="page-sub">All cinema booking transactions</p>
-        </div>
-        <div style="display:flex;gap:10px;">
-          <button class="btn btn-ghost" onclick="showToast('Exported to CSV','success')">Export CSV</button>
-        </div>
-      </div>
-
-      <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
-        <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">2,847</div><div class="stat-label">Total Orders</div></div>
-        <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">2,614</div><div class="stat-label">Completed</div></div>
-        <div class="stat-card orange" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">157</div><div class="stat-label">Pending</div></div>
-        <div class="stat-card red" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">76</div><div class="stat-label">Cancelled</div></div>
-      </div>
-
-      <div class="card">
-        <div class="toolbar">
-          <div class="toolbar-search">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-            <input type="text" placeholder="Search order ID or user...">
-          </div>
-          <select class="select-filter"><option>All Status</option><option>Completed</option><option>Pending</option><option>Cancelled</option><option>Refunded</option></select>
-          <select class="select-filter"><option>All Payment</option><option>MoMo</option><option>VNPay</option><option>PayPal</option><option>Cash</option></select>
-          <input type="date" class="select-filter" style="width:auto;">
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th>Order ID</th><th>User</th><th>Movie</th><th>Cinema</th><th>Seats</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th>
-            </tr></thead>
-            <tbody id="ticketOrdersBody"></tbody>
-          </table>
-        </div>
-        <div id="ticketPagination"></div>
-      </div>
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Ticket Orders</span></div>
+      <h1 class="page-title">Ticket Orders</h1>
+      <p class="page-sub">All cinema booking transactions</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" onclick="showToast('Exported to CSV','success')">Export CSV</button>
     </div>
   </div>
+
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);">
+    <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">2,847</div><div class="stat-label">Total Orders</div></div>
+    <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">2,614</div><div class="stat-label">Completed</div></div>
+    <div class="stat-card orange" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">157</div><div class="stat-label">Pending</div></div>
+    <div class="stat-card red" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">76</div><div class="stat-label">Cancelled</div></div>
+  </div>
+
+  <div class="card">
+    <div class="toolbar">
+      <div class="toolbar-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="text" placeholder="Search order ID or user...">
+      </div>
+      <select class="select-filter"><option>All Status</option><option>Completed</option><option>Pending</option><option>Cancelled</option><option>Refunded</option></select>
+      <select class="select-filter"><option>All Payment</option><option>MoMo</option><option>VNPay</option><option>PayPal</option><option>Cash</option></select>
+      <input type="date" class="select-filter" style="width:auto;">
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Order ID</th><th>User</th><th>Movie</th><th>Cinema</th><th>Seats</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="ticketOrdersBody"></tbody>
+      </table>
+    </div>
+    <div id="ticketPagination"></div>
+  </div>
 </div>
-<script src="shared.js"></script>
+
 <script>
 const ticketOrders = [
   {id:'#TK-2031',user:'Nguyen Van A',movie:'Avengers: Doomsday',cinema:'Galaxy',seats:2,total:'$14.00',payment:'MoMo',status:'Completed',date:'Today 14:32'},
@@ -94,7 +80,6 @@ function viewOrder(id) {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-
   document.getElementById('ticketOrdersBody').innerHTML = ticketOrders.map(o=>`
     <tr>
       <td class="td-id">${o.id}</td>
@@ -114,6 +99,3 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('ticketPagination').innerHTML = buildPagination('Showing 1–12 of 2,847 orders', 238);
 });
 </script>
-    <div id="footerMount"></div>
-</body>
-</html>

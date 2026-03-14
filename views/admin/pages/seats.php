@@ -1,91 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Seats — CineShop Admin</title>
-<link rel="stylesheet" href="shared.css">
-</head>
-<body>
-<div class="layout">
-    <div id="sidebarMount"></div>
-<div class="main-wrap" id="mainWrap">
-        <div id="headerMount"></div>
 <div class="page">
-      <div class="page-header">
+  <div class="page-header">
+    <div>
+      <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Cinema Management</span><span class="sep">›</span><span>Seats</span></div>
+      <h1 class="page-title">Seat Management</h1>
+      <p class="page-sub">Visual seat layout editor</p>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <select class="select-filter"><option>CineShop Galaxy</option><option>CineShop Premier</option><option>CineShop Landmark</option></select>
+      <select class="select-filter"><option>Room 1 — Deluxe</option><option>Room 2 — VIP</option><option>Room 3 — IMAX</option></select>
+    </div>
+  </div>
+
+  <div class="grid-main-side">
+    <div class="card">
+      <div class="card-header">
         <div>
-          <div class="breadcrumb"><span>Home</span><span class="sep">›</span><span>Cinema Management</span><span class="sep">›</span><span>Seats</span></div>
-          <h1 class="page-title">Seat Management</h1>
-          <p class="page-sub">Visual seat layout editor</p>
+          <div class="card-title">Room 1 — Deluxe · CineShop Galaxy</div>
+          <div class="card-sub">Click seat to select / edit type</div>
         </div>
-        <div style="display:flex;gap:10px;">
-          <select class="select-filter"><option>CineShop Galaxy</option><option>CineShop Premier</option><option>CineShop Landmark</option></select>
-          <select class="select-filter"><option>Room 1 — Deluxe</option><option>Room 2 — VIP</option><option>Room 3 — IMAX</option></select>
+        <button class="btn btn-primary btn-sm" onclick="showToast('Seat layout saved!','success')">Save Layout</button>
+      </div>
+      <div class="seat-map" id="seatMap"></div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Seat Statistics</div></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Normal Seats</span><span style="font-size:12px;font-weight:600;">120 / 140</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:85%;background:var(--blue);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">VIP Seats</span><span style="font-size:12px;font-weight:600;">24 / 30</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--gold);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Couple Seats</span><span style="font-size:12px;font-weight:600;">8 / 10</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--purple);"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Currently Booked</span><span style="font-size:12px;font-weight:600;color:var(--red);">94 seats</span></div>
+              <div class="progress-bar"><div class="progress-fill" style="width:52%;background:var(--red);"></div></div>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div class="grid-main-side">
-        <div class="card">
-          <div class="card-header">
-            <div>
-              <div class="card-title">Room 1 — Deluxe · CineShop Galaxy</div>
-              <div class="card-sub">Click seat to select / edit type</div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="showToast('Seat layout saved!','success')">Save Layout</button>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Edit Selected Seat</div></div>
+        <div class="card-body">
+          <div class="field" style="margin-bottom:12px;"><label>Selected Seat</label><input class="input" id="selectedSeat" value="Click a seat to select" readonly></div>
+          <div class="field" style="margin-bottom:12px;"><label>Seat Type</label>
+            <select class="select" id="seatType"><option>Normal</option><option>VIP</option><option>Couple</option></select>
           </div>
-          <div class="seat-map" id="seatMap"></div>
+          <div class="field" style="margin-bottom:16px;"><label>Status</label>
+            <select class="select"><option>Available</option><option>Maintenance</option><option>Disabled</option></select>
+          </div>
+          <button class="btn btn-primary" style="width:100%;" onclick="showToast('Seat updated!','success')">Update Seat</button>
         </div>
-
-        <div style="display:flex;flex-direction:column;gap:16px;">
-          <div class="card">
-            <div class="card-header"><div class="card-title">Seat Statistics</div></div>
-            <div class="card-body">
-              <div style="display:flex;flex-direction:column;gap:14px;">
-                <div>
-                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Normal Seats</span><span style="font-size:12px;font-weight:600;">120 / 140</span></div>
-                  <div class="progress-bar"><div class="progress-fill" style="width:85%;background:var(--blue);"></div></div>
-                </div>
-                <div>
-                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">VIP Seats</span><span style="font-size:12px;font-weight:600;">24 / 30</span></div>
-                  <div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--gold);"></div></div>
-                </div>
-                <div>
-                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Couple Seats</span><span style="font-size:12px;font-weight:600;">8 / 10</span></div>
-                  <div class="progress-bar"><div class="progress-fill" style="width:80%;background:var(--purple);"></div></div>
-                </div>
-                <div>
-                  <div style="display:flex;justify-content:space-between;margin-bottom:6px;"><span style="font-size:12px;color:var(--text-muted);">Currently Booked</span><span style="font-size:12px;font-weight:600;color:var(--red);">94 seats</span></div>
-                  <div class="progress-bar"><div class="progress-fill" style="width:52%;background:var(--red);"></div></div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Edit Selected Seat</div></div>
-            <div class="card-body">
-              <div class="field" style="margin-bottom:12px;"><label>Selected Seat</label><input class="input" id="selectedSeat" value="Click a seat to select" readonly></div>
-              <div class="field" style="margin-bottom:12px;"><label>Seat Type</label>
-                <select class="select" id="seatType"><option>Normal</option><option>VIP</option><option>Couple</option></select>
-              </div>
-              <div class="field" style="margin-bottom:16px;"><label>Status</label>
-                <select class="select"><option>Available</option><option>Maintenance</option><option>Disabled</option></select>
-              </div>
-              <button class="btn btn-primary" style="width:100%;" onclick="showToast('Seat updated!','success')">Update Seat</button>
-            </div>
-          </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Bulk Actions</div></div>
-            <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
-              <button class="btn btn-secondary" style="width:100%;" onclick="showToast('All seats reset to Available','info')">Reset All to Available</button>
-              <button class="btn btn-ghost" style="width:100%;border-color:var(--gold);color:var(--gold);" onclick="showToast('Row A set to VIP','info')">Set Row A as VIP</button>
-              <button class="btn btn-ghost" style="width:100%;" onclick="showToast('Last row set to Couple','info')">Set Last Row as Couple</button>
-            </div>
-          </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Bulk Actions</div></div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-secondary" style="width:100%;" onclick="showToast('All seats reset to Available','info')">Reset All to Available</button>
+          <button class="btn btn-ghost" style="width:100%;border-color:var(--gold);color:var(--gold);" onclick="showToast('Row A set to VIP','info')">Set Row A as VIP</button>
+          <button class="btn btn-ghost" style="width:100%;" onclick="showToast('Last row set to Couple','info')">Set Last Row as Couple</button>
         </div>
       </div>
     </div>
   </div>
 </div>
-<script src="shared.js"></script>
+
 <script>
 function renderSeatMap() {
   const el = document.getElementById('seatMap');
@@ -133,10 +119,6 @@ function selectSeat(el, id, type) {
 }
 
 document.addEventListener('DOMContentLoaded', function(){
-
   renderSeatMap();
 });
 </script>
-    <div id="footerMount"></div>
-</body>
-</html>

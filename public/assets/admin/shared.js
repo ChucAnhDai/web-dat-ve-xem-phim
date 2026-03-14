@@ -98,13 +98,14 @@ function toggleSidebar() {
   const mw = document.getElementById('mainWrap');
   const ov = document.getElementById('_sbOverlay');
   if (!sb) return;
+  const layout = document.querySelector('.layout');
   if (window.innerWidth <= 768) {
     sb.classList.toggle('mobile-open');
     ov?.classList.toggle('active');
   } else {
     _sidebarCollapsed = !_sidebarCollapsed;
     sb.classList.toggle('collapsed', _sidebarCollapsed);
-    mw?.classList.toggle('collapsed', _sidebarCollapsed);
+    layout?.classList.toggle('sidebar-collapsed', _sidebarCollapsed);
   }
 }
 
