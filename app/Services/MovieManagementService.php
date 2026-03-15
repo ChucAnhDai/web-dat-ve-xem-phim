@@ -181,6 +181,15 @@ class MovieManagementService
             return $this->error(['movie' => ['Movie not found.']], 404);
         }
 
+        if ($this->movies->hasFuturePublishedShowtimes($id)) {
+            $this->logger->info('Movie archive blocked by future published showtimes', [
+                'actor_id' => $actorId,
+                'movie_id' => $id,
+            ]);
+
+            return $this->error(['movie' => ['Cannot archive movie while published future showtimes exist.']], 409);
+        }
+
         try {
             $this->movies->archive($id);
         } catch (Throwable $exception) {

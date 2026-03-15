@@ -1,0 +1,224 @@
+{
+    "cached_at": 1773538059,
+    "payload": {
+        "status": "success",
+        "message": "",
+        "data": {
+            "seoOnPage": {
+                "og_type": "video.movie",
+                "titleHead": "Huyền Sử Pendragon: Truyền Thuyết Merlin-The Pendragon Cycle: Rise of the Merlin (2026) [HD-Vietsub]",
+                "seoSchema": {
+                    "@context": "https:\/\/schema.org",
+                    "@type": "TvSeries",
+                    "name": "Huyền Sử Pendragon: Truyền Thuyết Merlin-The Pendragon Cycle: Rise of the Merlin (2026) [HD-Vietsub]",
+                    "dateModified": "2026-01-09T12:48:14.000Z",
+                    "dateCreated": "2026-01-09T12:48:14.000Z",
+                    "url": "https:\/\/ophim17.cc\/phim\/huyen-su-pendragon-truyen-thuyet-merlin",
+                    "datePublished": "2026-01-09T12:48:14.000Z",
+                    "image": "https:\/\/img.ophim.live\/uploads\/movies\/huyen-su-pendragon-truyen-thuyet-merlin-thumb.jpg",
+                    "director": "Ryan Whitaker"
+                },
+                "descriptionHead": "Một phiên bản kể lại truyền thuyết vua Arthur được tái hiện trong thời kỳ La Mã chiếm đóng, giữa nguy cơ xâm lược từ các thế lực man...",
+                "og_image": [
+                    "movies\/huyen-su-pendragon-truyen-thuyet-merlin-thumb.jpg",
+                    "movies\/huyen-su-pendragon-truyen-thuyet-merlin-thumb.jpg"
+                ],
+                "updated_time": 1770239392000,
+                "og_url": "phim\/huyen-su-pendragon-truyen-thuyet-merlin"
+            },
+            "breadCrumb": [
+                {
+                    "name": "Phim Bộ",
+                    "slug": "\/danh-sach\/phim-bo",
+                    "position": 2
+                },
+                {
+                    "name": "Âu Mỹ",
+                    "slug": "\/quoc-gia\/au-my",
+                    "position": 3
+                },
+                {
+                    "name": "Nga",
+                    "slug": "\/quoc-gia\/nga",
+                    "position": 3
+                },
+                {
+                    "name": "Hành Động",
+                    "slug": "\/the-loai\/hanh-dong",
+                    "position": 3
+                },
+                {
+                    "name": "Viễn Tưởng",
+                    "slug": "\/the-loai\/vien-tuong",
+                    "position": 3
+                },
+                {
+                    "name": "Phiêu Lưu",
+                    "slug": "\/the-loai\/phieu-luu",
+                    "position": 3
+                },
+                {
+                    "name": "Khoa Học",
+                    "slug": "\/the-loai\/khoa-hoc",
+                    "position": 3
+                },
+                {
+                    "name": "Gia Đình",
+                    "slug": "\/the-loai\/gia-dinh",
+                    "position": 3
+                },
+                {
+                    "name": "Chính kịch",
+                    "slug": "\/the-loai\/chinh-kich",
+                    "position": 3
+                },
+                {
+                    "name": "Huyền Sử Pendragon: Truyền Thuyết Merlin",
+                    "isCurrent": true,
+                    "position": 4
+                }
+            ],
+            "params": {
+                "slug": "huyen-su-pendragon-truyen-thuyet-merlin"
+            },
+            "item": {
+                "tmdb": {
+                    "type": "tv",
+                    "id": "235685",
+                    "season": 1,
+                    "vote_average": 8.3,
+                    "vote_count": 20
+                },
+                "imdb": {
+                    "id": "tt23734948",
+                    "vote_average": 0,
+                    "vote_count": 0
+                },
+                "created": {
+                    "time": "2026-01-09T12:48:14.000Z"
+                },
+                "modified": {
+                    "time": "2026-02-04T21:09:52.000Z"
+                },
+                "_id": "6960969e4da3bf6eb3315542",
+                "name": "Huyền Sử Pendragon: Truyền Thuyết Merlin",
+                "slug": "huyen-su-pendragon-truyen-thuyet-merlin",
+                "origin_name": "The Pendragon Cycle: Rise of the Merlin",
+                "alternative_names": [
+                    ""
+                ],
+                "content": "<p>Một phiên bản kể lại truyền thuyết vua Arthur được tái hiện trong thời kỳ La Mã chiếm đóng, giữa nguy cơ xâm lược từ các thế lực man rợ.<br>&nbsp;<\/p>",
+                "type": "series",
+                "status": "ongoing",
+                "thumb_url": "huyen-su-pendragon-truyen-thuyet-merlin-thumb.jpg",
+                "poster_url": "huyen-su-pendragon-truyen-thuyet-merlin-poster.jpg",
+                "is_copyright": false,
+                "sub_docquyen": false,
+                "chieurap": false,
+                "trailer_url": "https:\/\/www.youtube.com\/watch?v=RkmT-kZIHNU",
+                "time": "? phút\/tập",
+                "episode_current": "Tập 3",
+                "episode_total": "7 Tập",
+                "quality": "HD",
+                "lang": "Vietsub",
+                "lang_key": [
+                    "vs"
+                ],
+                "notify": "",
+                "showtimes": "",
+                "year": 2026,
+                "view": 0,
+                "actor": [
+                    "Tom Sharp",
+                    "Rose Reid",
+                    "James Arden",
+                    "Emree Franklin",
+                    "Myles Clohessy",
+                    "Finney Cassidy",
+                    "Brett Cooper",
+                    "Alex Laurence - Phillips",
+                    "Colin Cunningham",
+                    "Nicholas Boulton"
+                ],
+                "director": [
+                    "Ryan Whitaker",
+                    "Jeremy Boreing"
+                ],
+                "category": [
+                    {
+                        "id": "620a21b2e0fc277084dfd0c5",
+                        "name": "Hành Động",
+                        "slug": "hanh-dong"
+                    },
+                    {
+                        "id": "620a2282e0fc277084dfd435",
+                        "name": "Viễn Tưởng",
+                        "slug": "vien-tuong"
+                    },
+                    {
+                        "id": "620a2293e0fc277084dfd489",
+                        "name": "Phiêu Lưu",
+                        "slug": "phieu-luu"
+                    },
+                    {
+                        "id": "620a229be0fc277084dfd4dd",
+                        "name": "Khoa Học",
+                        "slug": "khoa-hoc"
+                    },
+                    {
+                        "id": "620e4c0b6ba8271c5eef05a8",
+                        "name": "Gia Đình",
+                        "slug": "gia-dinh"
+                    },
+                    {
+                        "id": "620f3d2b91fa4af90ab697fe",
+                        "name": "Chính kịch",
+                        "slug": "chinh-kich"
+                    }
+                ],
+                "country": [
+                    {
+                        "id": "620a231fe0fc277084dfd7ce",
+                        "name": "Âu Mỹ",
+                        "slug": "au-my"
+                    },
+                    {
+                        "id": "62121edd1f1609c9d9345940",
+                        "name": "Nga",
+                        "slug": "nga"
+                    }
+                ],
+                "episodes": [
+                    {
+                        "server_name": "Vietsub #1",
+                        "is_ai": false,
+                        "server_data": [
+                            {
+                                "name": "1",
+                                "slug": "1",
+                                "filename": "The.Pendragon.Cycle.S01E01 1080p.DW.WEB-DL.AAC2.0.H.264-DUDU [Vsub]",
+                                "link_embed": "https:\/\/vip.opstream90.com\/share\/d947c9ca81cef801cd8cd633c0e9b483",
+                                "link_m3u8": "https:\/\/vip.opstream90.com\/20260110\/22139_d947c9ca\/index.m3u8"
+                            },
+                            {
+                                "name": "2",
+                                "slug": "2",
+                                "filename": "The.Pendragon.Cycle.S01E02 1080p.DW.WEB-DL.AAC2.0.H.264-DUDU [Vsub]",
+                                "link_embed": "https:\/\/vip.opstream90.com\/share\/8a898f8ade5848598d11aee0fa0a1a30",
+                                "link_m3u8": "https:\/\/vip.opstream90.com\/20260110\/22140_8a898f8a\/index.m3u8"
+                            },
+                            {
+                                "name": "3",
+                                "slug": "3",
+                                "filename": "The.Pendragon.Cycle.Rise.of.the.Merlin.S01E03 1080p.DW.WEB-DL.AAC2.0.H.264-DUDU [Vsub]",
+                                "link_embed": "https:\/\/vip.opstream90.com\/share\/d5447db4e54f5b3966dd967f22a9a07b",
+                                "link_m3u8": "https:\/\/vip.opstream90.com\/20260204\/24048_d5447db4\/index.m3u8"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "APP_DOMAIN_CDN_IMAGE": "https:\/\/img.ophim.live"
+        }
+    }
+}

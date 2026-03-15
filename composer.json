@@ -3,7 +3,7 @@
   "description": "PHP app for movie booking",
   "type": "project",
   "require-dev": {
-    "phpunit/phpunit": "^10.5"
+    "phpunit/phpunit": "^9.6"
   },
   "autoload": {
     "psr-4": {

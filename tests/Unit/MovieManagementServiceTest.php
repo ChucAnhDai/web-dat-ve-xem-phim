@@ -239,6 +239,36 @@ class MovieManagementServiceTest extends TestCase
         $this->assertSame(77, $result['data']['id']);
     }
 
+    public function testArchiveMovieBlocksFuturePublishedShowtimes(): void
+    {
+        $pdo = new PDO('sqlite::memory:');
+        $movieRepo = new UnitFakeMovieRepository();
+        $movieRepo->movieRowsById[77] = [
+            'id' => 77,
+            'slug' => 'demo-movie',
+            'title' => 'Demo Movie',
+            'status' => 'now_showing',
+        ];
+        $movieRepo->hasFuturePublishedShowtimes = true;
+
+        $service = new MovieManagementService(
+            $pdo,
+            $movieRepo,
+            new UnitFakeMovieCategoryRepository(),
+            new UnitFakeMovieCategoryAssignmentRepository(),
+            new UnitFakeMovieImageRepository(),
+            new UnitFakeMovieReviewRepository(),
+            new MovieManagementValidator(),
+            new UnitFakeMovieLogger()
+        );
+
+        $result = $service->archiveMovie(77, 10);
+
+        $this->assertSame(409, $result['status']);
+        $this->assertSame(['Cannot archive movie while published future showtimes exist.'], $result['errors']['movie']);
+        $this->assertFalse($movieRepo->archived);
+    }
+
     public function testModerateReviewUpdatesMovieSummary(): void
     {
         $pdo = new PDO('sqlite::memory:');
@@ -403,6 +433,8 @@ class UnitFakeMovieRepository extends MovieRepository
     public int $paginatedTotal = 0;
     public array $reviewSummaryUpdate = [];
     public array $statusCounts = [];
+    public bool $hasFuturePublishedShowtimes = false;
+    public bool $archived = false;
 
     public function __construct()
     {
@@ -469,6 +501,18 @@ class UnitFakeMovieRepository extends MovieRepository
         $this->createdData = $data;
 
         return 77;
+    }
+
+    public function archive(int $id): bool
+    {
+        $this->archived = true;
+
+        return true;
+    }
+
+    public function hasFuturePublishedShowtimes(int $movieId): bool
+    {
+        return $this->hasFuturePublishedShowtimes;
     }
 
     public function updateReviewSummary(int $id, float $averageRating, int $reviewCount): bool

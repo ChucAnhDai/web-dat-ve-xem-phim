@@ -428,6 +428,20 @@ class MovieRepository
         ]);
     }
 
+    public function hasFuturePublishedShowtimes(int $movieId): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT COUNT(*)
+            FROM showtimes
+            WHERE movie_id = :movie_id
+              AND status = 'published'
+              AND show_date >= CURRENT_DATE
+        ");
+        $stmt->execute(['movie_id' => $movieId]);
+
+        return (int) $stmt->fetchColumn() > 0;
+    }
+
     public function updateReviewSummary(int $id, float $averageRating, int $reviewCount): bool
     {
         $stmt = $this->db->prepare(

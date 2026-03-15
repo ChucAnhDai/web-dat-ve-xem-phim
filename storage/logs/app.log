@@ -164,3 +164,110 @@
 [2026-03-14T16:55:55+01:00] INFO: Movie asset updated {"actor_id":1,"asset_id":285}
 [2026-03-14T16:56:06+01:00] INFO: Movie asset updated {"actor_id":1,"asset_id":285}
 [2026-03-14T16:56:24+01:00] INFO: Movie asset updated {"actor_id":1,"asset_id":285}
+[2026-03-15T02:20:55+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-15T02:27:40+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"huyen-su-pendragon-truyen-thuyet-merlin","movie_id":1,"created":true,"category_count":6,"asset_count":7,"duration_ms":713.43}
+[2026-03-15T02:27:41+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"con-trai-cua-shakespeare","movie_id":2,"created":true,"category_count":1,"asset_count":10,"duration_ms":839.21}
+[2026-03-15T02:27:42+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"beast-games-phan-2","movie_id":3,"created":true,"category_count":1,"asset_count":10,"duration_ms":911.24}
+[2026-03-15T02:27:42+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"soda-chanh-mat-ong","movie_id":4,"created":true,"category_count":1,"asset_count":10,"duration_ms":751.4}
+[2026-03-15T02:27:43+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"mark-rober-crunchlabs-phan-2","movie_id":5,"created":true,"category_count":2,"asset_count":3,"duration_ms":707.27}
+[2026-03-15T02:27:44+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"gia-dinh-upshaw-phan-7","movie_id":6,"created":true,"category_count":3,"asset_count":10,"duration_ms":695.41}
+[2026-03-15T02:27:45+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"lieu-phap-su-that-phan-2","movie_id":7,"created":true,"category_count":2,"asset_count":10,"duration_ms":1020.11}
+[2026-03-15T02:27:45+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hai-nguoi-yeu-nhau","movie_id":8,"created":true,"category_count":2,"asset_count":4,"duration_ms":675.15}
+[2026-03-15T02:27:46+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"vu-dieu-tra-lucy-letby","movie_id":9,"created":true,"category_count":2,"asset_count":3,"duration_ms":650.86}
+[2026-03-15T02:27:47+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dem-nay-dau-tinh-yeu-nay-bien-mat-khoi-the-gian-2026","movie_id":10,"created":true,"category_count":1,"asset_count":10,"duration_ms":708.38}
+[2026-03-15T02:27:47+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"song-chu-my-tham","movie_id":11,"created":true,"category_count":2,"asset_count":2,"duration_ms":685.82}
+[2026-03-15T02:27:48+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"truoc-khi-tinh-yeu-bat-dau","movie_id":12,"created":true,"category_count":1,"asset_count":3,"duration_ms":667.7}
+[2026-03-15T02:27:48+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-moi","page":50,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":9546.74}
+[2026-03-15T04:13:31+01:00] INFO: Cinema created {"actor_id":1,"cinema_id":1,"status":"active","duration_ms":3.12}
+[2026-03-15T04:13:42+01:00] INFO: Room created {"actor_id":1,"room_id":1,"status":"active","duration_ms":3.44}
+[2026-03-15T04:16:36+01:00] INFO: Cinema archive blocked by active rooms {"actor_id":1,"cinema_id":1}
+[2026-03-15T04:16:39+01:00] INFO: Cinema archive blocked by active rooms {"actor_id":1,"cinema_id":1}
+[2026-03-15T04:35:40+01:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":6}
+[2026-03-15T10:38:28+01:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-15T10:40:05+01:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":5}
+[2026-03-15T10:41:10+01:00] INFO: Movie archived {"actor_id":1,"movie_id":5}
+[2026-03-15T10:41:12+01:00] INFO: Movie archived {"actor_id":1,"movie_id":4}
+[2026-03-15T10:41:14+01:00] INFO: Movie archived {"actor_id":1,"movie_id":3}
+[2026-03-15T10:41:17+01:00] INFO: Movie archived {"actor_id":1,"movie_id":2}
+[2026-03-15T10:41:18+01:00] INFO: Movie archived {"actor_id":1,"movie_id":1}
+[2026-03-15T10:41:20+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"midnight-pursuit","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:30+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"khi-dan-chim-tro-ve","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:30+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"khi-dan-chim-tro-ve","movie_id":6,"created":true,"category_count":3,"asset_count":2,"duration_ms":714.98}
+[2026-03-15T10:41:31+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"khep-mat-cho-ngay-mai","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:31+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"khep-mat-cho-ngay-mai","movie_id":7,"created":true,"category_count":2,"asset_count":2,"duration_ms":697.64}
+[2026-03-15T10:41:32+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"hon-nhan-trong-ngo-hep","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:32+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hon-nhan-trong-ngo-hep","movie_id":8,"created":true,"category_count":2,"asset_count":2,"duration_ms":678.54}
+[2026-03-15T10:41:33+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"hoa-sua-ve-trong-gio","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:33+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hoa-sua-ve-trong-gio","movie_id":9,"created":true,"category_count":2,"asset_count":2,"duration_ms":679.68}
+[2026-03-15T10:41:33+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"hay-noi-loi-yeu","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:33+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hay-noi-loi-yeu","movie_id":10,"created":true,"category_count":3,"asset_count":2,"duration_ms":637.31}
+[2026-03-15T10:41:34+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"hanh-trinh-cong-ly","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:34+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hanh-trinh-cong-ly","movie_id":11,"created":true,"category_count":2,"asset_count":2,"duration_ms":686.81}
+[2026-03-15T10:41:35+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"gap-em-ngay-nang","error":"Failed to communicate with OPhim API."}
+[2026-03-15T10:41:35+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"gap-em-ngay-nang","movie_id":12,"created":true,"category_count":3,"asset_count":2,"duration_ms":718.36}
+[2026-03-15T10:41:35+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ke-trom-thoi-gian","movie_id":13,"created":true,"category_count":1,"asset_count":4,"duration_ms":673.36}
+[2026-03-15T10:41:36+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"chuoi-thuc-an-tinh-yeu","movie_id":14,"created":true,"category_count":1,"asset_count":3,"duration_ms":658.07}
+[2026-03-15T10:41:36+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"no-hoa-cuu-non","movie_id":15,"created":true,"category_count":1,"asset_count":3,"duration_ms":612.16}
+[2026-03-15T10:41:38+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"troi-ban-phu-quy","movie_id":16,"created":true,"category_count":1,"asset_count":4,"duration_ms":1047.92}
+[2026-03-15T10:41:38+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"thien-tam-ky-bien","movie_id":17,"created":true,"category_count":1,"asset_count":3,"duration_ms":663.08}
+[2026-03-15T10:41:38+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-bo","page":100,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":8949.88}
+[2026-03-15T10:41:50+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"money-my-love","movie_id":18,"created":true,"category_count":1,"asset_count":4,"duration_ms":713.34}
+[2026-03-15T10:41:50+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"mon-qua-cua-kluay","movie_id":19,"created":true,"category_count":2,"asset_count":3,"duration_ms":651.52}
+[2026-03-15T10:41:51+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"chu-thuat-hoi-chien-phan-3","movie_id":20,"created":true,"category_count":4,"asset_count":10,"duration_ms":839.78}
+[2026-03-15T10:41:52+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dong-song-trinh-nu-phan-7","movie_id":21,"created":true,"category_count":1,"asset_count":10,"duration_ms":642.13}
+[2026-03-15T10:41:53+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"linh-moi-phan-8","movie_id":22,"created":true,"category_count":4,"asset_count":10,"duration_ms":863.14}
+[2026-03-15T10:41:54+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tri-tue-tiem-nang-phan-2","movie_id":23,"created":true,"category_count":4,"asset_count":10,"duration_ms":1008.22}
+[2026-03-15T10:41:55+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dua-con-cua-than-tuong-phan-3","movie_id":24,"created":true,"category_count":1,"asset_count":10,"duration_ms":838.56}
+[2026-03-15T10:41:55+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nhung-ong-bo-cua-ma-ri","movie_id":25,"created":true,"category_count":3,"asset_count":5,"duration_ms":668.61}
+[2026-03-15T10:41:56+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"thuy-trieu-tinh-yeu-phan-2","movie_id":26,"created":true,"category_count":1,"asset_count":5,"duration_ms":628.64}
+[2026-03-15T10:41:57+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"giang-ho-da-vu-thap-nien-dang","movie_id":27,"created":true,"category_count":4,"asset_count":6,"duration_ms":682.63}
+[2026-03-15T10:41:58+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nu-hon-siren","movie_id":28,"created":true,"category_count":3,"asset_count":10,"duration_ms":1119.57}
+[2026-03-15T10:41:58+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tinh-nhu-nuoc-soi-cho-so-co-laphan-2","movie_id":29,"created":true,"category_count":1,"asset_count":10,"duration_ms":681.9}
+[2026-03-15T10:41:58+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-bo","page":5,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":9789.19}
+[2026-03-15T10:42:10+01:00] INFO: Movie archived {"actor_id":1,"movie_id":1}
+[2026-03-15T10:42:13+01:00] INFO: Movie archived {"actor_id":1,"movie_id":2}
+[2026-03-15T10:42:15+01:00] INFO: Movie archived {"actor_id":1,"movie_id":3}
+[2026-03-15T10:42:17+01:00] INFO: Movie archived {"actor_id":1,"movie_id":4}
+[2026-03-15T10:43:11+01:00] INFO: Movie archived {"actor_id":1,"movie_id":5}
+[2026-03-15T10:43:18+01:00] INFO: Movie archived {"actor_id":1,"movie_id":5}
+[2026-03-15T10:43:23+01:00] INFO: Movie archived {"actor_id":1,"movie_id":5}
+[2026-03-15T10:43:40+01:00] INFO: Movie archived {"actor_id":1,"movie_id":1}
+[2026-03-15T10:57:25+01:00] INFO: Cinema created {"actor_id":1,"cinema_id":6,"status":"active","duration_ms":3.85}
+[2026-03-15T10:58:27+01:00] INFO: Room created {"actor_id":1,"room_id":8,"status":"active","duration_ms":2.44}
+[2026-03-15T10:58:41+01:00] INFO: Room created {"actor_id":1,"room_id":9,"status":"active","duration_ms":4.55}
+[2026-03-15T11:00:15+01:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":9,"total_seats":"24","duration_ms":5.42}
+[2026-03-15T11:00:57+01:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":9,"total_seats":"96","duration_ms":14.9}
+[2026-03-15T11:01:52+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":49,"status":"draft","duration_ms":7.01}
+[2026-03-15T11:02:32+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":49,"status":"published","duration_ms":159.02}
+[2026-03-15T11:08:48+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"midnight-pursuit","error":"Failed to communicate with OPhim API."}
+[2026-03-15T11:13:05+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"midnight-pursuit","error":"Failed to communicate with OPhim API."}
+[2026-03-15T11:24:02+01:00] INFO: Local movie detail blocked for non-public movie status {"slug":"midnight-pursuit"}
+[2026-03-15T11:25:36+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:36+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:36+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:37+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:37+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:37+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:37+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:37+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:38+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:38+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:38+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:39+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:39+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:42+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:42+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:43+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:43+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:43+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:43+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:44+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:44+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:44+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:45+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:45+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:45+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:25:46+01:00] INFO: Showtime archived {"actor_id":1,"showtime_id":36,"status":"archived"}
+[2026-03-15T11:43:59+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":36,"status":"archived","duration_ms":5.26}
+[2026-03-15T11:44:11+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":36,"status":"published","duration_ms":24.95}
+[2026-03-15T11:52:27+01:00] INFO: Legacy cinema demo fixtures archived {"legacy_cinema_ids":[1,6],"archived_cinemas":2,"archived_rooms":3,"archived_seats":96,"archived_showtimes":1,"duration_ms":11.18}

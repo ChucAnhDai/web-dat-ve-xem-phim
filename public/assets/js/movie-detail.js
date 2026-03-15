@@ -555,15 +555,21 @@
       <div class="cinema-row detail-showtime-row">
         <div class="cinema-name">${escapeHtml(buildVenueLabel(venue))}</div>
         <div class="time-chips">
-          ${(venue.times || []).map(time => `
+          ${(venue.times || []).map(time => {
+            const isUnavailable = Boolean(time.is_sold_out) || String(time.status || '').trim().toLowerCase() !== 'published';
+
+            return `
             <button
-              class="time-chip"
+              class="time-chip showtime-chip${isUnavailable ? ' unavailable full' : ''}"
               type="button"
               data-showtime-url="${escapeHtmlAttr(buildSeatSelectionUrl(time.id, state.movie?.slug))}"
+              ${isUnavailable ? 'disabled' : ''}
             >
-              ${escapeHtml(time.start_time_label || formatTime(time.start_time))}
+              <span class="showtime-chip-time">${escapeHtml(time.start_time_label || formatTime(time.start_time))}</span>
+              <span class="time-chip-note">${escapeHtml(time.availability_label || 'Available')}</span>
             </button>
-          `).join('')}
+          `;
+          }).join('')}
         </div>
       </div>
     `).join('');

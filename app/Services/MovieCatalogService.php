@@ -77,16 +77,27 @@ class MovieCatalogService
             return $this->error(['movie' => ['Movie not found.']], 404);
         }
 
+        $localMovieExists = false;
         try {
             $localMovie = $this->movies->findPublicDetailBySlug($normalizedSlug);
             if ($localMovie) {
                 return $this->buildLocalMovieDetail($localMovie);
             }
+
+            $localMovieExists = $this->movies->findBySlug($normalizedSlug) !== null;
         } catch (Throwable $exception) {
             $this->logger->error('Local movie detail lookup failed', [
                 'slug' => $normalizedSlug,
                 'error' => $exception->getMessage(),
             ]);
+        }
+
+        if ($localMovieExists) {
+            $this->logger->info('Local movie detail blocked for non-public movie status', [
+                'slug' => $normalizedSlug,
+            ]);
+
+            return $this->error(['movie' => ['Movie not found.']], 404);
         }
 
         try {
@@ -489,11 +500,25 @@ class MovieCatalogService
                         continue;
                     }
 
+                    $totalSeats = (int) ($time['total_seats'] ?? 0);
+                    $bookedSeats = (int) ($time['booked_seats'] ?? 0);
+                    $availableSeats = (int) ($time['available_seats'] ?? max(0, $totalSeats - $bookedSeats));
+                    $status = $time['status'] ?? 'published';
+
                     $times[] = [
                         'id' => (int) ($time['id'] ?? 0),
                         'start_time' => $time['start_time'] ?? null,
+                        'end_time' => $time['end_time'] ?? null,
                         'start_time_label' => $this->formatTimeLabel($time['start_time'] ?? null),
                         'price' => isset($time['price']) ? (float) $time['price'] : null,
+                        'status' => $status,
+                        'presentation_type' => $time['presentation_type'] ?? null,
+                        'language_version' => $time['language_version'] ?? null,
+                        'booked_seats' => $bookedSeats,
+                        'available_seats' => $availableSeats,
+                        'total_seats' => $totalSeats,
+                        'is_sold_out' => (bool) ($time['is_sold_out'] ?? ($totalSeats > 0 && $availableSeats <= 0)),
+                        'availability_label' => $this->showtimeAvailabilityLabel($status, $availableSeats, $totalSeats),
                     ];
                 }
 
@@ -948,6 +973,24 @@ class MovieCatalogService
         }
 
         return date('g:i A', $parsed);
+    }
+
+    private function showtimeAvailabilityLabel(?string $status, int $availableSeats, int $totalSeats): string
+    {
+        if ($status === 'cancelled') {
+            return 'Cancelled';
+        }
+        if ($status === 'draft') {
+            return 'Draft';
+        }
+        if ($totalSeats > 0 && $availableSeats <= 0) {
+            return 'Sold Out';
+        }
+        if ($totalSeats > 0 && $availableSeats <= 10) {
+            return $availableSeats . ' seats left';
+        }
+
+        return 'Available';
     }
 
     private function releaseDateFromYear($value): ?string

@@ -25,6 +25,8 @@ $backToMovieDetail = $selectedMovieSlug !== ''
         <div class="legend-item"><div class="legend-seat available"></div> Available</div>
         <div class="legend-item"><div class="legend-seat selected"></div> Selected</div>
         <div class="legend-item"><div class="legend-seat booked"></div> Booked</div>
+        <div class="legend-item"><div class="legend-seat maintenance"></div> Maintenance</div>
+        <div class="legend-item"><div class="legend-seat disabled"></div> Disabled</div>
         <div class="legend-item"><div class="legend-seat vip"></div> VIP (+$5)</div>
         <div class="legend-item"><div class="legend-seat couple"></div> Couple (+$10)</div>
       </div>

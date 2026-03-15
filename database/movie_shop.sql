@@ -1,3 +1,8 @@
+CREATE DATABASE IF NOT EXISTS movie_shop
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+USE movie_shop;
 
 -- ========================
 -- USERS
@@ -95,34 +100,71 @@ CREATE TABLE movie_images (
 
 CREATE TABLE cinemas (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255),
-    address VARCHAR(255)
+    slug VARCHAR(150) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    city VARCHAR(120) NOT NULL,
+    address VARCHAR(255) NOT NULL,
+    manager_name VARCHAR(120),
+    support_phone VARCHAR(20),
+    status ENUM('active','renovation','closed','archived') DEFAULT 'active',
+    opening_time TIME NULL,
+    closing_time TIME NULL,
+    latitude DECIMAL(10,7) NULL,
+    longitude DECIMAL(10,7) NULL,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_cinemas_city_status (city, status),
+    INDEX idx_cinemas_status (status)
 );
 
 CREATE TABLE rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    cinema_id INT,
-    room_name VARCHAR(50),
-    total_seats INT,
+    cinema_id INT NOT NULL,
+    room_name VARCHAR(120) NOT NULL,
+    room_type VARCHAR(50),
+    screen_label VARCHAR(120),
+    projection_type VARCHAR(50),
+    sound_profile VARCHAR(50),
+    cleaning_buffer_minutes INT DEFAULT 15,
+    total_seats INT DEFAULT 0,
+    status ENUM('active','maintenance','closed','archived') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_rooms_cinema_room_name (cinema_id, room_name),
+    INDEX idx_rooms_cinema_status (cinema_id, status),
     FOREIGN KEY (cinema_id) REFERENCES cinemas(id)
 );
 
 CREATE TABLE seats (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    room_id INT,
-    seat_row VARCHAR(5),
-    seat_number INT,
+    room_id INT NOT NULL,
+    seat_row VARCHAR(5) NOT NULL,
+    seat_number INT NOT NULL,
     seat_type ENUM('normal','vip','couple') DEFAULT 'normal',
+    status ENUM('available','maintenance','disabled','archived') DEFAULT 'available',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_seats_room_position (room_id, seat_row, seat_number),
+    INDEX idx_seats_room_status_type (room_id, status, seat_type),
     FOREIGN KEY (room_id) REFERENCES rooms(id)
 );
 
 CREATE TABLE showtimes (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    movie_id INT,
-    room_id INT,
-    show_date DATE,
-    start_time TIME,
-    price DECIMAL(10,2),
+    movie_id INT NOT NULL,
+    room_id INT NOT NULL,
+    show_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    status ENUM('draft','published','cancelled','completed','archived') DEFAULT 'draft',
+    presentation_type VARCHAR(50),
+    language_version VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_showtimes_movie_date (movie_id, show_date),
+    INDEX idx_showtimes_room_date_status (room_id, show_date, status),
     FOREIGN KEY (movie_id) REFERENCES movies(id),
     FOREIGN KEY (room_id) REFERENCES rooms(id)
 );

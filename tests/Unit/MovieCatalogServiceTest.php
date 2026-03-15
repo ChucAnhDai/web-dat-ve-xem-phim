@@ -382,6 +382,45 @@ class MovieCatalogServiceTest extends TestCase
         $this->assertSame('1:30 PM', $result['data']['showtimes'][0]['venues'][0]['times'][0]['start_time_label']);
         $this->assertSame('Related Local', $result['data']['related_movies'][0]['title']);
     }
+
+    public function testGetMovieDetailReturnsNotFoundWhenLocalMovieExistsButIsNotPublic(): void
+    {
+        $client = new UnitFakeOphimClient();
+        $client->detailPayload = [
+            'data' => [
+                'item' => [
+                    'slug' => 'hidden-movie',
+                    'name' => 'Remote Hidden Movie',
+                ],
+            ],
+        ];
+
+        $movies = new UnitFakePublicMovieRepository();
+        $movies->publicDetailRow = null;
+        $movies->movieBySlugRow = [
+            'id' => 99,
+            'slug' => 'hidden-movie',
+            'title' => 'Hidden Movie',
+            'status' => 'archived',
+        ];
+
+        $service = new MovieCatalogService(
+            $client,
+            new MovieCatalogValidator(),
+            new UnitFakeCatalogLogger(),
+            $movies,
+            new UnitFakePublicCategoryRepository(),
+            new UnitFakePublicImageRepository(),
+            new UnitFakePublicReviewRepository(),
+            new UnitFakeShowtimeRepository()
+        );
+
+        $result = $service->getMovieDetail('hidden-movie');
+
+        $this->assertSame(404, $result['status']);
+        $this->assertSame(['Movie not found.'], $result['errors']['movie']);
+        $this->assertSame([], $client->recordedDetailSlugs);
+    }
 }
 
 class UnitFakeOphimClient extends OphimClient
@@ -393,6 +432,7 @@ class UnitFakeOphimClient extends OphimClient
     public array $relatedPayload = [];
     public array $recordedListCalls = [];
     public array $recordedSearchCalls = [];
+    public array $recordedDetailSlugs = [];
 
     public function __construct()
     {
@@ -402,7 +442,7 @@ class UnitFakeOphimClient extends OphimClient
     {
         $this->recordedListCalls[] = ['slug' => $slug, 'query' => $query];
 
-        if (count($this->recordedListCalls) > 1 && !empty($this->relatedPayload)) {
+        if (!empty($this->relatedPayload) && (count($this->recordedListCalls) > 1 || empty($this->listPayload))) {
             return $this->relatedPayload;
         }
 
@@ -413,11 +453,13 @@ class UnitFakeOphimClient extends OphimClient
     {
         $this->recordedSearchCalls[] = ['keyword' => $keyword, 'query' => $query];
 
-        return $this->searchPayload;
+        return !empty($this->searchPayload) ? $this->searchPayload : $this->listPayload;
     }
 
     public function getMovieDetail(string $slug): array
     {
+        $this->recordedDetailSlugs[] = $slug;
+
         return $this->detailPayload;
     }
 
@@ -453,6 +495,7 @@ class UnitFakePublicMovieRepository extends MovieRepository
     ];
     public ?array $publicDetailRow = null;
     public array $relatedRows = [];
+    public ?array $movieBySlugRow = null;
 
     public function __construct()
     {
@@ -471,6 +514,11 @@ class UnitFakePublicMovieRepository extends MovieRepository
     public function findPublicDetailBySlug(string $slug): ?array
     {
         return $this->publicDetailRow;
+    }
+
+    public function findBySlug(string $slug, ?int $excludeId = null): ?array
+    {
+        return $this->movieBySlugRow;
     }
 
     public function listPublicRelatedMovies(int $movieId, ?int $categoryId = null, int $limit = 4): array

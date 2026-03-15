@@ -257,6 +257,34 @@ class MovieManagementServiceIntegrationTest extends TestCase
         $this->assertSame(1, (int) $movieRow['review_count']);
     }
 
+    public function testArchiveMovieBlocksFuturePublishedShowtimes(): void
+    {
+        $tomorrow = date('Y-m-d', strtotime('+1 day'));
+
+        $this->db->exec("
+            INSERT INTO movies (
+                id, primary_category_id, slug, title, summary, duration_minutes, release_date, poster_url, trailer_url,
+                age_rating, language, director, writer, cast_text, studio, average_rating, review_count, status, created_at, updated_at
+            ) VALUES (
+                9, 1, 'scheduled-movie', 'Scheduled Movie', NULL, 120, '2026-03-14', NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 'now_showing', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+        ");
+        $this->db->exec("
+            INSERT INTO showtimes (id, movie_id, room_id, show_date, start_time, end_time, price, status)
+            VALUES (81, 9, 1, '{$tomorrow}', '10:00:00', '12:00:00', 145000, 'published')
+        ");
+
+        $service = $this->makeService();
+        $result = $service->archiveMovie(9, 10);
+
+        $this->assertSame(409, $result['status']);
+        $this->assertSame(['Cannot archive movie while published future showtimes exist.'], $result['errors']['movie']);
+
+        $movieStatus = (string) $this->db->query("SELECT status FROM movies WHERE id = 9")->fetchColumn();
+        $this->assertSame('now_showing', $movieStatus);
+    }
+
     public function testOphimImportUpdatesExistingMovieAndArchivesPriorAssets(): void
     {
         $this->db->exec("
@@ -280,7 +308,7 @@ class MovieManagementServiceIntegrationTest extends TestCase
             new MovieCategoryRepository($this->db),
             new MovieCategoryAssignmentRepository($this->db),
             new MovieImageRepository($this->db),
-            new IntegrationFakeOphimClient(
+            new IntegrationMovieManagementFakeOphimClient(
                 [
                     'status' => 'success',
                     'data' => [
@@ -368,7 +396,7 @@ class MovieManagementServiceIntegrationTest extends TestCase
             new MovieCategoryRepository($this->db),
             new MovieCategoryAssignmentRepository($this->db),
             new MovieImageRepository($this->db),
-            new IntegrationFakeOphimClient(
+            new IntegrationMovieManagementFakeOphimClient(
                 [
                     'alpha-heist' => [
                         'status' => 'success',
@@ -577,6 +605,20 @@ class MovieManagementServiceIntegrationTest extends TestCase
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ');
+
+        $this->db->exec('
+            CREATE TABLE showtimes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                movie_id INTEGER NOT NULL,
+                room_id INTEGER NOT NULL,
+                show_date TEXT NOT NULL,
+                start_time TEXT NOT NULL,
+                end_time TEXT NOT NULL,
+                price REAL NOT NULL,
+                status TEXT NOT NULL,
+                FOREIGN KEY (movie_id) REFERENCES movies(id)
+            )
+        ');
     }
 
     private function seedBaseData(): void
@@ -609,7 +651,7 @@ class IntegrationFakeLogger extends Logger
     }
 }
 
-class IntegrationFakeOphimClient extends OphimClient
+class IntegrationMovieManagementFakeOphimClient extends OphimClient
 {
     private array $detailPayload;
     private array $imagesPayload;

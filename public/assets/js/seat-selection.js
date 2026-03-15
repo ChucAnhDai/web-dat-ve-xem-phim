@@ -110,8 +110,11 @@
       dom.backLink.href = backUrl;
     }
 
+    const scheduleLabel = `${formatShowDate(showtime.show_date)} - ${formatTime(showtime.start_time)}`;
+    const subtitle = `${showtime.movie_title || 'Movie'} - ${buildVenueLabel(showtime)} - ${scheduleLabel}`;
+
     if (dom.subtitle) {
-      dom.subtitle.textContent = `${showtime.movie_title || 'Movie'} · ${buildVenueLabel(showtime)} · ${formatShowDate(showtime.show_date)} · ${formatTime(showtime.start_time)}`;
+      dom.subtitle.textContent = subtitle;
     }
 
     if (dom.movieTitle) {
@@ -121,7 +124,7 @@
       dom.venue.textContent = buildVenueLabel(showtime);
     }
     if (dom.dateTime) {
-      dom.dateTime.textContent = `${formatShowDate(showtime.show_date)} · ${formatTime(showtime.start_time)}`;
+      dom.dateTime.textContent = scheduleLabel;
     }
   }
 
@@ -172,8 +175,8 @@
             class="seat ${seatClassName(seat)}"
             type="button"
             data-seat-id="${escapeHtmlAttr(seat.id)}"
-            ${seat.is_booked ? 'disabled' : ''}
-            title="${escapeHtmlAttr(`${seat.label} · ${humanizeSeatType(seat.type)}`)}"
+            ${seat.is_selectable ? '' : 'disabled'}
+            title="${escapeHtmlAttr(`${seat.label} - ${humanizeSeatType(seat.type)} - ${humanizeSeatStatus(seat.status, seat.is_booked)}`)}"
           >
             ${escapeHtml(seat.number)}
           </button>
@@ -277,6 +280,12 @@
     }
     if (seat.is_booked) {
       return 'booked';
+    }
+    if (seat.status === 'maintenance') {
+      return 'maintenance';
+    }
+    if (seat.status === 'disabled') {
+      return 'disabled';
     }
     if (seat.type === 'vip') {
       return 'vip';
@@ -384,7 +393,11 @@
 
   function formatCurrency(value) {
     const amount = Number(value || 0);
-    return `$${amount.toFixed(2)}`;
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+      maximumFractionDigits: 0,
+    }).format(amount);
   }
 
   function humanizeSeatType(value) {
@@ -397,6 +410,22 @@
     }
 
     return 'Standard';
+  }
+
+  function humanizeSeatStatus(status, isBooked) {
+    if (isBooked) {
+      return 'Booked';
+    }
+
+    const value = String(status || 'available').trim().toLowerCase();
+    if (value === 'maintenance') {
+      return 'Maintenance';
+    }
+    if (value === 'disabled') {
+      return 'Disabled';
+    }
+
+    return 'Available';
   }
 
   function firstErrorMessage(errors, fallback) {

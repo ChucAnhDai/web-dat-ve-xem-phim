@@ -15,6 +15,18 @@ class ShowtimeCatalogController
         $this->service = $service ?? new ShowtimeCatalogService();
     }
 
+    public function listShowtimes(Request $request, Response $response)
+    {
+        $result = $this->service->listShowtimes($request->getBody());
+        $status = (int) ($result['status'] ?? 200);
+
+        if (isset($result['errors'])) {
+            return $response->json(['errors' => $result['errors']], $status);
+        }
+
+        return $response->json(['data' => $result['data'] ?? []], $status);
+    }
+
     public function getSeatMap(Request $request, Response $response)
     {
         $showtimeId = (int) $request->getRouteParam('id');

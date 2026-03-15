@@ -28,7 +28,7 @@ $sectionView = $sectionViews[$cinemaSection] ?? $sectionViews['cinemas'];
       <h1 class="page-title"><?php echo htmlspecialchars($meta['title'], ENT_QUOTES, 'UTF-8'); ?></h1>
       <p class="page-sub"><?php echo htmlspecialchars($meta['subtitle'], ENT_QUOTES, 'UTF-8'); ?></p>
     </div>
-    <button class="btn btn-primary" onclick="handleCinemaSectionAction()">
+    <button class="btn btn-primary" id="cinemaSectionActionBtn" onclick="handleCinemaSectionAction()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <?php echo htmlspecialchars($meta['button'], ENT_QUOTES, 'UTF-8'); ?>
     </button>

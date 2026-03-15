@@ -287,6 +287,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .select-filter { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 10px; color: var(--text-muted); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; cursor: pointer; transition: var(--trans); }
 .select-filter:hover { border-color: var(--border-hover); }
 .toolbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.toolbar-scope { display: flex; align-items: center; gap: 6px; padding: 4px; background: var(--bg3); border: 1px solid var(--border); border-radius: 999px; }
+.toolbar-scope .btn { border-radius: 999px; }
 
 /* ===== POSTER / PRODUCT ===== */
 .poster-cell { display: flex; align-items: center; gap: 12px; }
@@ -784,6 +786,10 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .seat.couple { background: rgba(168,85,247,0.2); border-color: var(--purple); width: 58px; }
 .seat.couple::before { background: var(--purple); opacity: 0.4; }
 .seat.couple:hover { background: rgba(168,85,247,0.35); }
+.seat.maintenance { background: rgba(245,158,11,0.18); border-color: var(--orange); }
+.seat.maintenance::before { background: var(--orange); opacity: 0.45; }
+.seat.disabled { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); cursor: not-allowed; }
+.seat.disabled::before { background: rgba(255,255,255,0.18); opacity: 0.35; }
 .seat.booked { background: rgba(229,9,20,0.2); border-color: var(--red); cursor: not-allowed; }
 .seat.booked::before { background: var(--red); opacity: 0.3; }
 .seat.selected { background: var(--red); border-color: var(--red); }
@@ -791,6 +797,12 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .seat-legend { display: flex; align-items: center; gap: 20px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; justify-content: center; }
 .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted); }
 .legend-box { width: 16px; height: 14px; border-radius: 3px; border: 1px solid; }
+.legend-box.normal { background: var(--bg3); border-color: var(--border); }
+.legend-box.vip { background: rgba(201,168,76,0.2); border-color: var(--gold); }
+.legend-box.couple { background: rgba(168,85,247,0.2); border-color: var(--purple); width: 28px; }
+.legend-box.maintenance { background: rgba(245,158,11,0.18); border-color: var(--orange); }
+.legend-box.disabled { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); }
+.legend-box.selected { background: var(--red); border-color: var(--red); }
 
 /* ===== CALENDAR ===== */
 .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }

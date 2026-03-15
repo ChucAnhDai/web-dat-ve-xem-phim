@@ -10,6 +10,37 @@ use PHPUnit\Framework\TestCase;
 
 class ShowtimeCatalogControllerTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        $_GET = [];
+        $_POST = [];
+        $_SERVER = [];
+    }
+
+    public function testListShowtimesReturnsCatalogPayload(): void
+    {
+        $service = new FeatureFakeShowtimeCatalogService();
+        $service->result = [
+            'status' => 200,
+            'data' => [
+                'items' => [['id' => 1, 'movie_title' => 'Catalog Movie']],
+                'meta' => ['total' => 1, 'page' => 1, 'per_page' => 20, 'total_pages' => 1],
+                'options' => ['movies' => [], 'cinemas' => [], 'cities' => []],
+                'summary' => ['total_items' => 1, 'available' => 1, 'limited' => 0, 'sold_out' => 0],
+            ],
+        ];
+
+        $controller = new ShowtimeCatalogController($service);
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_GET = ['movie_id' => '5'];
+        $response = new FeatureCapturingShowtimeResponse();
+
+        $controller->listShowtimes(new Request(), $response);
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame('Catalog Movie', $response->payload['data']['items'][0]['movie_title']);
+    }
+
     public function testGetSeatMapReturnsDataPayload(): void
     {
         $service = new FeatureFakeShowtimeCatalogService();
@@ -64,6 +95,11 @@ class FeatureFakeShowtimeCatalogService extends ShowtimeCatalogService
     }
 
     public function getSeatMap(int $showtimeId): array
+    {
+        return $this->result;
+    }
+
+    public function listShowtimes(array $filters): array
     {
         return $this->result;
     }

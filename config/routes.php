@@ -1,7 +1,9 @@
 <?php
 
 use App\Controllers\Auth\AuthController;
+use App\Controllers\Admin\CinemaManagementController;
 use App\Controllers\Admin\MovieManagementController;
+use App\Controllers\Admin\ShowtimeManagementController;
 use App\Controllers\Api\MovieCatalogController;
 use App\Controllers\Api\ShowtimeCatalogController;
 use App\Middlewares\AdminMiddleware;
@@ -17,6 +19,7 @@ $app->router->post('/api/auth/update-password', [AuthController::class, 'updateP
 
 $app->router->get('/api/movies', [MovieCatalogController::class, 'listMovies']);
 $app->router->get('/api/movies/{slug}', [MovieCatalogController::class, 'getMovieDetail']);
+$app->router->get('/api/showtimes', [ShowtimeCatalogController::class, 'listShowtimes']);
 $app->router->get('/api/showtimes/{id}/seat-map', [ShowtimeCatalogController::class, 'getSeatMap']);
 
 $app->router->post('/api/admin/auth/login', [AuthController::class, 'adminLogin']);
@@ -46,3 +49,23 @@ $app->router->delete('/api/admin/movie-assets/{id}', [MovieManagementController:
 $app->router->get('/api/admin/movie-reviews', [MovieManagementController::class, 'listReviews'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/movie-reviews/{id}', [MovieManagementController::class, 'getReview'], [AdminMiddleware::class]);
 $app->router->put('/api/admin/movie-reviews/{id}/moderate', [MovieManagementController::class, 'moderateReview'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/cinemas', [CinemaManagementController::class, 'listCinemas'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/cinemas/{id}', [CinemaManagementController::class, 'getCinema'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/cinemas', [CinemaManagementController::class, 'createCinema'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/cinemas/{id}', [CinemaManagementController::class, 'updateCinema'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/cinemas/{id}', [CinemaManagementController::class, 'archiveCinema'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/rooms', [CinemaManagementController::class, 'listRooms'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/rooms/{id}', [CinemaManagementController::class, 'getRoom'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/rooms/{id}/seats', [CinemaManagementController::class, 'getRoomSeats'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/rooms', [CinemaManagementController::class, 'createRoom'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/rooms/{id}', [CinemaManagementController::class, 'updateRoom'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/rooms/{id}/seats', [CinemaManagementController::class, 'replaceRoomSeats'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/rooms/{id}', [CinemaManagementController::class, 'archiveRoom'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/showtimes', [ShowtimeManagementController::class, 'listShowtimes'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/showtimes/{id}', [ShowtimeManagementController::class, 'getShowtime'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/showtimes', [ShowtimeManagementController::class, 'createShowtime'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/showtimes/{id}', [ShowtimeManagementController::class, 'updateShowtime'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/showtimes/{id}', [ShowtimeManagementController::class, 'archiveShowtime'], [AdminMiddleware::class]);
