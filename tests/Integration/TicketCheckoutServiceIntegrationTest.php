@@ -72,13 +72,17 @@ class TicketCheckoutServiceIntegrationTest extends TestCase
         $this->assertSame(0, $this->countRows('ticket_seat_holds'));
 
         $orderRow = $this->db->query('SELECT status, user_id, total_price FROM ticket_orders LIMIT 1')->fetch();
-        $paymentRow = $this->db->query('SELECT payment_method, payment_status FROM payments LIMIT 1')->fetch();
+        $paymentRow = $this->db->query('SELECT payment_method, payment_status, amount, currency, provider_order_ref, completed_at FROM payments LIMIT 1')->fetch();
 
         $this->assertSame('paid', $orderRow['status']);
         $this->assertSame(9, (int) $orderRow['user_id']);
         $this->assertSame(175000.0, (float) $orderRow['total_price']);
         $this->assertSame('momo', $paymentRow['payment_method']);
         $this->assertSame('success', $paymentRow['payment_status']);
+        $this->assertSame(175000.0, (float) $paymentRow['amount']);
+        $this->assertSame('VND', $paymentRow['currency']);
+        $this->assertStringStartsWith('TKT-', (string) $paymentRow['provider_order_ref']);
+        $this->assertNotEmpty($paymentRow['completed_at']);
     }
 
     private function makeService(): TicketCheckoutService
@@ -96,6 +100,7 @@ class TicketCheckoutServiceIntegrationTest extends TestCase
             $payments,
             new TicketOrderValidator(),
             new TicketLifecycleService($this->db, $holds, $orders, $payments, new IntegrationTicketCheckoutLogger()),
+            null,
             new IntegrationTicketCheckoutLogger()
         );
     }
@@ -237,6 +242,20 @@ class TicketCheckoutServiceIntegrationTest extends TestCase
                 payment_method TEXT,
                 payment_status TEXT,
                 transaction_code TEXT,
+                amount REAL DEFAULT 0,
+                currency TEXT DEFAULT "VND",
+                provider_transaction_code TEXT NULL,
+                provider_order_ref TEXT NULL,
+                provider_response_code TEXT NULL,
+                provider_message TEXT NULL,
+                idempotency_key TEXT NULL,
+                checkout_url TEXT NULL,
+                request_payload TEXT NULL,
+                callback_payload TEXT NULL,
+                initiated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                completed_at TEXT NULL,
+                failed_at TEXT NULL,
+                refunded_at TEXT NULL,
                 payment_date TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ');

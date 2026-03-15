@@ -4,14 +4,14 @@ $sectionMeta = [
     'payments' => [
         'breadcrumb' => 'Payments',
         'title' => 'Payment Management',
-        'subtitle' => 'Track transactions, revenue, and refund health',
+        'subtitle' => 'Track payment records, gateway states, and settlement health',
         'button' => 'Export Report',
         'buttonClass' => 'btn btn-ghost',
     ],
     'payment-methods' => [
         'breadcrumb' => 'Payment Methods',
         'title' => 'Payment Methods',
-        'subtitle' => 'Manage payment channels and settlement rules',
+        'subtitle' => 'Review payment channels, fees, and operational defaults',
         'button' => 'Add Method',
         'buttonClass' => 'btn btn-primary',
     ],

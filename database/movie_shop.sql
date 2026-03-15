@@ -331,14 +331,58 @@ CREATE TABLE order_details (
 -- PAYMENT
 -- ========================
 
+CREATE TABLE payment_methods (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(30) NOT NULL UNIQUE,
+    name VARCHAR(100) NOT NULL,
+    provider VARCHAR(50) NOT NULL,
+    channel_type ENUM('e_wallet','gateway','international','counter') NOT NULL,
+    status ENUM('active','maintenance','disabled') DEFAULT 'active',
+    fee_rate_percent DECIMAL(5,2) NOT NULL DEFAULT 0.00,
+    fixed_fee_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    settlement_cycle VARCHAR(20) NOT NULL DEFAULT 'instant',
+    supports_refund TINYINT(1) NOT NULL DEFAULT 0,
+    supports_webhook TINYINT(1) NOT NULL DEFAULT 0,
+    supports_redirect TINYINT(1) NOT NULL DEFAULT 0,
+    display_order INT NOT NULL DEFAULT 0,
+    description VARCHAR(255) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_payment_methods_status_display (status, display_order)
+);
+
 CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_order_id INT NULL,
     shop_order_id INT NULL,
-    payment_method ENUM('momo','vnpay','paypal','cash'),
-    payment_status ENUM('pending','success','failed'),
-    transaction_code VARCHAR(255),
-    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    payment_method ENUM('momo','vnpay','paypal','cash') NOT NULL,
+    payment_status ENUM('pending','processing','success','failed','cancelled','expired','refunded') NOT NULL DEFAULT 'pending',
+    amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    currency CHAR(3) NOT NULL DEFAULT 'VND',
+    transaction_code VARCHAR(255) NULL,
+    provider_transaction_code VARCHAR(255) NULL,
+    provider_order_ref VARCHAR(255) NULL,
+    provider_response_code VARCHAR(50) NULL,
+    provider_message VARCHAR(255) NULL,
+    idempotency_key VARCHAR(80) NULL,
+    checkout_url VARCHAR(500) NULL,
+    request_payload LONGTEXT NULL,
+    callback_payload LONGTEXT NULL,
+    initiated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP NULL DEFAULT NULL,
+    failed_at TIMESTAMP NULL DEFAULT NULL,
+    refunded_at TIMESTAMP NULL DEFAULT NULL,
+    payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_payments_transaction_code (transaction_code),
+    UNIQUE KEY uniq_payments_idempotency_key (idempotency_key),
+    INDEX idx_payments_ticket_order (ticket_order_id),
+    INDEX idx_payments_shop_order (shop_order_id),
+    INDEX idx_payments_method_status_date (payment_method, payment_status, payment_date),
+    INDEX idx_payments_status_initiated (payment_status, initiated_at),
+    FOREIGN KEY (ticket_order_id) REFERENCES ticket_orders(id),
+    FOREIGN KEY (shop_order_id) REFERENCES shop_orders(id)
 );
 
 -- ========================
@@ -387,3 +431,37 @@ ON DUPLICATE KEY UPDATE
     password = VALUES(password),
     phone = VALUES(phone),
     role = VALUES(role);
+
+INSERT INTO payment_methods (
+    code,
+    name,
+    provider,
+    channel_type,
+    status,
+    fee_rate_percent,
+    fixed_fee_amount,
+    settlement_cycle,
+    supports_refund,
+    supports_webhook,
+    supports_redirect,
+    display_order,
+    description
+)
+VALUES
+    ('momo', 'MoMo Wallet', 'momo', 'e_wallet', 'active', 2.40, 0.00, 'T+1', 1, 1, 1, 1, 'Domestic e-wallet checkout for ticket and shop orders.'),
+    ('vnpay', 'VNPay', 'vnpay', 'gateway', 'active', 2.10, 0.00, 'T+1', 1, 1, 1, 2, 'Online redirect gateway for VNPay card and banking flows.'),
+    ('paypal', 'PayPal', 'paypal', 'international', 'maintenance', 3.90, 0.00, 'T+2', 1, 1, 1, 3, 'International checkout channel for selected cross-border payments.'),
+    ('cash', 'Cash At Counter', 'internal', 'counter', 'active', 0.00, 0.00, 'instant', 1, 0, 0, 4, 'Offline counter settlement for pickup or walk-in orders.')
+ON DUPLICATE KEY UPDATE
+    name = VALUES(name),
+    provider = VALUES(provider),
+    channel_type = VALUES(channel_type),
+    status = VALUES(status),
+    fee_rate_percent = VALUES(fee_rate_percent),
+    fixed_fee_amount = VALUES(fixed_fee_amount),
+    settlement_cycle = VALUES(settlement_cycle),
+    supports_refund = VALUES(supports_refund),
+    supports_webhook = VALUES(supports_webhook),
+    supports_redirect = VALUES(supports_redirect),
+    display_order = VALUES(display_order),
+    description = VALUES(description);

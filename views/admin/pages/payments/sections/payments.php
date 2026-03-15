@@ -1,27 +1,35 @@
 <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
   <div class="stat-card green" style="padding:16px;">
-    <div style="font-size:24px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">$104,980</div>
-    <div class="stat-label">Total Revenue</div>
+    <div style="font-size:24px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">1.049.800.000 đ</div>
+    <div class="stat-label">Captured Value</div>
   </div>
   <div class="stat-card blue" style="padding:16px;">
     <div style="font-size:24px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">9,498</div>
-    <div class="stat-label">Transactions</div>
+    <div class="stat-label">Payment Records</div>
   </div>
   <div class="stat-card gold" style="padding:16px;">
-    <div style="font-size:24px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">$18,240</div>
-    <div class="stat-label">This Month</div>
+    <div style="font-size:24px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">182.400.000 đ</div>
+    <div class="stat-label">VNPay This Month</div>
   </div>
   <div class="stat-card red" style="padding:16px;">
     <div style="font-size:24px;font-family:'Bebas Neue',sans-serif;letter-spacing:1px;">132</div>
-    <div class="stat-label">Refunded / Failed</div>
+    <div class="stat-label">Refunded / Failed / Expired</div>
   </div>
 </div>
 
 <div class="card">
+  <div class="card-body" style="border-bottom:1px solid var(--border);">
+    <div class="card-title">Schema-Aligned Preview</div>
+    <div class="card-sub" style="margin-top:6px;">
+      This screen is aligned to <code>payments</code> and previews the fields planned for live payment operations:
+      <code>payment_method</code>, <code>payment_status</code>, <code>amount</code>, <code>transaction_code</code>,
+      <code>provider_transaction_code</code>, and gateway timestamps.
+    </div>
+  </div>
   <div class="toolbar">
     <div class="toolbar-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input id="paymentSearch" type="text" placeholder="Search transaction or order..." oninput="filterPayments(this.value)">
+      <input id="paymentSearch" type="text" placeholder="Search payment code, gateway ref, or order..." oninput="filterPayments(this.value)">
     </div>
     <select id="paymentMethodFilter" class="select-filter" onchange="filterPayments()">
       <option>All Methods</option>
@@ -32,9 +40,13 @@
     </select>
     <select id="paymentStatusFilter" class="select-filter" onchange="filterPayments()">
       <option>All Status</option>
+      <option>Pending</option>
+      <option>Processing</option>
       <option>Success</option>
       <option>Failed</option>
       <option>Refunded</option>
+      <option>Cancelled</option>
+      <option>Expired</option>
     </select>
     <div class="toolbar-right">
       <span id="paymentCount" style="font-size:12px;color:var(--text-dim);">10 payments shown</span>
@@ -44,7 +56,7 @@
   <div class="table-wrap">
     <table>
       <thead><tr>
-        <th>Payment ID</th><th>Method</th><th>Transaction Code</th><th>Amount</th><th>Order Ref</th><th>Type</th><th>Status</th><th>Date</th>
+        <th>Payment Code</th><th>Method</th><th>Gateway Ref</th><th>Amount</th><th>Order Ref</th><th>Scope</th><th>Status</th><th>Updated</th>
       </tr></thead>
       <tbody id="paymentsBody"></tbody>
     </table>
@@ -54,16 +66,16 @@
 
 <script>
 const paymentRecords = [
-  {id:'#PAY-9498',method:'MoMo',txn:'TXN4A7C91E2001A',amount:'$14.00',order:'#TK-2031',type:'Ticket',status:'Success',date:'2026-03-12 14:00'},
-  {id:'#PAY-9497',method:'VNPay',txn:'TXN4A7C91E2001B',amount:'$28.00',order:'#TK-2030',type:'Ticket',status:'Success',date:'2026-03-12 13:45'},
-  {id:'#PAY-9496',method:'PayPal',txn:'TXN4A7C91E2001C',amount:'$22.50',order:'#SH-0042',type:'Shop',status:'Success',date:'2026-03-12 12:30'},
-  {id:'#PAY-9495',method:'Cash',txn:'TXN4A7C91E2001D',amount:'$7.00',order:'#TK-2029',type:'Ticket',status:'Failed',date:'2026-03-12 12:05'},
-  {id:'#PAY-9494',method:'MoMo',txn:'TXN4A7C91E2001E',amount:'$11.70',order:'#SH-0041',type:'Shop',status:'Success',date:'2026-03-11 19:18'},
-  {id:'#PAY-9493',method:'MoMo',txn:'TXN4A7C91E2001F',amount:'$16.00',order:'#TK-2026',type:'Ticket',status:'Refunded',date:'2026-03-11 16:42'},
-  {id:'#PAY-9492',method:'VNPay',txn:'TXN4A7C91E20020',amount:'$35.00',order:'#TK-2025',type:'Ticket',status:'Success',date:'2026-03-11 15:22'},
-  {id:'#PAY-9491',method:'Cash',txn:'TXN4A7C91E20021',amount:'$8.50',order:'#SH-0035',type:'Shop',status:'Success',date:'2026-03-08 11:12'},
-  {id:'#PAY-9490',method:'PayPal',txn:'TXN4A7C91E20022',amount:'$45.00',order:'#SH-0040',type:'Shop',status:'Failed',date:'2026-03-11 10:20'},
-  {id:'#PAY-9489',method:'MoMo',txn:'TXN4A7C91E20023',amount:'$21.00',order:'#TK-2028',type:'Ticket',status:'Success',date:'2026-03-12 11:20'},
+  {code:'PAY-9498',method:'MoMo',gatewayRef:'MM-240312-001A',amount:'140.000 đ',order:'TKT-2031',scope:'Ticket',status:'Success',updatedAt:'2026-03-12 14:00'},
+  {code:'PAY-9497',method:'VNPay',gatewayRef:'VNP-240312-001B',amount:'280.000 đ',order:'TKT-2030',scope:'Ticket',status:'Success',updatedAt:'2026-03-12 13:45'},
+  {code:'PAY-9496',method:'PayPal',gatewayRef:'PP-240312-001C',amount:'225.000 đ',order:'SHOP-0042',scope:'Shop',status:'Processing',updatedAt:'2026-03-12 12:30'},
+  {code:'PAY-9495',method:'Cash',gatewayRef:'',amount:'70.000 đ',order:'TKT-2029',scope:'Ticket',status:'Failed',updatedAt:'2026-03-12 12:05'},
+  {code:'PAY-9494',method:'MoMo',gatewayRef:'MM-240311-001E',amount:'117.000 đ',order:'SHOP-0041',scope:'Shop',status:'Success',updatedAt:'2026-03-11 19:18'},
+  {code:'PAY-9493',method:'MoMo',gatewayRef:'MM-240311-001F',amount:'160.000 đ',order:'TKT-2026',scope:'Ticket',status:'Refunded',updatedAt:'2026-03-11 16:42'},
+  {code:'PAY-9492',method:'VNPay',gatewayRef:'VNP-240311-0020',amount:'350.000 đ',order:'TKT-2025',scope:'Ticket',status:'Success',updatedAt:'2026-03-11 15:22'},
+  {code:'PAY-9491',method:'Cash',gatewayRef:'',amount:'85.000 đ',order:'SHOP-0035',scope:'Shop',status:'Success',updatedAt:'2026-03-08 11:12'},
+  {code:'PAY-9490',method:'PayPal',gatewayRef:'PP-240311-0022',amount:'450.000 đ',order:'SHOP-0040',scope:'Shop',status:'Cancelled',updatedAt:'2026-03-11 10:20'},
+  {code:'PAY-9489',method:'VNPay',gatewayRef:'VNP-240312-0023',amount:'210.000 đ',order:'TKT-2028',scope:'Ticket',status:'Expired',updatedAt:'2026-03-12 11:20'},
 ];
 
 function handlePaymentsSectionAction() {
@@ -74,14 +86,14 @@ function renderPayments(data) {
   const startItem = data.length === 0 ? 0 : 1;
   document.getElementById('paymentsBody').innerHTML = data.map(payment => `
     <tr>
-      <td class="td-id">${payment.id}</td>
+      <td class="td-id">${payment.code}</td>
       <td><span class="badge gray">${payment.method}</span></td>
-      <td class="td-mono">${payment.txn}</td>
+      <td class="td-mono">${payment.gatewayRef || 'Pending callback'}</td>
       <td style="font-weight:700;">${payment.amount}</td>
       <td class="td-id">${payment.order}</td>
-      <td><span class="badge ${payment.type === 'Ticket' ? 'red' : 'blue'}">${payment.type}</span></td>
+      <td><span class="badge ${payment.scope === 'Ticket' ? 'red' : 'blue'}">${payment.scope}</span></td>
       <td>${statusBadge(payment.status)}</td>
-      <td class="td-muted">${payment.date}</td>
+      <td class="td-muted">${payment.updatedAt}</td>
     </tr>`).join('');
   document.getElementById('paymentsPagination').innerHTML = buildPagination(`Showing ${startItem}-${data.length} of ${data.length} payments`, Math.max(1, Math.ceil(data.length / 10)));
 }
@@ -93,9 +105,9 @@ function filterPayments(q) {
   const selectedStatus = document.getElementById('paymentStatusFilter')?.value || 'All Status';
   const filtered = paymentRecords.filter(payment => {
     const matchesQuery = searchTerm === '' ||
-      payment.id.toLowerCase().includes(searchTerm) ||
+      payment.code.toLowerCase().includes(searchTerm) ||
       payment.order.toLowerCase().includes(searchTerm) ||
-      payment.txn.toLowerCase().includes(searchTerm);
+      payment.gatewayRef.toLowerCase().includes(searchTerm);
     const matchesMethod = selectedMethod === 'All Methods' || payment.method === selectedMethod;
     const matchesStatus = selectedStatus === 'All Status' || payment.status === selectedStatus;
     return matchesQuery && matchesMethod && matchesStatus;

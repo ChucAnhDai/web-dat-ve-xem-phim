@@ -386,3 +386,51 @@
 [2026-03-15T22:20:53+07:00] INFO: Movie updated {"actor_id":1,"movie_id":37,"duration_ms":3.72}
 [2026-03-15T22:21:46+07:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
 [2026-03-15T22:22:15+07:00] INFO: Showtime created {"actor_id":1,"showtime_id":53,"status":"completed","duration_ms":3.36}
+[2026-03-15T22:23:12+07:00] INFO: Showtime updated {"actor_id":1,"showtime_id":53,"status":"completed","duration_ms":3.75}
+[2026-03-15T22:23:19+07:00] INFO: Showtime updated {"actor_id":1,"showtime_id":53,"status":"published","duration_ms":3.66}
+[2026-03-15T22:23:43+07:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":1}
+[2026-03-15T22:23:59+07:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":1}
+[2026-03-15T22:24:09+07:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":1}
+[2026-03-15T22:24:26+07:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":1}
+[2026-03-15T22:24:31+07:00] INFO: Seat layout replace blocked by future published showtimes {"actor_id":1,"room_id":1}
+[2026-03-15T22:24:41+07:00] INFO: Ticket seats held {"showtime_id":53,"seat_ids":[149,150,151,157,158,159,165,168,175],"seat_count":9,"session_token":"072d732f8110","user_id":1,"hold_expires_at":"2026-03-15 22:39:41","duration_ms":7}
+[2026-03-15T22:24:48+07:00] INFO: Ticket order created {"order_id":6,"order_code":"TKT-0A7903C9DE","showtime_id":53,"seat_ids":[149,150,151,157,158,159,165,168,175],"seat_count":9,"user_id":1,"session_token":"072d732f8110","duration_ms":9.37}
+[2026-03-15T22:32:57+07:00] INFO: Demo ticket fixtures cleaned {"deleted_orders":3,"deleted_ticket_details":12,"deleted_payments":3,"deleted_holds":0,"duration_ms":9.61}
+[2026-03-15T22:33:11+07:00] INFO: Demo ticket fixtures cleaned {"deleted_orders":0,"deleted_ticket_details":0,"deleted_payments":0,"deleted_holds":0,"duration_ms":0.2}
+[2026-03-15T22:36:07+07:00] INFO: Ticket lifecycle maintenance completed {"purged_holds":6,"expired_orders":0,"expired_tickets":0,"failed_payments":0}
+[2026-03-15T22:36:49+07:00] INFO: Ticket seats held {"showtime_id":53,"seat_ids":[144,152,160,166,167,173,174,176,183,184],"seat_count":10,"session_token":"072d732f8110","user_id":1,"hold_expires_at":"2026-03-15 22:51:49","duration_ms":5.25}
+[2026-03-15T22:36:57+07:00] INFO: Ticket order created {"order_id":7,"order_code":"TKT-4AF42DCD8A","showtime_id":53,"seat_ids":[144,152,160,166,167,173,174,176,183,184],"seat_count":10,"user_id":1,"session_token":"072d732f8110","duration_ms":10.78}
+[2026-03-15T22:37:09+07:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":53,"session_token":"072d732f8110","user_id":1,"errors":{"hold":["Seat hold is missing or expired."]},"duration_ms":1.11}
+[2026-03-15T22:37:13+07:00] INFO: Ticket seats held {"showtime_id":53,"seat_ids":[155,163],"seat_count":2,"session_token":"072d732f8110","user_id":1,"hold_expires_at":"2026-03-15 22:52:13","duration_ms":3.03}
+[2026-03-15T22:37:16+07:00] INFO: Ticket order created {"order_id":8,"order_code":"TKT-20F8F20435","showtime_id":53,"seat_ids":[155,163],"seat_count":2,"user_id":1,"session_token":"072d732f8110","duration_ms":14.89}
+[2026-03-15T22:37:21+07:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":53,"session_token":"072d732f8110","user_id":1,"errors":{"hold":["Seat hold is missing or expired."]},"duration_ms":1.17}
+[2026-03-15T22:56:30+07:00] INFO: Demo ticket fixtures cleaned {"deleted_orders":0,"deleted_ticket_details":0,"deleted_payments":0,"deleted_holds":0,"duration_ms":0.84}
+[2026-03-15T22:58:59+07:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":53,"session_token":"072d732f8110","user_id":1,"errors":{"hold":["Seat hold is missing or expired."]},"duration_ms":4.56}
+[2026-03-15T23:21:06+07:00] INFO: Ticket seats held {"showtime_id":41,"seat_ids":[383,407,409,421,430,434,444],"seat_count":7,"session_token":"072d732f8110","user_id":1,"hold_expires_at":"2026-03-15 23:36:06","duration_ms":8.54}
+[2026-03-15T23:21:11+07:00] INFO: VNPay intent blocked by payment rule {"showtime_id":41,"user_id":1,"errors":{"payment":["VNPay credentials are not configured."]},"duration_ms":0.87}
+[2026-03-15T23:21:12+07:00] INFO: VNPay intent blocked by payment rule {"showtime_id":41,"user_id":1,"errors":{"payment":["VNPay credentials are not configured."]},"duration_ms":0.47}
+[2026-03-15T23:21:15+07:00] INFO: VNPay intent blocked by payment rule {"showtime_id":41,"user_id":1,"errors":{"payment":["VNPay credentials are not configured."]},"duration_ms":1.11}
+[2026-03-15T23:31:00+07:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":41,"session_token":"072d732f8110","user_id":1,"errors":{"showtime":["Showtime not found."]},"duration_ms":4.54}
+[2026-03-15T23:31:04+07:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":41,"session_token":"072d732f8110","user_id":1,"errors":{"showtime":["Showtime not found."]},"duration_ms":1.24}
+[2026-03-15T23:32:34+07:00] INFO: Cinema created {"actor_id":1,"cinema_id":1,"status":"active","duration_ms":3.25}
+[2026-03-15T23:32:41+07:00] INFO: Room created {"actor_id":1,"room_id":1,"status":"active","duration_ms":2.55}
+[2026-03-15T23:32:46+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"0","duration_ms":2.16}
+[2026-03-15T23:32:54+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"96","duration_ms":9.65}
+[2026-03-15T23:33:21+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"96","duration_ms":12.54}
+[2026-03-15T23:33:34+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"bac-si-watson-phan-1","movie_id":1,"created":true,"category_count":2,"asset_count":10,"duration_ms":685.84}
+[2026-03-15T23:33:35+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"cam-nang-yeu","movie_id":2,"created":true,"category_count":1,"asset_count":4,"duration_ms":616.25}
+[2026-03-15T23:33:36+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"soda-master","movie_id":3,"created":true,"category_count":2,"asset_count":4,"duration_ms":1021.64}
+[2026-03-15T23:33:37+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nui-va-bien-cua-toi","movie_id":4,"created":true,"category_count":1,"asset_count":5,"duration_ms":885.36}
+[2026-03-15T23:33:38+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"vong-xoay-yoga","movie_id":5,"created":true,"category_count":1,"asset_count":10,"duration_ms":1151.18}
+[2026-03-15T23:33:39+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"bui-hoa-hong","movie_id":6,"created":true,"category_count":2,"asset_count":2,"duration_ms":699.63}
+[2026-03-15T23:33:40+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"giang-ho-da-vu-thap-nien-dang","movie_id":7,"created":true,"category_count":4,"asset_count":6,"duration_ms":969.36}
+[2026-03-15T23:33:40+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"truc-ngoc","movie_id":8,"created":true,"category_count":1,"asset_count":5,"duration_ms":696.16}
+[2026-03-15T23:33:41+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-gioi-hoan-my","movie_id":9,"created":true,"category_count":4,"asset_count":10,"duration_ms":859.11}
+[2026-03-15T23:33:42+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"rooster","movie_id":10,"created":true,"category_count":1,"asset_count":10,"duration_ms":845.64}
+[2026-03-15T23:33:43+07:00] INFO: OPhim image sync skipped after image request failure {"slug":"tinh-dau-kho-noi","error":"Failed to communicate with OPhim API."}
+[2026-03-15T23:33:43+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tinh-dau-kho-noi","movie_id":11,"created":true,"category_count":1,"asset_count":2,"duration_ms":675.98}
+[2026-03-15T23:33:43+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"su-thay-gap-su-lay","movie_id":12,"created":true,"category_count":1,"asset_count":6,"duration_ms":672.97}
+[2026-03-15T23:33:43+07:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-moi","page":1,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":10648.19}
+[2026-03-15T23:34:25+07:00] INFO: Showtime created {"actor_id":1,"showtime_id":1,"status":"published","duration_ms":4.81}
+[2026-03-15T23:34:39+07:00] INFO: Ticket seats held {"showtime_id":1,"seat_ids":[104,116,124,129,131,135,139,141,149,160],"seat_count":10,"session_token":"072d732f8110","user_id":1,"hold_expires_at":"2026-03-15 23:49:39","duration_ms":8.98}
+[2026-03-15T23:34:46+07:00] INFO: Ticket order created {"order_id":1,"order_code":"TKT-D50D6924C9","showtime_id":1,"seat_ids":[104,116,124,129,131,135,139,141,149,160],"seat_count":10,"user_id":1,"session_token":"072d732f8110","duration_ms":10.42}

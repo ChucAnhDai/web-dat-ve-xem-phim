@@ -14,6 +14,8 @@ try {
         'categories_created' => 0,
         'movies_created' => 0,
         'movie_assets_created' => 0,
+        'payment_methods_created' => 0,
+        'payment_methods_updated' => 0,
         'cinemas_created' => 0,
         'cinemas_updated' => 0,
         'rooms_created' => 0,
@@ -23,25 +25,36 @@ try {
         'orders_created' => 0,
         'ticket_details_created' => 0,
         'payments_created' => 0,
+        'demo_ticket_orders_deleted' => 0,
+        'demo_ticket_details_deleted' => 0,
+        'demo_ticket_payments_deleted' => 0,
         'legacy_cinemas_archived' => 0,
         'legacy_rooms_archived' => 0,
         'legacy_seats_archived' => 0,
         'legacy_showtimes_archived' => 0,
     ];
 
-    $cleanupSummary = (new DemoDatasetMaintenanceService($pdo))->cleanupLegacyCinemaFixtures();
+    $maintenance = new DemoDatasetMaintenanceService($pdo);
+    $cleanupSummary = $maintenance->cleanupLegacyCinemaFixtures();
     $summary['legacy_cinemas_archived'] = (int) ($cleanupSummary['archived_cinemas'] ?? 0);
     $summary['legacy_rooms_archived'] = (int) ($cleanupSummary['archived_rooms'] ?? 0);
     $summary['legacy_seats_archived'] = (int) ($cleanupSummary['archived_seats'] ?? 0);
     $summary['legacy_showtimes_archived'] = (int) ($cleanupSummary['archived_showtimes'] ?? 0);
+    $ticketCleanupSummary = $maintenance->cleanupDemoTicketFixtures();
+    $summary['demo_ticket_orders_deleted'] = (int) ($ticketCleanupSummary['deleted_orders'] ?? 0);
+    $summary['demo_ticket_details_deleted'] = (int) ($ticketCleanupSummary['deleted_ticket_details'] ?? 0);
+    $summary['demo_ticket_payments_deleted'] = (int) ($ticketCleanupSummary['deleted_payments'] ?? 0);
 
+    ensurePaymentMethods($pdo, $summary);
     $categoryIds = ensureCategories($pdo, $summary);
     $movieIds = ensureMovies($pdo, $categoryIds, $summary);
     $cinemaIds = ensureCinemas($pdo, $summary);
     $rooms = ensureRooms($pdo, $cinemaIds, $summary);
     ensureRoomSeats($pdo, $rooms, $summary);
     ensureShowtimes($pdo, $movieIds, $rooms, $summary);
-    ensureDemoOrders($pdo, $summary);
+    if (shouldSeedDemoTickets($argv ?? [])) {
+        ensureDemoOrders($pdo, $summary);
+    }
 
     $pdo->commit();
 
@@ -56,6 +69,169 @@ try {
 
     fwrite(STDERR, 'Failed to seed cinema demo data: ' . $exception->getMessage() . PHP_EOL);
     exit(1);
+}
+
+function ensurePaymentMethods(PDO $pdo, array &$summary): void
+{
+    $definitions = [
+        [
+            'code' => 'momo',
+            'name' => 'MoMo Wallet',
+            'provider' => 'momo',
+            'channel_type' => 'e_wallet',
+            'status' => 'active',
+            'fee_rate_percent' => 2.40,
+            'fixed_fee_amount' => 0.00,
+            'settlement_cycle' => 'T+1',
+            'supports_refund' => 1,
+            'supports_webhook' => 1,
+            'supports_redirect' => 1,
+            'display_order' => 1,
+            'description' => 'Domestic e-wallet checkout for ticket and shop orders.',
+        ],
+        [
+            'code' => 'vnpay',
+            'name' => 'VNPay',
+            'provider' => 'vnpay',
+            'channel_type' => 'gateway',
+            'status' => 'active',
+            'fee_rate_percent' => 2.10,
+            'fixed_fee_amount' => 0.00,
+            'settlement_cycle' => 'T+1',
+            'supports_refund' => 1,
+            'supports_webhook' => 1,
+            'supports_redirect' => 1,
+            'display_order' => 2,
+            'description' => 'Online redirect gateway for VNPay card and banking flows.',
+        ],
+        [
+            'code' => 'paypal',
+            'name' => 'PayPal',
+            'provider' => 'paypal',
+            'channel_type' => 'international',
+            'status' => 'maintenance',
+            'fee_rate_percent' => 3.90,
+            'fixed_fee_amount' => 0.00,
+            'settlement_cycle' => 'T+2',
+            'supports_refund' => 1,
+            'supports_webhook' => 1,
+            'supports_redirect' => 1,
+            'display_order' => 3,
+            'description' => 'International checkout channel for selected cross-border payments.',
+        ],
+        [
+            'code' => 'cash',
+            'name' => 'Cash At Counter',
+            'provider' => 'internal',
+            'channel_type' => 'counter',
+            'status' => 'active',
+            'fee_rate_percent' => 0.00,
+            'fixed_fee_amount' => 0.00,
+            'settlement_cycle' => 'instant',
+            'supports_refund' => 1,
+            'supports_webhook' => 0,
+            'supports_redirect' => 0,
+            'display_order' => 4,
+            'description' => 'Offline counter settlement for pickup or walk-in orders.',
+        ],
+    ];
+
+    $findStmt = $pdo->prepare('SELECT id FROM payment_methods WHERE code = :code LIMIT 1');
+    $insertStmt = $pdo->prepare('
+        INSERT INTO payment_methods (
+            code,
+            name,
+            provider,
+            channel_type,
+            status,
+            fee_rate_percent,
+            fixed_fee_amount,
+            settlement_cycle,
+            supports_refund,
+            supports_webhook,
+            supports_redirect,
+            display_order,
+            description
+        ) VALUES (
+            :code,
+            :name,
+            :provider,
+            :channel_type,
+            :status,
+            :fee_rate_percent,
+            :fixed_fee_amount,
+            :settlement_cycle,
+            :supports_refund,
+            :supports_webhook,
+            :supports_redirect,
+            :display_order,
+            :description
+        )
+    ');
+    $updateStmt = $pdo->prepare('
+        UPDATE payment_methods
+        SET
+            name = :name,
+            provider = :provider,
+            channel_type = :channel_type,
+            status = :status,
+            fee_rate_percent = :fee_rate_percent,
+            fixed_fee_amount = :fixed_fee_amount,
+            settlement_cycle = :settlement_cycle,
+            supports_refund = :supports_refund,
+            supports_webhook = :supports_webhook,
+            supports_redirect = :supports_redirect,
+            display_order = :display_order,
+            description = :description
+        WHERE id = :id
+    ');
+
+    foreach ($definitions as $definition) {
+        $findStmt->execute(['code' => $definition['code']]);
+        $existingId = $findStmt->fetchColumn();
+
+        if ($existingId === false) {
+            $insertStmt->execute($definition);
+            $summary['payment_methods_created'] += 1;
+            continue;
+        }
+
+        $updateStmt->execute([
+            'id' => (int) $existingId,
+            'name' => $definition['name'],
+            'provider' => $definition['provider'],
+            'channel_type' => $definition['channel_type'],
+            'status' => $definition['status'],
+            'fee_rate_percent' => $definition['fee_rate_percent'],
+            'fixed_fee_amount' => $definition['fixed_fee_amount'],
+            'settlement_cycle' => $definition['settlement_cycle'],
+            'supports_refund' => $definition['supports_refund'],
+            'supports_webhook' => $definition['supports_webhook'],
+            'supports_redirect' => $definition['supports_redirect'],
+            'display_order' => $definition['display_order'],
+            'description' => $definition['description'],
+        ]);
+        $summary['payment_methods_updated'] += 1;
+    }
+}
+
+/**
+ * @param string[] $argv
+ */
+function shouldSeedDemoTickets(array $argv): bool
+{
+    if (in_array('--with-demo-tickets', $argv, true)) {
+        return true;
+    }
+
+    $flag = getenv('SEED_DEMO_TICKETS');
+    if ($flag === false) {
+        return false;
+    }
+
+    $normalized = strtolower(trim((string) $flag));
+
+    return in_array($normalized, ['1', 'true', 'yes', 'on'], true);
 }
 
 function ensureCategories(PDO $pdo, array &$summary): array
@@ -907,8 +1083,32 @@ function ensureDemoOrders(PDO $pdo, array &$summary): void
         )
     ');
     $paymentInsertStmt = $pdo->prepare('
-        INSERT INTO payments (ticket_order_id, payment_method, payment_status, transaction_code)
-        VALUES (:ticket_order_id, :payment_method, :payment_status, :transaction_code)
+        INSERT INTO payments (
+            ticket_order_id,
+            payment_method,
+            payment_status,
+            amount,
+            currency,
+            transaction_code,
+            provider_order_ref,
+            provider_message,
+            initiated_at,
+            completed_at,
+            payment_date
+        )
+        VALUES (
+            :ticket_order_id,
+            :payment_method,
+            :payment_status,
+            :amount,
+            :currency,
+            :transaction_code,
+            :provider_order_ref,
+            :provider_message,
+            :initiated_at,
+            :completed_at,
+            :payment_date
+        )
     ');
 
     foreach ($showtimes as $index => $showtime) {
@@ -981,7 +1181,16 @@ function ensureDemoOrders(PDO $pdo, array &$summary): void
             'ticket_order_id' => $orderId,
             'payment_method' => $contact['payment_method'],
             'payment_status' => $orderStatus === 'paid' ? 'success' : 'pending',
+            'amount' => $subtotalPrice + $surchargeTotal,
+            'currency' => 'VND',
             'transaction_code' => sprintf('PAY-DEMO-%06d', $orderId),
+            'provider_order_ref' => sprintf('TKT-DEMO-%06d', $showtimeId),
+            'provider_message' => $orderStatus === 'paid'
+                ? 'Seeded payment snapshot for cinema demo fixtures.'
+                : 'Seeded pending payment snapshot for cinema demo fixtures.',
+            'initiated_at' => date('Y-m-d H:i:s'),
+            'completed_at' => $orderStatus === 'paid' ? date('Y-m-d H:i:s') : null,
+            'payment_date' => date('Y-m-d H:i:s'),
         ]);
         $summary['payments_created'] += 1;
     }

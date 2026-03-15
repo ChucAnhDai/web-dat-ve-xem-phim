@@ -70,6 +70,32 @@ class DemoDatasetMaintenanceServiceIntegrationTest extends TestCase
         ], $showtimeStatuses);
     }
 
+    public function testCleanupDemoTicketFixturesDeletesOnlySeededDemoTicketData(): void
+    {
+        $service = new DemoDatasetMaintenanceService($this->db, new IntegrationDemoDatasetMaintenanceLogger());
+
+        $summary = $service->cleanupDemoTicketFixtures();
+
+        $this->assertSame(2, $summary['deleted_orders']);
+        $this->assertSame(3, $summary['deleted_ticket_details']);
+        $this->assertSame(2, $summary['deleted_payments']);
+        $this->assertSame(0, $summary['deleted_holds']);
+
+        $remainingOrders = $this->db->query('SELECT order_code FROM ticket_orders ORDER BY id ASC')->fetchAll();
+        $remainingTickets = $this->db->query('SELECT ticket_code FROM ticket_details ORDER BY id ASC')->fetchAll();
+        $remainingPayments = $this->db->query('SELECT transaction_code FROM payments ORDER BY id ASC')->fetchAll();
+
+        $this->assertSame([
+            ['order_code' => 'TKT-LIVE-000003'],
+        ], $remainingOrders);
+        $this->assertSame([
+            ['ticket_code' => 'TIC-LIVE-000003-000004'],
+        ], $remainingTickets);
+        $this->assertSame([
+            ['transaction_code' => 'PAY-LIVE-000003'],
+        ], $remainingPayments);
+    }
+
     private function createSchema(): void
     {
         $this->db->exec('
@@ -110,6 +136,32 @@ class DemoDatasetMaintenanceServiceIntegrationTest extends TestCase
                 FOREIGN KEY (room_id) REFERENCES rooms(id)
             )
         ');
+
+        $this->db->exec('
+            CREATE TABLE ticket_orders (
+                id INTEGER PRIMARY KEY,
+                order_code TEXT NOT NULL,
+                status TEXT NOT NULL
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE ticket_details (
+                id INTEGER PRIMARY KEY,
+                order_id INTEGER NOT NULL,
+                ticket_code TEXT NOT NULL,
+                qr_payload TEXT NULL,
+                FOREIGN KEY (order_id) REFERENCES ticket_orders(id)
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE payments (
+                id INTEGER PRIMARY KEY,
+                ticket_order_id INTEGER NULL,
+                transaction_code TEXT NULL
+            )
+        ');
     }
 
     private function seedBaseData(): void
@@ -141,6 +193,28 @@ class DemoDatasetMaintenanceServiceIntegrationTest extends TestCase
                 (1, 1, 'draft'),
                 (2, 3, 'published'),
                 (3, 4, 'published')
+        ");
+
+        $this->db->exec("
+            INSERT INTO ticket_orders (id, order_code, status) VALUES
+                (1, 'TKT-DEMO-000001', 'paid'),
+                (2, 'TKT-DEMO-000002', 'pending'),
+                (3, 'TKT-LIVE-000003', 'paid')
+        ");
+
+        $this->db->exec("
+            INSERT INTO ticket_details (id, order_id, ticket_code, qr_payload) VALUES
+                (1, 1, 'TIC-DEMO-000001-000001', 'ticket:TIC-DEMO-000001-000001'),
+                (2, 1, 'TIC-DEMO-000001-000002', 'ticket:TIC-DEMO-000001-000002'),
+                (3, 2, 'TIC-DEMO-000002-000003', 'ticket:TIC-DEMO-000002-000003'),
+                (4, 3, 'TIC-LIVE-000003-000004', 'ticket:TIC-LIVE-000003-000004')
+        ");
+
+        $this->db->exec("
+            INSERT INTO payments (id, ticket_order_id, transaction_code) VALUES
+                (1, 1, 'PAY-DEMO-000001'),
+                (2, 2, 'PAY-DEMO-000002'),
+                (3, 3, 'PAY-LIVE-000003')
         ");
     }
 }

@@ -185,6 +185,82 @@ class TicketOrderRepository
         return $stmt->rowCount();
     }
 
+    public function markOrdersPaid(array $orderIds, ?string $paidAt = null): int
+    {
+        if ($orderIds === []) {
+            return 0;
+        }
+
+        $paidAt = $paidAt ?: date('Y-m-d H:i:s');
+        $params = ['paid_at' => $paidAt];
+        $placeholders = $this->orderIdPlaceholders($orderIds, $params);
+        $stmt = $this->db->prepare("
+            UPDATE ticket_orders
+            SET status = 'paid',
+                paid_at = :paid_at,
+                hold_expires_at = NULL,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id IN ({$placeholders})
+              AND status <> 'paid'
+        ");
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, $key === 'paid_at' ? PDO::PARAM_STR : PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        return $stmt->rowCount();
+    }
+
+    public function markOrdersIssue(array $orderIds, string $status, ?string $timestamp = null): int
+    {
+        if ($orderIds === [] || !in_array($status, ['cancelled', 'expired'], true)) {
+            return 0;
+        }
+
+        $timestamp = $timestamp ?: date('Y-m-d H:i:s');
+        $params = [
+            'status_value' => $status,
+            'cancelled_at' => $status === 'cancelled' ? $timestamp : null,
+        ];
+        $placeholders = $this->orderIdPlaceholders($orderIds, $params);
+        $stmt = $this->db->prepare("
+            UPDATE ticket_orders
+            SET status = :status_value,
+                cancelled_at = CASE WHEN :status_value = 'cancelled' THEN :cancelled_at ELSE cancelled_at END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id IN ({$placeholders})
+              AND status NOT IN ('paid', 'refunded')
+        ");
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, $key === 'status_value' || $key === 'cancelled_at' ? PDO::PARAM_STR : PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        return $stmt->rowCount();
+    }
+
+    public function markTicketDetailsStatusForOrderIds(array $orderIds, string $status): int
+    {
+        if ($orderIds === [] || !in_array($status, ['pending', 'paid', 'cancelled', 'expired', 'refunded', 'used'], true)) {
+            return 0;
+        }
+
+        $params = ['status_value' => $status];
+        $placeholders = $this->orderIdPlaceholders($orderIds, $params);
+        $stmt = $this->db->prepare("
+            UPDATE ticket_details
+            SET status = :status_value,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE order_id IN ({$placeholders})
+        ");
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, $key === 'status_value' ? PDO::PARAM_STR : PDO::PARAM_INT);
+        }
+        $stmt->execute();
+
+        return $stmt->rowCount();
+    }
+
     public function orderCodeExists(string $orderCode): bool
     {
         $stmt = $this->db->prepare('SELECT COUNT(*) FROM ticket_orders WHERE order_code = :order_code');
@@ -269,6 +345,59 @@ class TicketOrderRepository
             LIMIT 1
         ");
         $stmt->execute(['id' => $orderId]);
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
+    public function findOrderHeaderByCode(string $orderCode): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                o.id,
+                o.order_code,
+                o.user_id,
+                o.contact_name,
+                o.contact_email,
+                o.contact_phone,
+                o.fulfillment_method,
+                o.seat_count,
+                o.subtotal_price,
+                o.discount_amount,
+                o.fee_amount,
+                o.total_price,
+                o.currency,
+                o.status,
+                o.hold_expires_at,
+                o.paid_at,
+                o.order_date,
+                o.updated_at,
+                (
+                    SELECT p.payment_method
+                    FROM payments p
+                    WHERE p.ticket_order_id = o.id
+                    ORDER BY p.id DESC
+                    LIMIT 1
+                ) AS payment_method,
+                (
+                    SELECT p.payment_status
+                    FROM payments p
+                    WHERE p.ticket_order_id = o.id
+                    ORDER BY p.id DESC
+                    LIMIT 1
+                ) AS payment_status,
+                (
+                    SELECT p.transaction_code
+                    FROM payments p
+                    WHERE p.ticket_order_id = o.id
+                    ORDER BY p.id DESC
+                    LIMIT 1
+                ) AS transaction_code
+            FROM ticket_orders o
+            WHERE o.order_code = :order_code
+            LIMIT 1
+        ");
+        $stmt->execute(['order_code' => $orderCode]);
         $row = $stmt->fetch();
 
         return $row ?: null;

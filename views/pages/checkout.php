@@ -51,19 +51,19 @@ $backToSeatSelection = $publicBase . '/seat-selection' . ($backQuery !== [] ? '?
       <div class="payment-methods" id="ticketCheckoutPaymentGroup">
         <button class="payment-option selected" type="button" data-group="payment" data-value="momo">
           <div class="payment-logo">MM</div>
-          <div><div class="payment-label">MoMo</div><div class="payment-desc">Creates payments.payment_method = momo</div></div>
+          <div><div class="payment-label">MoMo</div><div class="payment-desc">Maps to <code>payments.payment_method = momo</code> for e-wallet checkout.</div></div>
         </button>
         <button class="payment-option" type="button" data-group="payment" data-value="vnpay">
           <div class="payment-logo">VN</div>
-          <div><div class="payment-label">VNPay</div><div class="payment-desc">Creates payments.payment_method = vnpay</div></div>
+          <div><div class="payment-label">VNPay</div><div class="payment-desc">Maps to <code>payments.payment_method = vnpay</code> for online redirect gateway checkout.</div></div>
         </button>
         <button class="payment-option" type="button" data-group="payment" data-value="paypal">
           <div class="payment-logo">PP</div>
-          <div><div class="payment-label">PayPal</div><div class="payment-desc">Creates payments.payment_method = paypal</div></div>
+          <div><div class="payment-label">PayPal</div><div class="payment-desc">Maps to <code>payments.payment_method = paypal</code> for international checkout.</div></div>
         </button>
         <button class="payment-option" type="button" data-group="payment" data-value="cash">
           <div class="payment-logo">CA</div>
-          <div><div class="payment-label">Cash</div><div class="payment-desc">Creates payments.payment_method = cash</div></div>
+          <div><div class="payment-label">Cash</div><div class="payment-desc">Maps to <code>payments.payment_method = cash</code> for counter settlement.</div></div>
         </button>
       </div>
 
@@ -74,6 +74,7 @@ $backToSeatSelection = $publicBase . '/seat-selection' . ($backQuery !== [] ? '?
           <div style="margin-top:6px;color:var(--text2);font-size:14px;line-height:1.6;">
             Pricing, seat validation, order creation, ticket issuance, and payment snapshots are now computed on the server.
             If the hold expires or a seat becomes invalid, checkout will stop before any order is written.
+            VNPay now creates a pending ticket order, redirects you to the gateway, and waits for a verified callback before the order is marked as paid.
           </div>
         </div>
       </div>

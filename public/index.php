@@ -35,6 +35,7 @@ $app->router->get('/login', [WebController::class, 'showLoginForm']);
 $app->router->get('/register', [WebController::class, 'showRegisterForm']);
 $app->router->get('/seat-selection', [WebController::class, 'showSeatSelectionPage']);
 $app->router->get('/checkout', [WebController::class, 'showCheckoutPage']);
+$app->router->get('/payment-result', [WebController::class, 'showPaymentResultPage']);
 
 // Admin routes
 $app->router->get('/admin/login', [AdminAuthController::class, 'showLogin']);

@@ -118,4 +118,11 @@ class WebController
             'activePage' => 'movies',
         ]);
     }
+    public function showPaymentResultPage(Request $request, Response $response)
+    {
+        return $response->view('pages/payment-result', [
+            'title' => 'Ket qua thanh toan - CinemaX',
+            'activePage' => 'movies',
+        ]);
+    }
 }

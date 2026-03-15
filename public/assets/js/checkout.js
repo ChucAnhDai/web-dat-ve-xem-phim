@@ -109,6 +109,7 @@
 
     dom.state.innerHTML = '';
     dom.content.hidden = false;
+    setSubmitBusy(false);
   }
 
   function renderPoster(showtime) {
@@ -182,6 +183,8 @@
       state.preview.order.fulfillment_method = state.selectedFulfillment;
       state.preview.order.payment_method = state.selectedPayment;
     }
+
+    setSubmitBusy(false);
   }
 
   async function hydrateProfileDefaults() {
@@ -233,6 +236,30 @@
     setSubmitBusy(true);
 
     try {
+      if (state.selectedPayment === 'vnpay') {
+        const payload = await fetchJson('/api/payments/ticket-intents', {
+          method: 'POST',
+          body: {
+            showtime_id: state.showtimeId,
+            seat_ids: state.seatIds,
+            contact_name: name,
+            contact_email: email,
+            contact_phone: phone,
+            fulfillment_method: state.selectedFulfillment,
+            payment_method: state.selectedPayment,
+          },
+        });
+
+        const data = payload?.data || {};
+        if (!data.redirect_url) {
+          throw new Error('VNPay checkout URL is missing.');
+        }
+
+        renderRedirectState(data.order || null, data.payment || null, data.redirect_url);
+        window.location.href = data.redirect_url;
+        return;
+      }
+
       const payload = await fetchJson('/api/ticket-orders', {
         method: 'POST',
         body: {
@@ -285,6 +312,26 @@
     `;
   }
 
+  function renderRedirectState(order, payment, redirectUrl) {
+    const orderCode = order?.order_code || payment?.provider_order_ref || 'N/A';
+    const paymentMethod = humanizeStatus(payment?.payment_method || state.selectedPayment);
+
+    dom.content.hidden = true;
+    dom.state.innerHTML = `
+      <div class="detail-state-card">
+        <div>
+          <strong>Redirecting to ${escapeHtml(paymentMethod)}...</strong>
+          <div>Order ${escapeHtml(orderCode)} was created in pending status and the checkout is being handed off to the payment gateway.</div>
+          <div style="margin-top:8px;color:var(--text2);">If the redirect does not start automatically, use the secure link below.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+            <a class="btn btn-primary btn-sm" href="${escapeHtmlAttr(redirectUrl)}">Open VNPay Checkout</a>
+            <a class="btn btn-ghost btn-sm" href="${escapeHtmlAttr(appUrl('/my-tickets'))}">My Tickets</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   function showCheckoutError(message) {
     if (typeof showToast === 'function') {
       showToast('!', 'Checkout', message);
@@ -298,7 +345,12 @@
     }
 
     dom.submit.disabled = state.isSubmitting;
-    dom.submit.textContent = state.isSubmitting ? 'Creating Ticket Order...' : 'Complete Ticket Order';
+    if (state.isSubmitting) {
+      dom.submit.textContent = state.selectedPayment === 'vnpay' ? 'Redirecting to VNPay...' : 'Creating Ticket Order...';
+      return;
+    }
+
+    dom.submit.textContent = state.selectedPayment === 'vnpay' ? 'Continue to VNPay' : 'Complete Ticket Order';
   }
 
   async function fetchJson(path, options = {}) {

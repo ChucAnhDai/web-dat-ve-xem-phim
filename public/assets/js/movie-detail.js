@@ -324,8 +324,8 @@
       dom.showtimeVenues.innerHTML = `
         <div class="detail-state-card detail-state-card-compact">
           <div>
-            <strong>Showtimes are opening soon.</strong>
-            <div>This movie is available in the catalog, but screening times have not been published yet.</div>
+            <strong>Showtimes for this movie are opening soon.</strong>
+            <div>This movie is available in the catalog, but its screening times have not been published yet.</div>
           </div>
         </div>
       `;
@@ -544,7 +544,7 @@
       return `
         <div class="detail-state-card detail-state-card-compact">
           <div>
-            <strong>No screenings for this date.</strong>
+            <strong>No screenings for this movie on this date.</strong>
             <div>Please try another day to continue with ticket booking.</div>
           </div>
         </div>

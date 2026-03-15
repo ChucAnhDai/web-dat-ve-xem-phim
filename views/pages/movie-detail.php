@@ -29,8 +29,8 @@
   <div class="showtime-section" id="movieDetailShowtimesSection" hidden>
     <div class="detail-section-head">
       <div>
-        <h3 class="detail-section-title">Available Showtimes</h3>
-        <p class="detail-section-copy">Choose a screening to continue to seat selection.</p>
+        <h3 class="detail-section-title">Showtimes For This Movie</h3>
+        <p class="detail-section-copy">Only screenings for the movie you are viewing appear here. Choose a screening to continue to seat selection.</p>
       </div>
     </div>
     <div class="date-tabs" id="movieDetailShowtimeDates"></div>

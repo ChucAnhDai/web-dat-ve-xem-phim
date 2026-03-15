@@ -1,13 +1,13 @@
 <div class="grid-2" style="margin-bottom:20px;">
   <div class="card">
     <div class="card-header">
-      <div><div class="card-title">Methods Overview</div><div class="card-sub">Performance by payment channel</div></div>
+      <div><div class="card-title">Methods Overview</div><div class="card-sub">Preview of <code>payment_methods</code> channel defaults</div></div>
     </div>
     <div class="card-body" id="paymentMethodOverview"></div>
   </div>
   <div class="card">
     <div class="card-header">
-      <div><div class="card-title">Settlement Summary</div><div class="card-sub">Current payout and fee rules</div></div>
+      <div><div class="card-title">Settlement Summary</div><div class="card-sub">Operational defaults for gateway fees and payout timing</div></div>
     </div>
     <div class="card-body">
       <div style="display:flex;flex-direction:column;gap:16px;">
@@ -21,6 +21,14 @@
 </div>
 
 <div class="card">
+  <div class="card-body" style="border-bottom:1px solid var(--border);">
+    <div class="card-title">Schema-Aligned Preview</div>
+    <div class="card-sub" style="margin-top:6px;">
+      This screen now maps to the planned <code>payment_methods</code> table with operational fields like
+      <code>code</code>, <code>channel_type</code>, <code>status</code>, <code>fee_rate_percent</code>,
+      <code>settlement_cycle</code>, and gateway support flags. Live CRUD is still pending the Payments phase.
+    </div>
+  </div>
   <div class="toolbar">
     <div class="toolbar-search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -39,7 +47,7 @@
   <div class="table-wrap">
     <table>
       <thead><tr>
-        <th>Method</th><th>Type</th><th>Transactions</th><th>Revenue</th><th>Fee</th><th>Settlement</th><th>Status</th><th>Actions</th>
+        <th>Code</th><th>Method</th><th>Type</th><th>Transactions</th><th>Revenue</th><th>Fee</th><th>Settlement</th><th>Status</th><th>Actions</th>
       </tr></thead>
       <tbody id="paymentMethodsBody"></tbody>
     </table>
@@ -48,10 +56,10 @@
 
 <script>
 const paymentMethodRecords = [
-  {name:'MoMo Wallet',short:'MoMo',type:'E-wallet',transactions:4218,revenue:'$42,180',fee:'2.4%',settlement:'T+1',status:'Active',color:'#AE2070'},
-  {name:'VNPay',short:'VNPay',type:'Gateway',transactions:3840,revenue:'$38,400',fee:'2.1%',settlement:'T+1',status:'Active',color:'#003DA5'},
-  {name:'PayPal',short:'PP',type:'International',transactions:820,revenue:'$18,200',fee:'3.9%',settlement:'T+2',status:'Maintenance',color:'#009CDE'},
-  {name:'Cash',short:'Cash',type:'Counter',transactions:620,revenue:'$6,200',fee:'0%',settlement:'Instant',status:'Active',color:'#22C55E'},
+  {code:'momo',name:'MoMo Wallet',short:'MoMo',type:'E-wallet',transactions:4218,revenue:'421.800.000 đ',fee:'2.4%',settlement:'T+1',status:'Active',color:'#AE2070'},
+  {code:'vnpay',name:'VNPay',short:'VNPay',type:'Gateway',transactions:3840,revenue:'384.000.000 đ',fee:'2.1%',settlement:'T+1',status:'Active',color:'#003DA5'},
+  {code:'paypal',name:'PayPal',short:'PP',type:'International',transactions:820,revenue:'182.000.000 đ',fee:'3.9%',settlement:'T+2',status:'Maintenance',color:'#009CDE'},
+  {code:'cash',name:'Cash At Counter',short:'Cash',type:'Counter',transactions:620,revenue:'62.000.000 đ',fee:'0%',settlement:'Instant',status:'Active',color:'#22C55E'},
 ];
 
 function paymentMethodFormBody(method = {}) {
@@ -72,7 +80,7 @@ function paymentMethodFormBody(method = {}) {
       <div class="field"><label>Brand Accent</label><input class="input" placeholder="#AE2070" value="${method.color || ''}"></div>
       <div class="field"><label>Gateway Fee</label><input class="input" placeholder="2.4%" value="${method.fee || ''}"></div>
       <div class="field"><label>Settlement</label><input class="input" placeholder="T+1" value="${method.settlement || ''}"></div>
-      <div class="field"><label>Minimum Payout</label><input class="input" placeholder="$50" value="${method.minimum || ''}"></div>
+      <div class="field"><label>Minimum Payout</label><input class="input" placeholder="500.000 đ" value="${method.minimum || ''}"></div>
       <div class="field"><label>Support Contact</label><input class="input" placeholder="payments@cineshop.com" value="${method.contact || ''}"></div>
       <div class="field"><label>Fraud Rule</label><select class="select">${buildOptions(['Standard screening', 'Strict screening', 'Manual review'], method.risk || 'Standard screening')}</select></div>
       <div class="field"><label>Refund Window</label><input class="input" placeholder="Up to 24h" value="${method.refunds || ''}"></div>
@@ -107,7 +115,7 @@ function openPaymentMethodModal(title, method = {}) {
     description: isEdit
       ? 'Update settlement timing, support rules, and gateway capabilities for this payment method.'
       : 'Create a new payment channel profile with fees, risk rules, and settlement expectations.',
-    note: 'UI preview only. Payment method settings are not persisted yet.',
+    note: 'Schema-aligned preview only. Live CRUD for payment_methods is not connected yet.',
     submitLabel: isEdit ? 'Update Method' : 'Create Method',
     successMessage: isEdit ? 'Payment method preview updated!' : 'Payment method preview staged!',
   });
@@ -129,6 +137,7 @@ function renderPaymentMethodOverview() {
 function renderPaymentMethods(data) {
   document.getElementById('paymentMethodsBody').innerHTML = data.map(method => `
     <tr>
+      <td class="td-mono">${method.code}</td>
       <td><div class="td-bold">${method.name}</div></td>
       <td class="td-muted">${method.type}</td>
       <td style="font-weight:700;">${method.transactions.toLocaleString()}</td>

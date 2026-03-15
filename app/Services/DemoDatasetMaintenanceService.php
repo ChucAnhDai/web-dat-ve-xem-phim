@@ -11,6 +11,9 @@ class DemoDatasetMaintenanceService
 {
     private const LEGACY_CINEMA_SLUGS = ['123123', 'test'];
     private const LEGACY_CINEMA_NAMES = ['123123', 'test'];
+    private const DEMO_TICKET_ORDER_CODE_PREFIX = 'TKT-DEMO-%';
+    private const DEMO_TICKET_CODE_PREFIX = 'TIC-DEMO-%';
+    private const DEMO_PAYMENT_CODE_PREFIX = 'PAY-DEMO-%';
 
     private PDO $db;
     private Logger $logger;
@@ -84,6 +87,53 @@ class DemoDatasetMaintenanceService
         }
     }
 
+    public function cleanupDemoTicketFixtures(): array
+    {
+        $startedAt = microtime(true);
+        $startedTransaction = !$this->db->inTransaction();
+
+        if ($startedTransaction) {
+            $this->db->beginTransaction();
+        }
+
+        try {
+            $orderIds = $this->findDemoTicketOrderIds();
+
+            $summary = [
+                'deleted_orders' => 0,
+                'deleted_ticket_details' => 0,
+                'deleted_payments' => 0,
+                'deleted_holds' => 0,
+                'duration_ms' => 0.0,
+            ];
+
+            if ($orderIds !== []) {
+                $summary['deleted_payments'] = $this->deleteDemoPayments($orderIds);
+                $summary['deleted_ticket_details'] = $this->deleteDemoTicketDetails($orderIds);
+                $summary['deleted_orders'] = $this->deleteDemoOrders($orderIds);
+            }
+
+            if ($startedTransaction && $this->db->inTransaction()) {
+                $this->db->commit();
+            }
+
+            $summary['duration_ms'] = $this->durationMs($startedAt);
+            $this->logger->info('Demo ticket fixtures cleaned', $summary);
+
+            return $summary;
+        } catch (Throwable $exception) {
+            if ($startedTransaction && $this->db->inTransaction()) {
+                $this->db->rollBack();
+            }
+
+            $this->logger->error('Demo ticket fixture cleanup failed', [
+                'error' => $exception->getMessage(),
+            ]);
+
+            throw $exception;
+        }
+    }
+
     private function findLegacyCinemas(): array
     {
         $slugPlaceholders = $this->namedPlaceholders('slug_', self::LEGACY_CINEMA_SLUGS);
@@ -107,6 +157,26 @@ class DemoDatasetMaintenanceService
         $stmt->execute($params);
 
         return $stmt->fetchAll() ?: [];
+    }
+
+    /**
+     * @return int[]
+     */
+    private function findDemoTicketOrderIds(): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT id
+            FROM ticket_orders
+            WHERE order_code LIKE :order_code
+            ORDER BY id ASC
+        ");
+        $stmt->execute([
+            'order_code' => self::DEMO_TICKET_ORDER_CODE_PREFIX,
+        ]);
+
+        return array_map(static function ($value): int {
+            return (int) $value;
+        }, $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
     }
 
     /**
@@ -263,6 +333,89 @@ class DemoDatasetMaintenanceService
             WHERE id IN ({$placeholders})
         ");
         $stmt->execute($params);
+    }
+
+    /**
+     * @param int[] $orderIds
+     */
+    private function deleteDemoPayments(array $orderIds): int
+    {
+        if ($orderIds === []) {
+            return 0;
+        }
+
+        $placeholders = $this->namedPlaceholders('demo_payment_order_', $orderIds);
+        $params = [
+            'transaction_code' => self::DEMO_PAYMENT_CODE_PREFIX,
+        ];
+        foreach ($orderIds as $index => $orderId) {
+            $params['demo_payment_order_' . $index] = $orderId;
+        }
+
+        $stmt = $this->db->prepare("
+            DELETE FROM payments
+            WHERE ticket_order_id IN ({$placeholders})
+               OR transaction_code LIKE :transaction_code
+        ");
+        $stmt->execute($params);
+
+        return $stmt->rowCount();
+    }
+
+    /**
+     * @param int[] $orderIds
+     */
+    private function deleteDemoTicketDetails(array $orderIds): int
+    {
+        if ($orderIds === []) {
+            return 0;
+        }
+
+        $placeholders = $this->namedPlaceholders('demo_detail_order_', $orderIds);
+        $params = [
+            'ticket_code' => self::DEMO_TICKET_CODE_PREFIX,
+            'qr_payload' => 'ticket:' . self::DEMO_TICKET_CODE_PREFIX,
+        ];
+        foreach ($orderIds as $index => $orderId) {
+            $params['demo_detail_order_' . $index] = $orderId;
+        }
+
+        $stmt = $this->db->prepare("
+            DELETE FROM ticket_details
+            WHERE order_id IN ({$placeholders})
+               OR ticket_code LIKE :ticket_code
+               OR qr_payload LIKE :qr_payload
+        ");
+        $stmt->execute($params);
+
+        return $stmt->rowCount();
+    }
+
+    /**
+     * @param int[] $orderIds
+     */
+    private function deleteDemoOrders(array $orderIds): int
+    {
+        if ($orderIds === []) {
+            return 0;
+        }
+
+        $placeholders = $this->namedPlaceholders('demo_order_', $orderIds);
+        $params = [
+            'order_code' => self::DEMO_TICKET_ORDER_CODE_PREFIX,
+        ];
+        foreach ($orderIds as $index => $orderId) {
+            $params['demo_order_' . $index] = $orderId;
+        }
+
+        $stmt = $this->db->prepare("
+            DELETE FROM ticket_orders
+            WHERE id IN ({$placeholders})
+               OR order_code LIKE :order_code
+        ");
+        $stmt->execute($params);
+
+        return $stmt->rowCount();
     }
 
     /**

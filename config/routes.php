@@ -6,6 +6,7 @@ use App\Controllers\Admin\MovieManagementController;
 use App\Controllers\Admin\ShowtimeManagementController;
 use App\Controllers\Admin\TicketManagementController;
 use App\Controllers\Api\MovieCatalogController;
+use App\Controllers\Api\PaymentController;
 use App\Controllers\Api\ShowtimeCatalogController;
 use App\Controllers\Api\TicketHoldController;
 use App\Controllers\Api\TicketOrderController;
@@ -29,6 +30,9 @@ $app->router->post('/api/tickets/holds', [TicketHoldController::class, 'createHo
 $app->router->delete('/api/tickets/holds/{showtimeId}', [TicketHoldController::class, 'releaseHold']);
 $app->router->post('/api/ticket-orders/preview', [TicketOrderController::class, 'previewOrder']);
 $app->router->post('/api/ticket-orders', [TicketOrderController::class, 'createOrder']);
+$app->router->post('/api/payments/ticket-intents', [PaymentController::class, 'createTicketVnpayIntent']);
+$app->router->get('/api/payments/vnpay/return', [PaymentController::class, 'handleVnpayReturn']);
+$app->router->get('/api/payments/vnpay/ipn', [PaymentController::class, 'handleVnpayIpn']);
 $app->router->get('/api/me/tickets', [UserTicketController::class, 'listMyTickets'], [AuthMiddleware::class]);
 $app->router->get('/api/me/ticket-orders', [UserTicketController::class, 'listMyOrders'], [AuthMiddleware::class]);
 
