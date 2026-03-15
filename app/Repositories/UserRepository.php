@@ -65,8 +65,14 @@ class UserRepository
             'SELECT COUNT(td.id)
              FROM ticket_orders o
              LEFT JOIN ticket_details td ON td.order_id = o.id
-             WHERE o.user_id = :user_id AND o.status <> :cancelled',
-            ['user_id' => $userId, 'cancelled' => 'cancelled']
+             WHERE o.user_id = :user_id
+               AND o.status NOT IN (:cancelled, :expired, :refunded)',
+            [
+                'user_id' => $userId,
+                'cancelled' => 'cancelled',
+                'expired' => 'expired',
+                'refunded' => 'refunded',
+            ]
         );
 
         $orderCount = (int) $this->scalar(
@@ -81,7 +87,8 @@ class UserRepository
                 COALESCE((
                     SELECT SUM(total_price)
                     FROM ticket_orders
-                    WHERE user_id = :ticket_user_id AND status <> :ticket_cancelled
+                    WHERE user_id = :ticket_user_id
+                      AND status NOT IN (:ticket_cancelled, :ticket_expired, :ticket_refunded)
                 ), 0) +
                 COALESCE((
                     SELECT SUM(total_price)
@@ -91,6 +98,8 @@ class UserRepository
             [
                 'ticket_user_id' => $userId,
                 'ticket_cancelled' => 'cancelled',
+                'ticket_expired' => 'expired',
+                'ticket_refunded' => 'refunded',
                 'shop_user_id' => $userId,
                 'shop_cancelled' => 'cancelled',
             ]
@@ -110,7 +119,7 @@ class UserRepository
             SELECT *
             FROM (
                 SELECT
-                    CONCAT('T-', o.id) AS order_code,
+                    COALESCE(NULLIF(o.order_code, ''), CONCAT('T-', o.id)) AS order_code,
                     'ticket' AS order_type,
                     COALESCE(COUNT(td.id), 0) AS items_count,
                     o.order_date AS order_date,

@@ -1,5 +1,7 @@
 <?php
 
+date_default_timezone_set('Asia/Saigon');
+
 spl_autoload_register(function (string $class): void {
     $prefix = 'App\\';
     $baseDir = __DIR__ . '/../app/';

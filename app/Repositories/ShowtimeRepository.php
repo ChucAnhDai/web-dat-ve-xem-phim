@@ -19,6 +19,9 @@ class ShowtimeRepository
 
     public function listUpcomingByMovie(int $movieId, int $limitDays = 6): array
     {
+        $bookedSubquery = $this->bookedSeatsSubquery();
+        $heldSubquery = $this->heldSeatsSubquery();
+
         $stmt = $this->db->prepare("
             SELECT
                 s.id,
@@ -33,18 +36,14 @@ class ShowtimeRepository
                 r.room_name,
                 r.total_seats,
                 c.name AS cinema_name,
-                COALESCE(bookings.booked_seats, 0) AS booked_seats
+                COALESCE(bookings.booked_seats, 0) AS booked_seats,
+                COALESCE(holds.held_seats, 0) AS held_seats
             FROM showtimes s
             INNER JOIN movies m ON m.id = s.movie_id
             INNER JOIN rooms r ON r.id = s.room_id
             INNER JOIN cinemas c ON c.id = r.cinema_id
-            LEFT JOIN (
-                SELECT td.showtime_id, COUNT(DISTINCT td.seat_id) AS booked_seats
-                FROM ticket_details td
-                INNER JOIN ticket_orders o ON o.id = td.order_id
-                WHERE o.status IN ('pending', 'paid')
-                GROUP BY td.showtime_id
-            ) bookings ON bookings.showtime_id = s.id
+            LEFT JOIN ({$bookedSubquery}) bookings ON bookings.showtime_id = s.id
+            LEFT JOIN ({$heldSubquery}) holds ON holds.showtime_id = s.id
             WHERE s.movie_id = :movie_id
               AND s.show_date >= CURRENT_DATE
               AND s.status = 'published'
@@ -94,7 +93,8 @@ class ShowtimeRepository
 
             $totalSeats = (int) ($row['total_seats'] ?? 0);
             $bookedSeats = (int) ($row['booked_seats'] ?? 0);
-            $availableSeats = max(0, $totalSeats - $bookedSeats);
+            $heldSeats = (int) ($row['held_seats'] ?? 0);
+            $availableSeats = max(0, $totalSeats - $bookedSeats - $heldSeats);
 
             $groupedByDate[$dateKey]['venues'][$venueKey]['times'][] = [
                 'id' => (int) ($row['id'] ?? 0),
@@ -105,6 +105,7 @@ class ShowtimeRepository
                 'presentation_type' => $row['presentation_type'] ?? null,
                 'language_version' => $row['language_version'] ?? null,
                 'booked_seats' => $bookedSeats,
+                'held_seats' => $heldSeats,
                 'available_seats' => $availableSeats,
                 'total_seats' => $totalSeats,
                 'is_sold_out' => $totalSeats > 0 && $availableSeats <= 0,
@@ -126,13 +127,8 @@ class ShowtimeRepository
     {
         ['where' => $where, 'params' => $params] = $this->buildPublicFilterParts($filters);
 
-        $bookedSubquery = "
-            SELECT td.showtime_id, COUNT(DISTINCT td.seat_id) AS booked_seats
-            FROM ticket_details td
-            INNER JOIN ticket_orders o ON o.id = td.order_id
-            WHERE o.status IN ('pending', 'paid')
-            GROUP BY td.showtime_id
-        ";
+        $bookedSubquery = $this->bookedSeatsSubquery();
+        $heldSubquery = $this->heldSeatsSubquery();
 
         $selectSql = "
             SELECT
@@ -157,12 +153,14 @@ class ShowtimeRepository
                 r.room_type,
                 r.screen_label,
                 r.total_seats,
-                COALESCE(bookings.booked_seats, 0) AS booked_seats
+                COALESCE(bookings.booked_seats, 0) AS booked_seats,
+                COALESCE(holds.held_seats, 0) AS held_seats
             FROM showtimes s
             INNER JOIN movies m ON m.id = s.movie_id
             INNER JOIN rooms r ON r.id = s.room_id
             INNER JOIN cinemas c ON c.id = r.cinema_id
             LEFT JOIN ({$bookedSubquery}) bookings ON bookings.showtime_id = s.id
+            LEFT JOIN ({$heldSubquery}) holds ON holds.showtime_id = s.id
             {$where}
             ORDER BY s.show_date ASC, s.start_time ASC, m.title ASC, c.name ASC, r.room_name ASC
         ";
@@ -239,6 +237,9 @@ class ShowtimeRepository
 
     public function findPublicDetail(int $showtimeId): ?array
     {
+        $bookedSubquery = $this->bookedSeatsSubquery();
+        $heldSubquery = $this->heldSeatsSubquery();
+
         $stmt = $this->db->prepare("
             SELECT
                 s.id,
@@ -260,18 +261,14 @@ class ShowtimeRepository
                 r.room_name,
                 r.total_seats,
                 r.status AS room_status,
-                COALESCE(bookings.booked_seats, 0) AS booked_seats
+                COALESCE(bookings.booked_seats, 0) AS booked_seats,
+                COALESCE(holds.held_seats, 0) AS held_seats
             FROM showtimes s
             INNER JOIN movies m ON m.id = s.movie_id
             INNER JOIN rooms r ON r.id = s.room_id
             INNER JOIN cinemas c ON c.id = r.cinema_id
-            LEFT JOIN (
-                SELECT td.showtime_id, COUNT(DISTINCT td.seat_id) AS booked_seats
-                FROM ticket_details td
-                INNER JOIN ticket_orders o ON o.id = td.order_id
-                WHERE o.status IN ('pending', 'paid')
-                GROUP BY td.showtime_id
-            ) bookings ON bookings.showtime_id = s.id
+            LEFT JOIN ({$bookedSubquery}) bookings ON bookings.showtime_id = s.id
+            LEFT JOIN ({$heldSubquery}) holds ON holds.showtime_id = s.id
             WHERE s.id = :id
               AND s.status = 'published'
               AND " . $this->publicMovieStatusCondition('m') . "
@@ -327,5 +324,26 @@ class ShowtimeRepository
     private function publicMovieStatusCondition(string $movieAlias = 'm'): string
     {
         return sprintf("%s.status IN ('now_showing', 'coming_soon')", $movieAlias);
+    }
+
+    private function bookedSeatsSubquery(): string
+    {
+        return "
+            SELECT td.showtime_id, COUNT(DISTINCT td.seat_id) AS booked_seats
+            FROM ticket_details td
+            INNER JOIN ticket_orders o ON o.id = td.order_id
+            WHERE o.status IN ('pending', 'paid')
+            GROUP BY td.showtime_id
+        ";
+    }
+
+    private function heldSeatsSubquery(): string
+    {
+        return "
+            SELECT showtime_id, COUNT(DISTINCT seat_id) AS held_seats
+            FROM ticket_seat_holds
+            WHERE hold_expires_at > CURRENT_TIMESTAMP
+            GROUP BY showtime_id
+        ";
     }
 }

@@ -22,6 +22,7 @@ try {
         'showtimes_created' => 0,
         'orders_created' => 0,
         'ticket_details_created' => 0,
+        'payments_created' => 0,
         'legacy_cinemas_archived' => 0,
         'legacy_rooms_archived' => 0,
         'legacy_seats_archived' => 0,
@@ -812,6 +813,11 @@ function ensureShowtimes(PDO $pdo, array $movieIds, array $rooms, array &$summar
 
 function ensureDemoOrders(PDO $pdo, array &$summary): void
 {
+    $contactProfiles = [
+        ['name' => 'Nguyen Van An', 'email' => 'ticket.an@example.com', 'phone' => '0901000001', 'fulfillment' => 'e_ticket', 'payment_method' => 'momo'],
+        ['name' => 'Tran Minh Chau', 'email' => 'ticket.chau@example.com', 'phone' => '0901000002', 'fulfillment' => 'counter_pickup', 'payment_method' => 'cash'],
+        ['name' => 'Le Gia Han', 'email' => 'ticket.han@example.com', 'phone' => '0901000003', 'fulfillment' => 'e_ticket', 'payment_method' => 'vnpay'],
+    ];
     $showtimeStmt = $pdo->query("
         SELECT s.id, s.room_id, s.price
         FROM showtimes s
@@ -831,7 +837,7 @@ function ensureDemoOrders(PDO $pdo, array &$summary): void
 
     $existingTicketCountStmt = $pdo->prepare('SELECT COUNT(*) FROM ticket_details WHERE showtime_id = :showtime_id');
     $seatStmt = $pdo->prepare("
-        SELECT id
+        SELECT id, seat_type
         FROM seats
         WHERE room_id = :room_id
           AND status = 'available'
@@ -839,12 +845,70 @@ function ensureDemoOrders(PDO $pdo, array &$summary): void
         LIMIT 4
     ");
     $orderInsertStmt = $pdo->prepare('
-        INSERT INTO ticket_orders (user_id, total_price, status)
-        VALUES (NULL, :total_price, :status)
+        INSERT INTO ticket_orders (
+            order_code,
+            user_id,
+            contact_name,
+            contact_email,
+            contact_phone,
+            fulfillment_method,
+            seat_count,
+            subtotal_price,
+            discount_amount,
+            fee_amount,
+            total_price,
+            currency,
+            status,
+            hold_expires_at,
+            paid_at
+        )
+        VALUES (
+            :order_code,
+            NULL,
+            :contact_name,
+            :contact_email,
+            :contact_phone,
+            :fulfillment_method,
+            :seat_count,
+            :subtotal_price,
+            0.00,
+            0.00,
+            :total_price,
+            :currency,
+            :status,
+            :hold_expires_at,
+            :paid_at
+        )
     ');
     $detailInsertStmt = $pdo->prepare('
-        INSERT INTO ticket_details (order_id, showtime_id, seat_id, price)
-        VALUES (:order_id, :showtime_id, :seat_id, :price)
+        INSERT INTO ticket_details (
+            order_id,
+            showtime_id,
+            seat_id,
+            ticket_code,
+            status,
+            base_price,
+            surcharge_amount,
+            discount_amount,
+            price,
+            qr_payload
+        )
+        VALUES (
+            :order_id,
+            :showtime_id,
+            :seat_id,
+            :ticket_code,
+            :status,
+            :base_price,
+            :surcharge_amount,
+            0.00,
+            :price,
+            :qr_payload
+        )
+    ');
+    $paymentInsertStmt = $pdo->prepare('
+        INSERT INTO payments (ticket_order_id, payment_method, payment_status, transaction_code)
+        VALUES (:ticket_order_id, :payment_method, :payment_status, :transaction_code)
     ');
 
     foreach ($showtimes as $index => $showtime) {
@@ -855,33 +919,86 @@ function ensureDemoOrders(PDO $pdo, array &$summary): void
         }
 
         $seatStmt->execute(['room_id' => (int) $showtime['room_id']]);
-        $seatIds = array_map(static function (array $row): int {
-            return (int) $row['id'];
-        }, $seatStmt->fetchAll(PDO::FETCH_ASSOC) ?: []);
+        $seatRows = $seatStmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
-        if ($seatIds === []) {
+        if ($seatRows === []) {
             continue;
         }
 
         $orderStatus = $index % 2 === 0 ? 'paid' : 'pending';
+        $contact = $contactProfiles[$index % count($contactProfiles)];
         $seatPrice = (float) $showtime['price'];
+        $seatCount = count($seatRows);
+        $subtotalPrice = $seatPrice * $seatCount;
+        $surchargeTotal = 0.0;
+
+        foreach ($seatRows as $seatRow) {
+            $surchargeTotal += ticketSeatSurcharge((string) ($seatRow['seat_type'] ?? 'normal'));
+        }
+
+        $holdExpiresAt = $orderStatus === 'pending'
+            ? date('Y-m-d H:i:s', strtotime('+15 minutes'))
+            : null;
+        $paidAt = $orderStatus === 'paid'
+            ? date('Y-m-d H:i:s')
+            : null;
+
         $orderInsertStmt->execute([
-            'total_price' => $seatPrice * count($seatIds),
+            'order_code' => sprintf('TKT-DEMO-%06d', $showtimeId),
+            'contact_name' => $contact['name'],
+            'contact_email' => $contact['email'],
+            'contact_phone' => $contact['phone'],
+            'fulfillment_method' => $contact['fulfillment'],
+            'seat_count' => $seatCount,
+            'subtotal_price' => $subtotalPrice,
+            'total_price' => $subtotalPrice + $surchargeTotal,
+            'currency' => 'VND',
             'status' => $orderStatus,
+            'hold_expires_at' => $holdExpiresAt,
+            'paid_at' => $paidAt,
         ]);
         $orderId = (int) $pdo->lastInsertId();
         $summary['orders_created'] += 1;
 
-        foreach ($seatIds as $seatId) {
+        foreach ($seatRows as $seatRow) {
+            $seatId = (int) $seatRow['id'];
+            $surchargeAmount = ticketSeatSurcharge((string) ($seatRow['seat_type'] ?? 'normal'));
             $detailInsertStmt->execute([
                 'order_id' => $orderId,
                 'showtime_id' => $showtimeId,
                 'seat_id' => $seatId,
-                'price' => $seatPrice,
+                'ticket_code' => sprintf('TIC-DEMO-%06d-%06d', $showtimeId, $seatId),
+                'status' => $orderStatus,
+                'base_price' => $seatPrice,
+                'surcharge_amount' => $surchargeAmount,
+                'price' => $seatPrice + $surchargeAmount,
+                'qr_payload' => sprintf('ticket:TIC-DEMO-%06d-%06d', $showtimeId, $seatId),
             ]);
             $summary['ticket_details_created'] += 1;
         }
+
+        $paymentInsertStmt->execute([
+            'ticket_order_id' => $orderId,
+            'payment_method' => $contact['payment_method'],
+            'payment_status' => $orderStatus === 'paid' ? 'success' : 'pending',
+            'transaction_code' => sprintf('PAY-DEMO-%06d', $orderId),
+        ]);
+        $summary['payments_created'] += 1;
     }
+}
+
+function ticketSeatSurcharge(string $seatType): float
+{
+    $normalizedSeatType = strtolower(trim($seatType));
+
+    if ($normalizedSeatType === 'vip') {
+        return 15000.0;
+    }
+    if ($normalizedSeatType === 'couple') {
+        return 30000.0;
+    }
+
+    return 0.0;
 }
 
 function buildSeatLayout(string $roomType): array

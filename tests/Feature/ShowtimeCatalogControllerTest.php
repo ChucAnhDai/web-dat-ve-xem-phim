@@ -6,6 +6,7 @@ use App\Controllers\Api\ShowtimeCatalogController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Services\ShowtimeCatalogService;
+use App\Support\TicketSessionManager;
 use PHPUnit\Framework\TestCase;
 
 class ShowtimeCatalogControllerTest extends TestCase
@@ -14,6 +15,7 @@ class ShowtimeCatalogControllerTest extends TestCase
     {
         $_GET = [];
         $_POST = [];
+        $_COOKIE = [];
         $_SERVER = [];
     }
 
@@ -53,8 +55,12 @@ class ShowtimeCatalogControllerTest extends TestCase
             ],
         ];
 
-        $controller = new ShowtimeCatalogController($service);
+        $sessions = new FeatureFakeTicketSessionManager();
+        $sessions->resolvedToken = str_repeat('a', 48);
+
+        $controller = new ShowtimeCatalogController($service, $sessions);
         $_SERVER['REQUEST_METHOD'] = 'GET';
+        $_COOKIE[FeatureFakeTicketSessionManager::COOKIE_NAME] = str_repeat('a', 48);
         $request = new Request();
         $request->setRouteParams(['id' => 501]);
         $response = new FeatureCapturingShowtimeResponse();
@@ -63,6 +69,7 @@ class ShowtimeCatalogControllerTest extends TestCase
 
         $this->assertSame(200, $response->statusCode);
         $this->assertSame('Detail Movie', $response->payload['data']['showtime']['movie_title']);
+        $this->assertSame(str_repeat('a', 48), $service->receivedSessionToken);
     }
 
     public function testGetSeatMapReturnsErrorPayload(): void
@@ -89,19 +96,32 @@ class ShowtimeCatalogControllerTest extends TestCase
 class FeatureFakeShowtimeCatalogService extends ShowtimeCatalogService
 {
     public array $result = [];
+    public ?string $receivedSessionToken = null;
 
     public function __construct()
     {
     }
 
-    public function getSeatMap(int $showtimeId): array
+    public function getSeatMapForSession(int $showtimeId, ?string $sessionToken = null): array
     {
+        $this->receivedSessionToken = $sessionToken;
+
         return $this->result;
     }
 
     public function listShowtimes(array $filters): array
     {
         return $this->result;
+    }
+}
+
+class FeatureFakeTicketSessionManager extends TicketSessionManager
+{
+    public ?string $resolvedToken = null;
+
+    public function resolve(Request $request): ?string
+    {
+        return $this->resolvedToken;
     }
 }
 

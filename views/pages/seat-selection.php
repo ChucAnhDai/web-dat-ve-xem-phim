@@ -25,10 +25,11 @@ $backToMovieDetail = $selectedMovieSlug !== ''
         <div class="legend-item"><div class="legend-seat available"></div> Available</div>
         <div class="legend-item"><div class="legend-seat selected"></div> Selected</div>
         <div class="legend-item"><div class="legend-seat booked"></div> Booked</div>
+        <div class="legend-item"><div class="legend-seat held"></div> Held</div>
         <div class="legend-item"><div class="legend-seat maintenance"></div> Maintenance</div>
         <div class="legend-item"><div class="legend-seat disabled"></div> Disabled</div>
-        <div class="legend-item"><div class="legend-seat vip"></div> VIP (+$5)</div>
-        <div class="legend-item"><div class="legend-seat couple"></div> Couple (+$10)</div>
+        <div class="legend-item"><div class="legend-seat vip"></div> VIP (+15,000 VND)</div>
+        <div class="legend-item"><div class="legend-seat couple"></div> Couple (+30,000 VND)</div>
       </div>
     </div>
 
@@ -39,18 +40,21 @@ $backToMovieDetail = $selectedMovieSlug !== ''
         <div class="summary-movie-info">
           <h4 id="seatSelectionMovieTitle">Movie Title</h4>
           <p id="seatSelectionVenue">Cinema - Room</p>
-          <p id="seatSelectionDateTime">Date · Time</p>
+          <p id="seatSelectionDateTime">Date - Time</p>
         </div>
       </div>
       <div class="divider"></div>
       <div class="summary-row"><label>Selected Seats</label></div>
       <div class="seats-display" id="selectedSeatsDisplay"><span class="seat-tag">None selected</span></div>
       <div class="divider"></div>
-      <div class="summary-row"><label>Base Price</label><span id="seatBasePrice">$0.00</span></div>
-      <div class="summary-row"><label>Seat Surcharge</label><span id="seatSurcharge">$0.00</span></div>
+      <div class="summary-row"><label>Base Price</label><span id="seatBasePrice">0 VND</span></div>
+      <div class="summary-row"><label>Seat Surcharge</label><span id="seatSurcharge">0 VND</span></div>
       <div class="summary-row"><label>Seats</label><span id="seatCount">0</span></div>
       <div class="divider"></div>
-      <div class="summary-row total"><label>Total</label><span id="seatTotal" style="color:var(--red)">$0.00</span></div>
+      <div class="summary-row total"><label>Total</label><span id="seatTotal" style="color:var(--red)">0 VND</span></div>
+      <div style="margin-top:10px;color:var(--text2);font-size:12px;line-height:1.6;">
+        Seats are held for your session before checkout so another customer cannot take them while you continue.
+      </div>
       <div style="margin-top:16px">
         <button class="btn btn-primary btn-full btn-lg" id="seatSelectionCheckoutBtn" type="button">Proceed to Checkout</button>
         <a href="<?php echo htmlspecialchars($backToMovieDetail, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-ghost btn-full btn-sm" style="margin-top:8px;display:flex">Back to Showtimes</a>

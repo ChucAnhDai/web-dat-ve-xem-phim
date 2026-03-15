@@ -115,7 +115,7 @@ class WebController
     {
         return $response->view('pages/checkout', [
             'title' => 'Thanh toán - CinemaX',
-            'activePage' => 'cart',
+            'activePage' => 'movies',
         ]);
     }
 }

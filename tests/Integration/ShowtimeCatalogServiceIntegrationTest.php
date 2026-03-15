@@ -50,6 +50,25 @@ class ShowtimeCatalogServiceIntegrationTest extends TestCase
         $this->assertSame(['Showtime not found.'], $result['errors']['showtime']);
     }
 
+    public function testGetSeatMapMarksHeldSeatForCurrentSession(): void
+    {
+        $this->db->exec("
+            INSERT INTO ticket_seat_holds (id, showtime_id, seat_id, session_token, hold_expires_at)
+            VALUES (1, 11, 2, '" . str_repeat('f', 48) . "', datetime('now', '+10 minutes'))
+        ");
+
+        $service = $this->makeService();
+
+        $result = $service->getSeatMapForSession(11, str_repeat('f', 48));
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame(1, $result['data']['summary']['held_seats']);
+        $this->assertSame(1, $result['data']['summary']['held_by_current_session_seats']);
+        $this->assertTrue($result['data']['seats'][1]['is_held']);
+        $this->assertTrue($result['data']['seats'][1]['held_by_current_session']);
+        $this->assertTrue($result['data']['seats'][1]['is_selectable']);
+    }
+
     private function makeService(): ShowtimeCatalogService
     {
         return new ShowtimeCatalogService(
@@ -137,6 +156,19 @@ class ShowtimeCatalogServiceIntegrationTest extends TestCase
                 showtime_id INTEGER,
                 seat_id INTEGER,
                 FOREIGN KEY (order_id) REFERENCES ticket_orders(id),
+                FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
+                FOREIGN KEY (seat_id) REFERENCES seats(id)
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE ticket_seat_holds (
+                id INTEGER PRIMARY KEY,
+                showtime_id INTEGER NOT NULL,
+                seat_id INTEGER NOT NULL,
+                session_token TEXT NOT NULL,
+                hold_expires_at TEXT NOT NULL,
+                UNIQUE (showtime_id, seat_id),
                 FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
                 FOREIGN KEY (seat_id) REFERENCES seats(id)
             )

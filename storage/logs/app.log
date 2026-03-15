@@ -271,3 +271,118 @@
 [2026-03-15T11:43:59+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":36,"status":"archived","duration_ms":5.26}
 [2026-03-15T11:44:11+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":36,"status":"published","duration_ms":24.95}
 [2026-03-15T11:52:27+01:00] INFO: Legacy cinema demo fixtures archived {"legacy_cinema_ids":[1,6],"archived_cinemas":2,"archived_rooms":3,"archived_seats":96,"archived_showtimes":1,"duration_ms":11.18}
+[2026-03-15T12:42:44+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"made-in-korea-2026","movie_id":30,"created":true,"category_count":1,"asset_count":6,"duration_ms":709.28}
+[2026-03-15T12:42:44+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dong-song-trinh-nu-phan-7","movie_id":21,"created":false,"category_count":1,"asset_count":10,"duration_ms":686.89}
+[2026-03-15T12:42:45+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"linh-moi-phan-8","movie_id":22,"created":false,"category_count":4,"asset_count":10,"duration_ms":839.55}
+[2026-03-15T12:42:46+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tri-tue-tiem-nang-phan-2","movie_id":23,"created":false,"category_count":4,"asset_count":10,"duration_ms":862.79}
+[2026-03-15T12:42:47+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dahmer-tuoi-tre-ke-sat-nhan","movie_id":31,"created":true,"category_count":2,"asset_count":10,"duration_ms":697.89}
+[2026-03-15T12:42:47+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"kiem-lai-phan-2","movie_id":32,"created":true,"category_count":4,"asset_count":10,"duration_ms":705.41}
+[2026-03-15T12:42:48+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hierarchy","movie_id":33,"created":true,"category_count":2,"asset_count":7,"duration_ms":692.03}
+[2026-03-15T12:42:49+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"i-dont-love-you-anymore","movie_id":34,"created":true,"category_count":2,"asset_count":4,"duration_ms":635.47}
+[2026-03-15T12:42:49+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nguoi-anh-hung-21-tuoi","movie_id":35,"created":true,"category_count":2,"asset_count":7,"duration_ms":692.18}
+[2026-03-15T12:42:50+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"reckless","movie_id":36,"created":true,"category_count":3,"asset_count":9,"duration_ms":661.01}
+[2026-03-15T12:42:51+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"kiem-com-bang-tro-choi-sinh-tu","movie_id":37,"created":true,"category_count":2,"asset_count":9,"duration_ms":658.71}
+[2026-03-15T12:42:52+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dua-con-cua-than-tuong-phan-3","movie_id":24,"created":false,"category_count":1,"asset_count":10,"duration_ms":1031.92}
+[2026-03-15T12:42:52+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-moi","page":11,"limit":12,"processed_count":12,"created_count":8,"updated_count":4,"skipped_count":0,"failed_count":0,"duration_ms":9427.68}
+[2026-03-15T13:39:13+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":50,"status":"draft","duration_ms":6.05}
+[2026-03-15T13:39:44+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:39:59+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:40:03+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":50,"status":"completed","duration_ms":4.67}
+[2026-03-15T13:40:26+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:40:47+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:49:05+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:49:17+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:49:17+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:49:18+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:49:18+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:49:25+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":50,"status":"completed","duration_ms":4.11}
+[2026-03-15T13:49:44+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":50,"status":"completed","duration_ms":4.33}
+[2026-03-15T13:50:23+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":50,"status":"completed","duration_ms":5.68}
+[2026-03-15T13:52:09+01:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T13:52:27+01:00] INFO: Showtime create blocked by overlap {"actor_id":1,"room_id":6,"show_date":"2026-03-15","start_time":"19:51:00","end_time":"20:37:00"}
+[2026-03-15T13:52:32+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":51,"status":"published","duration_ms":7.64}
+[2026-03-15T13:57:37+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"em-be-cute-tan-cong-tong-giam-doc-mat-tri-nho-muon-lam-cha-duong-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:37+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"em-be-cute-tan-cong-tong-giam-doc-mat-tri-nho-muon-lam-cha-duong-short-drama","movie_id":1,"created":true,"category_count":1,"asset_count":1,"duration_ms":681.29}
+[2026-03-15T13:57:38+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"quan-chua-ga-den-danh-tinh-cua-toi-khong-giau-noi-nua-roi-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:38+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"quan-chua-ga-den-danh-tinh-cua-toi-khong-giau-noi-nua-roi-short-drama","movie_id":2,"created":true,"category_count":2,"asset_count":1,"duration_ms":662.32}
+[2026-03-15T13:57:39+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"vong-lap-vo-tan-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:39+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"vong-lap-vo-tan-short-drama","movie_id":3,"created":true,"category_count":1,"asset_count":1,"duration_ms":911.92}
+[2026-03-15T13:57:39+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"hoang-de-chien-cuu-gioi-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:39+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"hoang-de-chien-cuu-gioi-short-drama","movie_id":4,"created":true,"category_count":1,"asset_count":1,"duration_ms":661.47}
+[2026-03-15T13:57:40+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"dieu-bi-mat-phim-viet-nam","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:40+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dieu-bi-mat-phim-viet-nam","movie_id":5,"created":true,"category_count":3,"asset_count":2,"duration_ms":725.51}
+[2026-03-15T13:57:41+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"tinh-yeu-khi-sao-troi-lap-lanh-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:41+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tinh-yeu-khi-sao-troi-lap-lanh-short-drama","movie_id":6,"created":true,"category_count":1,"asset_count":1,"duration_ms":716.27}
+[2026-03-15T13:57:42+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"ta-la-phuong-hoang-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:42+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ta-la-phuong-hoang-short-drama","movie_id":7,"created":true,"category_count":2,"asset_count":1,"duration_ms":662.4}
+[2026-03-15T13:57:42+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"vo-xau-cua-toi-dep-nhu-tranh-ve-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:42+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"vo-xau-cua-toi-dep-nhu-tranh-ve-short-drama","movie_id":8,"created":true,"category_count":1,"asset_count":1,"duration_ms":703.8}
+[2026-03-15T13:57:43+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"toi-la-ba-noi-tre-cua-anh-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:43+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-la-ba-noi-tre-cua-anh-short-drama","movie_id":9,"created":true,"category_count":1,"asset_count":1,"duration_ms":670.78}
+[2026-03-15T13:57:44+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"toi-la-nguoi-duoc-moi-nguoi-yeu-men-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:44+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-la-nguoi-duoc-moi-nguoi-yeu-men-short-drama","movie_id":10,"created":true,"category_count":1,"asset_count":1,"duration_ms":724.14}
+[2026-03-15T13:57:44+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"nhin-kia-toi-tim-thay-chong-tong-giam-doc-trong-thung-rac-ten-phu-xin-loi-tong-nghiem-toi-co-can-duong-lam-giau-cua-anh-khong-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:44+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nhin-kia-toi-tim-thay-chong-tong-giam-doc-trong-thung-rac-ten-phu-xin-loi-tong-nghiem-toi-co-can-duong-lam-giau-cua-anh-khong-short-drama","movie_id":11,"created":true,"category_count":1,"asset_count":1,"duration_ms":705.52}
+[2026-03-15T13:57:45+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"goa-phu-den-tu-than-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:45+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"goa-phu-den-tu-than-short-drama","movie_id":12,"created":true,"category_count":1,"asset_count":1,"duration_ms":679.49}
+[2026-03-15T13:57:46+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"tiem-da-cuu-long-rong-o-nhan-gian-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:46+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tiem-da-cuu-long-rong-o-nhan-gian-short-drama","movie_id":13,"created":true,"category_count":1,"asset_count":1,"duration_ms":695.24}
+[2026-03-15T13:57:46+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"mua-nho-biet-vi-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:46+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"mua-nho-biet-vi-short-drama","movie_id":14,"created":true,"category_count":1,"asset_count":1,"duration_ms":712.45}
+[2026-03-15T13:57:47+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"toi-lam-vuong-phi-o-thoi-co-dai-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:47+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"toi-lam-vuong-phi-o-thoi-co-dai-short-drama","movie_id":15,"created":true,"category_count":2,"asset_count":1,"duration_ms":707.76}
+[2026-03-15T13:57:48+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"thien-kieu-vo-song-an-si-than-ton-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:48+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"thien-kieu-vo-song-an-si-than-ton-short-drama","movie_id":16,"created":true,"category_count":1,"asset_count":1,"duration_ms":716.56}
+[2026-03-15T13:57:49+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"di-qua-mua-ha","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:49+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"di-qua-mua-ha","movie_id":17,"created":true,"category_count":2,"asset_count":2,"duration_ms":738.4}
+[2026-03-15T13:57:49+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"tong-giam-doc-ngai-ngung-short-drama","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:49+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tong-giam-doc-ngai-ngung-short-drama","movie_id":18,"created":true,"category_count":1,"asset_count":1,"duration_ms":704.52}
+[2026-03-15T13:57:50+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"dau-tri-phim-viet-nam","error":"Failed to communicate with OPhim API."}
+[2026-03-15T13:57:50+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"dau-tri-phim-viet-nam","movie_id":19,"created":true,"category_count":2,"asset_count":2,"duration_ms":720.97}
+[2026-03-15T13:57:50+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-moi","page":100,"limit":19,"processed_count":19,"created_count":19,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":14020.68}
+[2026-03-15T15:20:15+01:00] INFO: Movie archived {"actor_id":1,"movie_id":11}
+[2026-03-15T15:21:03+01:00] INFO: Cinema created {"actor_id":1,"cinema_id":1,"status":"active","duration_ms":3.89}
+[2026-03-15T15:21:16+01:00] INFO: Room created {"actor_id":1,"room_id":1,"status":"active","duration_ms":1.78}
+[2026-03-15T15:21:21+01:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"0","duration_ms":2.34}
+[2026-03-15T15:21:55+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":1,"status":"published","duration_ms":3.91}
+[2026-03-15T15:22:32+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":2,"status":"draft","duration_ms":5.58}
+[2026-03-15T15:22:40+01:00] INFO: Showtime updated {"actor_id":1,"showtime_id":2,"status":"published","duration_ms":2.54}
+[2026-03-15T15:23:07+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":3,"status":"published","duration_ms":6.8}
+[2026-03-15T15:24:50+01:00] INFO: OPhim image sync skipped after image request failure {"slug":"tinh-dau-kho-noi","error":"Failed to communicate with OPhim API."}
+[2026-03-15T15:24:50+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tinh-dau-kho-noi","movie_id":20,"created":true,"category_count":1,"asset_count":2,"duration_ms":831.15}
+[2026-03-15T15:24:51+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"su-thay-gap-su-lay","movie_id":21,"created":true,"category_count":1,"asset_count":6,"duration_ms":1202.15}
+[2026-03-15T15:24:52+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ngay-hoc-cuoi-cung","movie_id":22,"created":true,"category_count":1,"asset_count":10,"duration_ms":1262.6}
+[2026-03-15T15:24:54+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-hermit","movie_id":23,"created":true,"category_count":1,"asset_count":5,"duration_ms":1214.7}
+[2026-03-15T15:24:54+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"frankensteins-bride","movie_id":24,"created":true,"category_count":1,"asset_count":4,"duration_ms":664.95}
+[2026-03-15T15:24:55+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"akaal-the-unconquered","movie_id":25,"created":true,"category_count":2,"asset_count":2,"duration_ms":697.39}
+[2026-03-15T15:24:56+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"demon-squad-tooth-and-claw","movie_id":26,"created":true,"category_count":2,"asset_count":5,"duration_ms":649.83}
+[2026-03-15T15:24:56+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ghost-elephants","movie_id":27,"created":true,"category_count":1,"asset_count":10,"duration_ms":673.78}
+[2026-03-15T15:24:57+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"yoroi","movie_id":28,"created":true,"category_count":1,"asset_count":10,"duration_ms":929.53}
+[2026-03-15T15:24:58+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"solo-mio","movie_id":29,"created":true,"category_count":1,"asset_count":10,"duration_ms":838.28}
+[2026-03-15T15:24:59+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"barbara-tro-thanh-shirin-david","movie_id":30,"created":true,"category_count":1,"asset_count":2,"duration_ms":761.39}
+[2026-03-15T15:25:00+01:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"doi-gio-hu-2026","movie_id":31,"created":true,"category_count":1,"asset_count":10,"duration_ms":869.87}
+[2026-03-15T15:25:00+01:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-le","page":1,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":11077.7}
+[2026-03-15T15:29:02+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"little-comet","error":"Failed to communicate with OPhim API."}
+[2026-03-15T15:29:16+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"little-comet","error":"Failed to communicate with OPhim API."}
+[2026-03-15T15:29:25+01:00] ERROR: Public movie detail load failed from OPhim {"slug":"little-comet","error":"Failed to communicate with OPhim API."}
+[2026-03-15T15:31:24+01:00] INFO: Showtime created {"actor_id":1,"showtime_id":4,"status":"published","duration_ms":2.03}
+[2026-03-15T16:05:09+01:00] INFO: Ticket seats held {"showtime_id":42,"seat_ids":[383,384],"seat_count":2,"session_token":"3a9b0bf9946f","user_id":null,"hold_expires_at":"2026-03-15 16:20:09","duration_ms":7.09}
+[2026-03-15T16:05:15+01:00] INFO: Ticket lifecycle maintenance completed {"purged_holds":2,"expired_orders":1,"expired_tickets":4,"failed_payments":1}
+[2026-03-15T16:05:15+01:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":42,"session_token":"3a9b0bf9946f","user_id":null,"errors":{"hold":["Seat hold is missing or expired."]},"duration_ms":7.2}
+[2026-03-15T16:05:45+01:00] INFO: Ticket seats held {"showtime_id":42,"seat_ids":[383,384],"seat_count":2,"session_token":"bb5db927d981","user_id":null,"hold_expires_at":"2026-03-15 16:20:45","duration_ms":7.25}
+[2026-03-15T16:06:09+01:00] INFO: Ticket seats held {"showtime_id":42,"seat_ids":[383,384],"seat_count":2,"session_token":"ffffffffffff","user_id":null,"hold_expires_at":"2026-03-15 16:21:09","duration_ms":6.59}
+[2026-03-15T16:06:23+01:00] INFO: Ticket lifecycle maintenance completed {"purged_holds":2,"expired_orders":0,"expired_tickets":0,"failed_payments":0}
+[2026-03-15T16:06:23+01:00] INFO: Ticket checkout preview blocked by business rule {"showtime_id":42,"session_token":"ffffffffffff","user_id":null,"errors":{"hold":["Seat hold is missing or expired."]},"duration_ms":2.29}
+[2026-03-15T16:06:57+01:00] INFO: Ticket seats held {"showtime_id":42,"seat_ids":[383,384],"seat_count":2,"session_token":"ffffffffffff","user_id":null,"hold_expires_at":"2026-03-15 16:21:57","duration_ms":5.74}
+[2026-03-15T22:07:59+07:00] INFO: Ticket seats held {"showtime_id":42,"seat_ids":[383,384],"seat_count":2,"session_token":"eac4988d3833","user_id":null,"hold_expires_at":"2026-03-15 22:22:59","duration_ms":5.4}
+[2026-03-15T22:08:05+07:00] INFO: Ticket order created {"order_id":4,"order_code":"TKT-3B0716714F","showtime_id":42,"seat_ids":[383,384],"seat_count":2,"user_id":null,"session_token":"eac4988d3833","duration_ms":4.78}
+[2026-03-15T22:08:16+07:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-15T22:08:38+07:00] INFO: Authentication succeeded {"user_id":"1","context":"user"}
+[2026-03-15T22:08:48+07:00] INFO: Ticket seats held {"showtime_id":42,"seat_ids":[385,386],"seat_count":2,"session_token":"20e327c693e2","user_id":1,"hold_expires_at":"2026-03-15 22:23:48","duration_ms":7.13}
+[2026-03-15T22:08:56+07:00] INFO: Ticket order created {"order_id":5,"order_code":"TKT-F6C1B7680D","showtime_id":42,"seat_ids":[385,386],"seat_count":2,"user_id":1,"session_token":"20e327c693e2","duration_ms":11.45}
+[2026-03-15T22:17:40+07:00] INFO: Ticket seats held {"showtime_id":47,"seat_ids":[441,442,443,444,445,446],"seat_count":6,"session_token":"072d732f8110","user_id":1,"hold_expires_at":"2026-03-15 22:32:40","duration_ms":5.94}
+[2026-03-15T22:19:35+07:00] INFO: Movie created {"actor_id":1,"movie_id":37,"duration_ms":3.67}
+[2026-03-15T22:19:53+07:00] INFO: Movie updated {"actor_id":1,"movie_id":37,"duration_ms":7.36}
+[2026-03-15T22:20:53+07:00] INFO: Movie updated {"actor_id":1,"movie_id":37,"duration_ms":3.72}
+[2026-03-15T22:21:46+07:00] INFO: Published showtime blocked by inactive room {"room_id":7,"room_status":"closed"}
+[2026-03-15T22:22:15+07:00] INFO: Showtime created {"actor_id":1,"showtime_id":53,"status":"completed","duration_ms":3.36}

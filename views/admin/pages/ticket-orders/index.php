@@ -4,15 +4,15 @@ $sectionMeta = [
     'ticket-orders' => [
         'breadcrumb' => 'Ticket Orders',
         'title' => 'Ticket Orders',
-        'subtitle' => 'All cinema booking transactions',
-        'button' => 'Export CSV',
+        'subtitle' => 'Live ticket order operations synced from ticket_orders and payments',
+        'button' => 'Refresh Orders',
         'buttonClass' => 'btn btn-ghost',
     ],
     'ticket-details' => [
         'breadcrumb' => 'Ticket Details',
         'title' => 'Ticket Details',
-        'subtitle' => 'Inspect seat allocations and booking metadata',
-        'button' => 'Open Detail',
+        'subtitle' => 'Live ticket details and active seat hold queue',
+        'button' => 'Refresh Details',
         'buttonClass' => 'btn btn-primary',
     ],
 ];

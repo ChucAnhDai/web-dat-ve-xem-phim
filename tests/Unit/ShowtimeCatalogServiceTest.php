@@ -37,9 +37,9 @@ class ShowtimeCatalogServiceTest extends TestCase
 
         $seats = new UnitFakeSeatRepository();
         $seats->items = [
-            ['id' => 1, 'seat_row' => 'A', 'seat_number' => 1, 'seat_type' => 'normal', 'status' => 'available', 'is_booked' => 0],
-            ['id' => 2, 'seat_row' => 'A', 'seat_number' => 2, 'seat_type' => 'vip', 'status' => 'available', 'is_booked' => 1],
-            ['id' => 3, 'seat_row' => 'B', 'seat_number' => 1, 'seat_type' => 'normal', 'status' => 'maintenance', 'is_booked' => 0],
+            ['id' => 1, 'seat_row' => 'A', 'seat_number' => 1, 'seat_type' => 'normal', 'status' => 'available', 'is_booked' => 0, 'is_held' => 0, 'held_by_current_session' => 0],
+            ['id' => 2, 'seat_row' => 'A', 'seat_number' => 2, 'seat_type' => 'vip', 'status' => 'available', 'is_booked' => 1, 'is_held' => 0, 'held_by_current_session' => 0],
+            ['id' => 3, 'seat_row' => 'B', 'seat_number' => 1, 'seat_type' => 'normal', 'status' => 'maintenance', 'is_booked' => 0, 'is_held' => 1, 'held_by_current_session' => 0],
         ];
 
         $service = new ShowtimeCatalogService($showtimes, $seats, new ShowtimeManagementValidator(), new UnitFakeSeatLogger());
@@ -51,6 +51,8 @@ class ShowtimeCatalogServiceTest extends TestCase
         $this->assertTrue($result['data']['seats'][1]['is_booked']);
         $this->assertSame('maintenance', $result['data']['seats'][2]['status']);
         $this->assertFalse($result['data']['seats'][2]['is_selectable']);
+        $this->assertTrue($result['data']['seats'][2]['is_held']);
+        $this->assertSame(1, $result['data']['summary']['held_seats']);
         $this->assertSame(1, $result['data']['summary']['available_seats']);
         $this->assertSame(1, $result['data']['summary']['blocked_seats']);
     }
@@ -173,7 +175,7 @@ class UnitFakeSeatRepository extends SeatRepository
     {
     }
 
-    public function listSeatMapForShowtime(int $showtimeId): array
+    public function listSeatMapForShowtimeSession(int $showtimeId, ?string $sessionToken = null): array
     {
         return $this->items;
     }

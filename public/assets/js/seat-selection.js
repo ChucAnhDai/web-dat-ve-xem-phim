@@ -1,8 +1,9 @@
 (function () {
+  const MAX_SEATS_PER_HOLD = 10;
   const SURCHARGES = {
     normal: 0,
-    vip: 5,
-    couple: 10,
+    vip: 15000,
+    couple: 30000,
   };
 
   const state = {
@@ -10,7 +11,10 @@
     slug: '',
     showtime: null,
     seats: [],
+    requestedSeatIds: [],
     selectedSeatIds: [],
+    holdExpiresAt: null,
+    isSubmittingHold: false,
     initialized: false,
   };
 
@@ -32,6 +36,7 @@
     const params = new URLSearchParams(window.location.search);
     state.showtimeId = Number(params.get('showtime_id') || 0);
     state.slug = String(params.get('slug') || '').trim();
+    state.requestedSeatIds = parseNumberList(params.get('seat_ids'));
 
     if (!Number.isFinite(state.showtimeId) || state.showtimeId <= 0) {
       renderStateCard('Showtime not selected.', 'Choose a screening from the movie detail page to continue with seat selection.');
@@ -66,13 +71,18 @@
   }
 
   async function loadSeatMap() {
+    const preferredSeatIds = state.selectedSeatIds.length > 0
+      ? [...state.selectedSeatIds]
+      : [...state.requestedSeatIds];
+
     try {
       const payload = await fetchJson(`/api/showtimes/${encodeURIComponent(state.showtimeId)}/seat-map`);
       const data = payload?.data || {};
 
       state.showtime = data.showtime || null;
       state.seats = Array.isArray(data.seats) ? data.seats : [];
-      state.selectedSeatIds = [];
+      state.holdExpiresAt = currentSessionHoldExpiry(state.seats);
+      state.selectedSeatIds = restoreSeatSelection(preferredSeatIds);
 
       renderSeatSelection();
     } catch (error) {
@@ -111,7 +121,10 @@
     }
 
     const scheduleLabel = `${formatShowDate(showtime.show_date)} - ${formatTime(showtime.start_time)}`;
-    const subtitle = `${showtime.movie_title || 'Movie'} - ${buildVenueLabel(showtime)} - ${scheduleLabel}`;
+    const holdSuffix = state.holdExpiresAt
+      ? ` - Hold active until ${formatDateTime(state.holdExpiresAt)}`
+      : '';
+    const subtitle = `${showtime.movie_title || 'Movie'} - ${buildVenueLabel(showtime)} - ${scheduleLabel}${holdSuffix}`;
 
     if (dom.subtitle) {
       dom.subtitle.textContent = subtitle;
@@ -176,7 +189,7 @@
             type="button"
             data-seat-id="${escapeHtmlAttr(seat.id)}"
             ${seat.is_selectable ? '' : 'disabled'}
-            title="${escapeHtmlAttr(`${seat.label} - ${humanizeSeatType(seat.type)} - ${humanizeSeatStatus(seat.status, seat.is_booked)}`)}"
+            title="${escapeHtmlAttr(`${seat.label} - ${humanizeSeatType(seat.type)} - ${humanizeSeatStatus(seat)}`)}"
           >
             ${escapeHtml(seat.number)}
           </button>
@@ -198,6 +211,12 @@
 
     const index = state.selectedSeatIds.indexOf(seatId);
     if (index === -1) {
+      if (state.selectedSeatIds.length >= MAX_SEATS_PER_HOLD) {
+        if (typeof showToast === 'function') {
+          showToast('!', 'Seat Limit', 'A single hold can include up to 10 seats.');
+        }
+        return;
+      }
       state.selectedSeatIds.push(seatId);
     } else {
       state.selectedSeatIds.splice(index, 1);
@@ -232,7 +251,11 @@
     }
   }
 
-  function proceedCheckout() {
+  async function proceedCheckout() {
+    if (state.isSubmittingHold) {
+      return;
+    }
+
     const selectedSeats = state.seats.filter(seat => state.selectedSeatIds.includes(Number(seat.id)));
     if (selectedSeats.length === 0) {
       if (typeof showToast === 'function') {
@@ -240,21 +263,59 @@
       }
       return;
     }
-
-    const params = new URLSearchParams();
-    params.set('showtime_id', String(state.showtimeId));
-    params.set('seats', selectedSeats.map(seat => seat.label).join(','));
-    if (state.showtime?.movie_slug || state.slug) {
-      params.set('slug', String(state.showtime?.movie_slug || state.slug));
+    if (selectedSeats.length > MAX_SEATS_PER_HOLD) {
+      if (typeof showToast === 'function') {
+        showToast('!', 'Seat Limit', 'A single hold can include up to 10 seats.');
+      }
+      return;
     }
 
-    if (typeof showToast === 'function') {
-      showToast('i', 'Seats Reserved', `${selectedSeats.length} seat(s) selected. Proceeding to checkout.`);
-    }
+    setCheckoutBusy(true);
 
-    window.setTimeout(() => {
-      window.location.href = `${appUrl('/checkout')}?${params.toString()}`;
-    }, 400);
+    try {
+      const payload = await fetchJson('/api/tickets/holds', {
+        method: 'POST',
+        body: {
+          showtime_id: state.showtimeId,
+          seat_ids: selectedSeats.map(seat => Number(seat.id)),
+        },
+      });
+      const hold = payload?.data || {};
+      const seatIds = Array.isArray(hold.seat_ids) && hold.seat_ids.length > 0
+        ? hold.seat_ids
+        : selectedSeats.map(seat => Number(seat.id));
+      const seatLabels = Array.isArray(hold.seat_labels) && hold.seat_labels.length > 0
+        ? hold.seat_labels
+        : selectedSeats.map(seat => seat.label);
+
+      state.requestedSeatIds = seatIds.map(value => Number(value)).filter(value => Number.isFinite(value) && value > 0);
+      state.selectedSeatIds = [...state.requestedSeatIds];
+      state.holdExpiresAt = String(hold.hold_expires_at || '').trim() || null;
+
+      const params = new URLSearchParams();
+      params.set('showtime_id', String(state.showtimeId));
+      params.set('seats', seatLabels.join(','));
+      params.set('seat_ids', state.requestedSeatIds.join(','));
+      if (state.showtime?.movie_slug || state.slug) {
+        params.set('slug', String(state.showtime?.movie_slug || state.slug));
+      }
+
+      if (typeof showToast === 'function') {
+        const expiryLabel = state.holdExpiresAt ? ` Held until ${formatDateTime(state.holdExpiresAt)}.` : '';
+        showToast('i', 'Seats Held', `${seatLabels.length} seat(s) secured.${expiryLabel}`);
+      }
+
+      window.setTimeout(() => {
+        window.location.href = `${appUrl('/checkout')}?${params.toString()}`;
+      }, 250);
+    } catch (error) {
+      if (typeof showToast === 'function') {
+        showToast('!', 'Seat Hold Failed', error.message || 'Unable to hold the selected seats.');
+      }
+      await loadSeatMap();
+    } finally {
+      setCheckoutBusy(false);
+    }
   }
 
   function groupSeatsByRow(seats) {
@@ -281,6 +342,12 @@
     if (seat.is_booked) {
       return 'booked';
     }
+    if (seat.is_held && !seat.held_by_current_session) {
+      return 'held';
+    }
+    if (seat.is_held && seat.held_by_current_session) {
+      return 'held-current';
+    }
     if (seat.status === 'maintenance') {
       return 'maintenance';
     }
@@ -297,6 +364,44 @@
     return 'available';
   }
 
+  function restoreSeatSelection(preferredSeatIds) {
+    if (!Array.isArray(preferredSeatIds) || preferredSeatIds.length === 0) {
+      return [];
+    }
+
+    const selectableSeatIds = new Set(
+      state.seats
+        .filter(seat => seat.is_selectable)
+        .map(seat => Number(seat.id))
+    );
+
+    return preferredSeatIds.filter(seatId => selectableSeatIds.has(Number(seatId)));
+  }
+
+  function currentSessionHoldExpiry(seats) {
+    const heldSeats = Array.isArray(seats)
+      ? seats.filter(seat => seat.held_by_current_session && seat.hold_expires_at)
+      : [];
+
+    if (heldSeats.length === 0) {
+      return null;
+    }
+
+    heldSeats.sort((left, right) => String(left.hold_expires_at).localeCompare(String(right.hold_expires_at)));
+
+    return String(heldSeats[0].hold_expires_at || '').trim() || null;
+  }
+
+  function setCheckoutBusy(isBusy) {
+    state.isSubmittingHold = Boolean(isBusy);
+    if (!dom.checkoutBtn) {
+      return;
+    }
+
+    dom.checkoutBtn.disabled = state.isSubmittingHold;
+    dom.checkoutBtn.textContent = state.isSubmittingHold ? 'Holding Seats...' : 'Proceed to Checkout';
+  }
+
   function surchargeForSeat(type) {
     return Number(SURCHARGES[String(type || 'normal')] || 0);
   }
@@ -310,13 +415,29 @@
     return `${appUrl('/movie-detail')}?slug=${encodeURIComponent(cleanSlug)}#movieDetailShowtimesSection`;
   }
 
-  async function fetchJson(path) {
-    const response = await fetch(appUrl(path), {
-      headers: {
-        Accept: 'application/json',
-      },
+  async function fetchJson(path, options = {}) {
+    const headers = Object.assign({
+      Accept: 'application/json',
+    }, options.headers || {});
+    const token = typeof getAuthToken === 'function' ? getAuthToken() : '';
+    if (token && !headers.Authorization) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+    const init = {
+      method: String(options.method || 'GET').toUpperCase(),
+      headers,
       cache: 'no-store',
-    });
+      credentials: 'same-origin',
+    };
+
+    if (Object.prototype.hasOwnProperty.call(options, 'body')) {
+      if (!Object.prototype.hasOwnProperty.call(headers, 'Content-Type')) {
+        headers['Content-Type'] = 'application/json';
+      }
+      init.body = typeof options.body === 'string' ? options.body : JSON.stringify(options.body);
+    }
+
+    const response = await fetch(appUrl(path), init);
 
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) {
@@ -412,12 +533,18 @@
     return 'Standard';
   }
 
-  function humanizeSeatStatus(status, isBooked) {
-    if (isBooked) {
+  function humanizeSeatStatus(seat) {
+    if (seat?.is_booked) {
       return 'Booked';
     }
+    if (seat?.is_held && seat?.held_by_current_session) {
+      return 'Held by you';
+    }
+    if (seat?.is_held) {
+      return 'Held by another customer';
+    }
 
-    const value = String(status || 'available').trim().toLowerCase();
+    const value = String(seat?.status || 'available').trim().toLowerCase();
     if (value === 'maintenance') {
       return 'Maintenance';
     }
@@ -426,6 +553,33 @@
     }
 
     return 'Available';
+  }
+
+  function parseNumberList(value) {
+    return String(value || '')
+      .split(',')
+      .map(item => Number(item.trim()))
+      .filter(item => Number.isFinite(item) && item > 0);
+  }
+
+  function formatDateTime(value) {
+    const normalized = String(value || '').trim().replace(' ', 'T');
+    if (!normalized) {
+      return 'TBA';
+    }
+
+    const parsed = new Date(normalized);
+    if (Number.isNaN(parsed.getTime())) {
+      return String(value);
+    }
+
+    return new Intl.DateTimeFormat('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(parsed);
   }
 
   function firstErrorMessage(errors, fallback) {

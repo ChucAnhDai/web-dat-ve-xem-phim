@@ -16,6 +16,13 @@ class SeatRepository
 
     public function listSeatMapForShowtime(int $showtimeId): array
     {
+        return $this->listSeatMapForShowtimeSession($showtimeId);
+    }
+
+    public function listSeatMapForShowtimeSession(int $showtimeId, ?string $sessionToken = null): array
+    {
+        $sessionToken = trim((string) ($sessionToken ?? ''));
+
         $stmt = $this->db->prepare("
             SELECT
                 se.id,
@@ -28,22 +35,44 @@ class SeatRepository
                         WHEN td.id IS NOT NULL AND o.status IN ('pending', 'paid') THEN 1
                         ELSE 0
                     END
-                ) AS is_booked
+                ) AS is_booked,
+                MAX(
+                    CASE
+                        WHEN th.id IS NOT NULL THEN 1
+                        ELSE 0
+                    END
+                ) AS is_held,
+                MAX(
+                    CASE
+                        WHEN th.id IS NOT NULL AND th.session_token = :session_token THEN 1
+                        ELSE 0
+                    END
+                ) AS held_by_current_session,
+                MAX(th.hold_expires_at) AS hold_expires_at
             FROM showtimes s
             INNER JOIN rooms r ON r.id = s.room_id
             INNER JOIN cinemas c ON c.id = r.cinema_id
+            INNER JOIN movies m ON m.id = s.movie_id
             INNER JOIN seats se ON se.room_id = r.id
             LEFT JOIN ticket_details td ON td.showtime_id = s.id AND td.seat_id = se.id
             LEFT JOIN ticket_orders o ON o.id = td.order_id
+            LEFT JOIN ticket_seat_holds th
+                ON th.showtime_id = s.id
+               AND th.seat_id = se.id
+               AND th.hold_expires_at > CURRENT_TIMESTAMP
             WHERE s.id = :showtime_id
               AND s.status = 'published'
+              AND m.status IN ('now_showing', 'coming_soon')
               AND r.status = 'active'
               AND c.status = 'active'
               AND se.status <> 'archived'
             GROUP BY se.id, se.seat_row, se.seat_number, se.seat_type, se.status
             ORDER BY se.seat_row ASC, se.seat_number ASC, se.id ASC
         ");
-        $stmt->execute(['showtime_id' => $showtimeId]);
+        $stmt->execute([
+            'showtime_id' => $showtimeId,
+            'session_token' => $sessionToken,
+        ]);
 
         return $stmt->fetchAll() ?: [];
     }
@@ -137,5 +166,76 @@ class SeatRepository
         $stmt->execute(['room_id' => $roomId]);
 
         return (int) $stmt->fetchColumn() > 0;
+    }
+
+    public function findRoomSeatsByIds(int $roomId, array $seatIds): array
+    {
+        if ($roomId <= 0 || $seatIds === []) {
+            return [];
+        }
+
+        $params = ['room_id' => $roomId];
+        $placeholders = $this->seatIdPlaceholders($seatIds, $params);
+
+        $stmt = $this->db->prepare("
+            SELECT
+                id,
+                room_id,
+                seat_row,
+                seat_number,
+                seat_type,
+                status
+            FROM seats
+            WHERE room_id = :room_id
+              AND status <> 'archived'
+              AND id IN ({$placeholders})
+            ORDER BY seat_row ASC, seat_number ASC, id ASC
+        ");
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
+        return $stmt->fetchAll() ?: [];
+    }
+
+    public function findBookedSeatIdsForShowtime(int $showtimeId, array $seatIds): array
+    {
+        if ($showtimeId <= 0 || $seatIds === []) {
+            return [];
+        }
+
+        $params = ['showtime_id' => $showtimeId];
+        $placeholders = $this->seatIdPlaceholders($seatIds, $params);
+
+        $stmt = $this->db->prepare("
+            SELECT DISTINCT td.seat_id
+            FROM ticket_details td
+            INNER JOIN ticket_orders o ON o.id = td.order_id
+            WHERE td.showtime_id = :showtime_id
+              AND td.seat_id IN ({$placeholders})
+              AND o.status IN ('pending', 'paid')
+            ORDER BY td.seat_id ASC
+        ");
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value, is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR);
+        }
+        $stmt->execute();
+
+        return array_map(static function ($value): int {
+            return (int) $value;
+        }, $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
+    }
+
+    private function seatIdPlaceholders(array $seatIds, array &$params): string
+    {
+        $placeholders = [];
+        foreach (array_values($seatIds) as $index => $seatId) {
+            $key = 'seat_id_' . $index;
+            $placeholders[] = ':' . $key;
+            $params[$key] = (int) $seatId;
+        }
+
+        return implode(', ', $placeholders);
     }
 }

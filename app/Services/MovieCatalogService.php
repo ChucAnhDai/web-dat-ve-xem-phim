@@ -502,7 +502,8 @@ class MovieCatalogService
 
                     $totalSeats = (int) ($time['total_seats'] ?? 0);
                     $bookedSeats = (int) ($time['booked_seats'] ?? 0);
-                    $availableSeats = (int) ($time['available_seats'] ?? max(0, $totalSeats - $bookedSeats));
+                    $heldSeats = (int) ($time['held_seats'] ?? 0);
+                    $availableSeats = (int) ($time['available_seats'] ?? max(0, $totalSeats - $bookedSeats - $heldSeats));
                     $status = $time['status'] ?? 'published';
 
                     $times[] = [
@@ -515,6 +516,7 @@ class MovieCatalogService
                         'presentation_type' => $time['presentation_type'] ?? null,
                         'language_version' => $time['language_version'] ?? null,
                         'booked_seats' => $bookedSeats,
+                        'held_seats' => $heldSeats,
                         'available_seats' => $availableSeats,
                         'total_seats' => $totalSeats,
                         'is_sold_out' => (bool) ($time['is_sold_out'] ?? ($totalSeats > 0 && $availableSeats <= 0)),

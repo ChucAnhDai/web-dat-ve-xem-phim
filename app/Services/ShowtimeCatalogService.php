@@ -77,6 +77,11 @@ class ShowtimeCatalogService
 
     public function getSeatMap(int $showtimeId): array
     {
+        return $this->getSeatMapForSession($showtimeId);
+    }
+
+    public function getSeatMapForSession(int $showtimeId, ?string $sessionToken = null): array
+    {
         if ($showtimeId <= 0) {
             return $this->error(['showtime' => ['Showtime not found.']], 404);
         }
@@ -87,10 +92,11 @@ class ShowtimeCatalogService
                 return $this->error(['showtime' => ['Showtime not found.']], 404);
             }
 
-            $seats = $this->seats->listSeatMapForShowtime($showtimeId);
+            $seats = $this->seats->listSeatMapForShowtimeSession($showtimeId, $sessionToken);
         } catch (Throwable $exception) {
             $this->logger->error('Public showtime seat map load failed', [
                 'showtime_id' => $showtimeId,
+                'has_session_token' => $sessionToken !== null && trim($sessionToken) !== '',
                 'error' => $exception->getMessage(),
             ]);
 
@@ -104,6 +110,12 @@ class ShowtimeCatalogService
         $availableCount = count(array_filter($mappedSeats, static function (array $seat): bool {
             return (bool) ($seat['is_selectable'] ?? false) && !($seat['is_booked'] ?? false);
         }));
+        $heldCount = count(array_filter($mappedSeats, static function (array $seat): bool {
+            return (bool) ($seat['is_held'] ?? false);
+        }));
+        $heldByCurrentSessionCount = count(array_filter($mappedSeats, static function (array $seat): bool {
+            return (bool) ($seat['held_by_current_session'] ?? false);
+        }));
         $blockedCount = count($mappedSeats) - $bookedCount - $availableCount;
 
         return $this->success([
@@ -113,6 +125,8 @@ class ShowtimeCatalogService
                 'total_seats' => count($mappedSeats),
                 'booked_seats' => $bookedCount,
                 'available_seats' => max(0, $availableCount),
+                'held_seats' => max(0, $heldCount),
+                'held_by_current_session_seats' => max(0, $heldByCurrentSessionCount),
                 'blocked_seats' => max(0, $blockedCount),
             ],
         ]);
@@ -122,7 +136,8 @@ class ShowtimeCatalogService
     {
         $totalSeats = isset($row['total_seats']) ? (int) $row['total_seats'] : 0;
         $bookedSeats = isset($row['booked_seats']) ? (int) $row['booked_seats'] : 0;
-        $availableSeats = max(0, $totalSeats - $bookedSeats);
+        $heldSeats = isset($row['held_seats']) ? (int) $row['held_seats'] : 0;
+        $availableSeats = max(0, $totalSeats - $bookedSeats - $heldSeats);
         $status = $row['status'] ?? null;
 
         return [
@@ -143,6 +158,7 @@ class ShowtimeCatalogService
             'room_name' => $row['room_name'] ?? null,
             'total_seats' => $totalSeats,
             'booked_seats' => $bookedSeats,
+            'held_seats' => $heldSeats,
             'available_seats' => $availableSeats,
             'is_sold_out' => $totalSeats > 0 && $availableSeats <= 0,
             'availability_label' => $this->availabilityLabel($status, $availableSeats, $totalSeats),
@@ -155,6 +171,9 @@ class ShowtimeCatalogService
         $seatNumber = (int) ($row['seat_number'] ?? 0);
         $status = $row['status'] ?? 'available';
         $isBooked = (bool) ($row['is_booked'] ?? false);
+        $isHeld = (bool) ($row['is_held'] ?? false);
+        $heldByCurrentSession = (bool) ($row['held_by_current_session'] ?? false);
+        $isSelectable = $status === 'available' && $isBooked === false && ($isHeld === false || $heldByCurrentSession);
 
         return [
             'id' => (int) ($row['id'] ?? 0),
@@ -164,7 +183,10 @@ class ShowtimeCatalogService
             'type' => $row['seat_type'] ?? 'normal',
             'status' => $status,
             'is_booked' => $isBooked,
-            'is_selectable' => $status === 'available' && $isBooked === false,
+            'is_held' => $isHeld,
+            'held_by_current_session' => $heldByCurrentSession,
+            'hold_expires_at' => $row['hold_expires_at'] ?? null,
+            'is_selectable' => $isSelectable,
         ];
     }
 
@@ -172,7 +194,8 @@ class ShowtimeCatalogService
     {
         $totalSeats = (int) ($row['total_seats'] ?? 0);
         $bookedSeats = (int) ($row['booked_seats'] ?? 0);
-        $availableSeats = max(0, $totalSeats - $bookedSeats);
+        $heldSeats = (int) ($row['held_seats'] ?? 0);
+        $availableSeats = max(0, $totalSeats - $bookedSeats - $heldSeats);
         $status = $row['status'] ?? null;
 
         return [
@@ -197,6 +220,7 @@ class ShowtimeCatalogService
             'language_version' => $row['language_version'] ?? null,
             'total_seats' => $totalSeats,
             'booked_seats' => $bookedSeats,
+            'held_seats' => $heldSeats,
             'available_seats' => $availableSeats,
             'is_sold_out' => $totalSeats > 0 && $availableSeats <= 0,
             'availability_label' => $this->availabilityLabel($status, $availableSeats, $totalSeats),

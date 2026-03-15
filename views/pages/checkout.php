@@ -1,118 +1,111 @@
+<?php
+$checkoutShowtimeId = trim((string) ($_GET['showtime_id'] ?? ''));
+$checkoutSeatIds = trim((string) ($_GET['seat_ids'] ?? ''));
+$checkoutSeats = trim((string) ($_GET['seats'] ?? ''));
+$checkoutSlug = trim((string) ($_GET['slug'] ?? ''));
+$backQuery = array_filter([
+    $checkoutShowtimeId !== '' ? 'showtime_id=' . rawurlencode($checkoutShowtimeId) : null,
+    $checkoutSeatIds !== '' ? 'seat_ids=' . rawurlencode($checkoutSeatIds) : null,
+    $checkoutSeats !== '' ? 'seats=' . rawurlencode($checkoutSeats) : null,
+    $checkoutSlug !== '' ? 'slug=' . rawurlencode($checkoutSlug) : null,
+]);
+$backToSeatSelection = $publicBase . '/seat-selection' . ($backQuery !== [] ? '?' . implode('&', $backQuery) : '');
+?>
+
 <div style="margin-bottom:16px">
-  <a href="<?php echo $publicBase; ?>/cart" class="btn btn-ghost btn-sm">← Back to Cart</a>
+  <a id="ticketCheckoutBackLink" href="<?php echo htmlspecialchars($backToSeatSelection, ENT_QUOTES, 'UTF-8'); ?>" class="btn btn-ghost btn-sm">Back to Seat Selection</a>
 </div>
 
-<div class="page-header">
-  <h1 class="page-title">Checkout</h1>
-  <p class="page-subtitle">Complete your order</p>
-</div>
+<div id="ticketCheckoutState"></div>
 
-<div class="checkout-layout">
-  <div class="checkout-form">
-    <div class="form-section-title"><span>1</span> Personal Information</div>
-    <div class="form-row">
-      <div class="form-group"><label>First Name</label><input class="form-control" type="text" value="John"></div>
-      <div class="form-group"><label>Last Name</label><input class="form-control" type="text" value="Doe"></div>
-    </div>
-    <div class="form-group"><label>Email Address</label><input class="form-control" type="email" value="john.doe@email.com"></div>
-    <div class="form-group"><label>Phone Number</label><input class="form-control" type="tel" value="+1 555 123 4567"></div>
-
-    <div class="divider" style="margin:20px 0"></div>
-    <div class="form-section-title"><span>2</span> Delivery Method</div>
-    <div class="radio-group">
-      <div class="radio-option selected" onclick="selectOpt(this,'.radio-option')">
-        <div class="radio-icon">🎭</div>
-        <div><div class="radio-label">Pickup at Cinema</div><div class="radio-desc">Collect at counter — Free</div></div>
-      </div>
-      <div class="radio-option" onclick="selectOpt(this,'.radio-option')">
-        <div class="radio-icon">🚚</div>
-        <div><div class="radio-label">Home Delivery</div><div class="radio-desc">Est. 2–3 hours — $4.99</div></div>
-      </div>
-    </div>
-
-    <div class="divider" style="margin:20px 0"></div>
-    <div class="form-section-title"><span>3</span> Payment Method</div>
-    <div class="payment-methods">
-      <div class="payment-option selected" onclick="selectOpt(this,'.payment-option')">
-        <div class="payment-logo">💳</div>
-        <div><div class="payment-label">Credit / Debit Card</div><div class="payment-desc">Visa, Mastercard, Amex</div></div>
-      </div>
-      <div class="payment-option" onclick="selectOpt(this,'.payment-option')">
-        <div class="payment-logo">📱</div>
-        <div><div class="payment-label">Digital Wallet</div><div class="payment-desc">Apple Pay, Google Pay, PayPal</div></div>
-      </div>
-      <div class="payment-option" onclick="selectOpt(this,'.payment-option')">
-        <div class="payment-logo">🏦</div>
-        <div><div class="payment-label">Bank Transfer</div><div class="payment-desc">Direct bank payment</div></div>
-      </div>
-      <div class="payment-option" onclick="selectOpt(this,'.payment-option')">
-        <div class="payment-logo">💵</div>
-        <div><div class="payment-label">Cash at Venue</div><div class="payment-desc">Pay at cinema counter</div></div>
-      </div>
-    </div>
-
-    <div class="divider" style="margin:20px 0"></div>
-    <button class="btn btn-primary btn-full btn-lg" onclick="placeOrder()">🎉 Place Order</button>
+<div id="ticketCheckoutContent" hidden>
+  <div class="page-header">
+    <h1 class="page-title">Ticket Checkout</h1>
+    <p class="page-subtitle">Complete your held seats and create a live ticket order from the current session.</p>
   </div>
 
-  <div class="checkout-summary-box">
-    <div class="summary-title">Order Summary</div>
-    <div id="orderItems"></div>
-    <div class="divider"></div>
-    <div class="summary-row"><label>Subtotal</label><span id="orderSubtotal">$0.00</span></div>
-    <div class="summary-row"><label>Discount</label><span style="color:#22c55e">− $0.00</span></div>
-    <div class="summary-row"><label>Delivery</label><span>Free</span></div>
-    <div class="divider"></div>
-    <div class="summary-row total"><label>Total</label><span id="orderTotal" style="color:var(--red)">$0.00</span></div>
+  <div class="checkout-layout">
+    <div class="checkout-form">
+      <div class="form-section-title"><span>1</span> Contact Information</div>
+      <div class="form-row">
+        <div class="form-group"><label for="ticketCheckoutName">Contact Name</label><input class="form-control" id="ticketCheckoutName" type="text" placeholder="Nguyen Van A"></div>
+        <div class="form-group"><label for="ticketCheckoutPhone">Contact Phone</label><input class="form-control" id="ticketCheckoutPhone" type="tel" placeholder="0901234567"></div>
+      </div>
+      <div class="form-group"><label for="ticketCheckoutEmail">Contact Email</label><input class="form-control" id="ticketCheckoutEmail" type="email" placeholder="ticket@example.com"></div>
+
+      <div class="divider" style="margin:20px 0"></div>
+      <div class="form-section-title"><span>2</span> Fulfillment Method</div>
+      <div class="radio-group" id="ticketCheckoutFulfillmentGroup">
+        <button class="radio-option selected" type="button" data-group="fulfillment" data-value="e_ticket">
+          <div class="radio-icon">ET</div>
+          <div><div class="radio-label">E-ticket</div><div class="radio-desc">Matches ticket_orders.fulfillment_method = e_ticket</div></div>
+        </button>
+        <button class="radio-option" type="button" data-group="fulfillment" data-value="counter_pickup">
+          <div class="radio-icon">CP</div>
+          <div><div class="radio-label">Counter Pickup</div><div class="radio-desc">Matches ticket_orders.fulfillment_method = counter_pickup</div></div>
+        </button>
+      </div>
+
+      <div class="divider" style="margin:20px 0"></div>
+      <div class="form-section-title"><span>3</span> Payment Method</div>
+      <div class="payment-methods" id="ticketCheckoutPaymentGroup">
+        <button class="payment-option selected" type="button" data-group="payment" data-value="momo">
+          <div class="payment-logo">MM</div>
+          <div><div class="payment-label">MoMo</div><div class="payment-desc">Creates payments.payment_method = momo</div></div>
+        </button>
+        <button class="payment-option" type="button" data-group="payment" data-value="vnpay">
+          <div class="payment-logo">VN</div>
+          <div><div class="payment-label">VNPay</div><div class="payment-desc">Creates payments.payment_method = vnpay</div></div>
+        </button>
+        <button class="payment-option" type="button" data-group="payment" data-value="paypal">
+          <div class="payment-logo">PP</div>
+          <div><div class="payment-label">PayPal</div><div class="payment-desc">Creates payments.payment_method = paypal</div></div>
+        </button>
+        <button class="payment-option" type="button" data-group="payment" data-value="cash">
+          <div class="payment-logo">CA</div>
+          <div><div class="payment-label">Cash</div><div class="payment-desc">Creates payments.payment_method = cash</div></div>
+        </button>
+      </div>
+
+      <div class="divider" style="margin:20px 0"></div>
+      <div class="card" style="border:1px solid var(--border);">
+        <div style="padding:20px;">
+          <div style="font-weight:700;font-size:16px;">Checkout Rule</div>
+          <div style="margin-top:6px;color:var(--text2);font-size:14px;line-height:1.6;">
+            Pricing, seat validation, order creation, ticket issuance, and payment snapshots are now computed on the server.
+            If the hold expires or a seat becomes invalid, checkout will stop before any order is written.
+          </div>
+        </div>
+      </div>
+
+      <div class="divider" style="margin:20px 0"></div>
+      <button class="btn btn-primary btn-full btn-lg" id="ticketCheckoutSubmitBtn" type="button">Complete Ticket Order</button>
+    </div>
+
+    <div class="checkout-summary-box">
+      <div class="summary-title">Ticket Order Summary</div>
+      <div class="summary-movie" style="margin-bottom:16px;">
+        <div class="order-item-img" style="width:70px;height:100px;border-radius:6px;overflow:hidden" id="ticketCheckoutPoster"></div>
+        <div class="summary-movie-info">
+          <h4 id="ticketCheckoutMovieTitle">Movie Title</h4>
+          <p id="ticketCheckoutVenue">Cinema - Room</p>
+          <p id="ticketCheckoutDateTime">Date - Time</p>
+        </div>
+      </div>
+      <div class="summary-row"><label>Selected Seats</label></div>
+      <div class="seats-display" id="ticketCheckoutSeatList"><span class="seat-tag">None selected</span></div>
+      <div class="divider"></div>
+      <div class="summary-row"><label>Order Status Preview</label><span id="ticketCheckoutStatus">pending</span></div>
+      <div class="summary-row"><label>Hold Expires</label><span id="ticketCheckoutHold">Not started</span></div>
+      <div class="divider"></div>
+      <div class="summary-row"><label>Subtotal</label><span id="ticketCheckoutSubtotal">0 VND</span></div>
+      <div class="summary-row"><label>Seat Surcharge</label><span id="ticketCheckoutSurcharge">0 VND</span></div>
+      <div class="summary-row"><label>Fees</label><span id="ticketCheckoutFees">0 VND</span></div>
+      <div class="divider"></div>
+      <div class="summary-row total"><label>Total</label><span id="ticketCheckoutTotal" style="color:var(--red)">0 VND</span></div>
+    </div>
   </div>
 </div>
 
-<script>
-  function selectOpt(el, selector) {
-    el.closest('.checkout-form').querySelectorAll(selector).forEach(o=>o.classList.remove('selected'));
-    el.classList.add('selected');
-  }
-
-  function renderOrderSummary() {
-    // Attempt to use cartItems from app.js if available
-    const items = (typeof cartItems !== 'undefined' && cartItems.length) ? cartItems : [
-      {id:0,name:'Dune: Part Two Ticket × 2',cat:'ticket',price:18,qty:2,img:'https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg'}
-    ];
-    
-    const itemsContainer = document.getElementById('orderItems');
-    if (itemsContainer) {
-      itemsContainer.innerHTML = items.map(i=>`
-        <div class="order-item-row">
-          <div class="order-item-img">${i.img?`<img src="${i.img}" alt="" onerror="this.style.display='none'">`:''}</div>
-          <div style="flex:1"><div class="order-item-name">${i.name}</div><div class="order-item-qty">×${i.qty}</div></div>
-          <div class="order-item-price">$${(i.price*i.qty).toFixed(2)}</div>
-        </div>`).join('');
-    }
-    
-    const subtotal = items.reduce((s,i)=>s+i.price*i.qty,0);
-    const subtotalEl = document.getElementById('orderSubtotal');
-    const totalEl = document.getElementById('orderTotal');
-    
-    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    if (totalEl) totalEl.textContent = `$${subtotal.toFixed(2)}`;
-  }
-
-  function placeOrder() {
-    if (typeof showToast === 'function') {
-      showToast('🎉','Order Placed!','Your order has been confirmed. Thank you!');
-    } else {
-      alert('Order Placed! Your order has been confirmed. Thank you!');
-    }
-    
-    if (typeof cartItems !== 'undefined') {
-      cartItems.length = 0;
-      if (typeof updateCartBadges === 'function') updateCartBadges();
-    }
-    
-    setTimeout(()=> {
-      location.href = window.PUBLIC_BASE_PATH + '/my-orders';
-    }, 1500);
-  }
-
-  document.addEventListener('DOMContentLoaded', renderOrderSummary);
-</script>
+<?php $ticketCheckoutScriptVersion = @filemtime(__DIR__ . '/../../public/assets/js/checkout.js') ?: time(); ?>
+<script src="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/assets/js/checkout.js?v=<?php echo urlencode((string) $ticketCheckoutScriptVersion); ?>"></script>

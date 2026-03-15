@@ -171,22 +171,67 @@ CREATE TABLE showtimes (
 
 CREATE TABLE ticket_orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    total_price DECIMAL(10,2),
-    status ENUM('pending','paid','cancelled'),
+    order_code VARCHAR(32) NOT NULL UNIQUE,
+    user_id INT NULL,
+    contact_name VARCHAR(120) NULL,
+    contact_email VARCHAR(150) NULL,
+    contact_phone VARCHAR(20) NULL,
+    fulfillment_method ENUM('e_ticket','counter_pickup') DEFAULT 'e_ticket',
+    seat_count INT NOT NULL DEFAULT 0,
+    subtotal_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    fee_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    currency CHAR(3) NOT NULL DEFAULT 'VND',
+    status ENUM('pending','paid','cancelled','expired','refunded') DEFAULT 'pending',
+    hold_expires_at TIMESTAMP NULL DEFAULT NULL,
+    paid_at TIMESTAMP NULL DEFAULT NULL,
+    cancelled_at TIMESTAMP NULL DEFAULT NULL,
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_ticket_orders_user_status (user_id, status),
+    INDEX idx_ticket_orders_status_order_date (status, order_date),
+    INDEX idx_ticket_orders_hold_expires (hold_expires_at),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE ticket_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT,
-    showtime_id INT,
-    seat_id INT,
-    price DECIMAL(10,2),
+    order_id INT NOT NULL,
+    showtime_id INT NOT NULL,
+    seat_id INT NOT NULL,
+    ticket_code VARCHAR(40) NOT NULL UNIQUE,
+    status ENUM('pending','paid','cancelled','expired','refunded','used') DEFAULT 'pending',
+    base_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    surcharge_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    qr_payload VARCHAR(255),
+    scanned_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_ticket_details_order_status (order_id, status),
+    INDEX idx_ticket_details_showtime_seat_status (showtime_id, seat_id, status),
     FOREIGN KEY (order_id) REFERENCES ticket_orders(id),
     FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
     FOREIGN KEY (seat_id) REFERENCES seats(id)
+);
+
+CREATE TABLE ticket_seat_holds (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    showtime_id INT NOT NULL,
+    seat_id INT NOT NULL,
+    user_id INT NULL,
+    session_token VARCHAR(100) NOT NULL,
+    hold_expires_at DATETIME NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_ticket_seat_holds_showtime_seat (showtime_id, seat_id),
+    INDEX idx_ticket_seat_holds_session_expires (session_token, hold_expires_at),
+    INDEX idx_ticket_seat_holds_expires (hold_expires_at),
+    FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
+    FOREIGN KEY (seat_id) REFERENCES seats(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE movie_reviews (

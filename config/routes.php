@@ -4,8 +4,12 @@ use App\Controllers\Auth\AuthController;
 use App\Controllers\Admin\CinemaManagementController;
 use App\Controllers\Admin\MovieManagementController;
 use App\Controllers\Admin\ShowtimeManagementController;
+use App\Controllers\Admin\TicketManagementController;
 use App\Controllers\Api\MovieCatalogController;
 use App\Controllers\Api\ShowtimeCatalogController;
+use App\Controllers\Api\TicketHoldController;
+use App\Controllers\Api\TicketOrderController;
+use App\Controllers\Api\UserTicketController;
 use App\Middlewares\AdminMiddleware;
 use App\Middlewares\AuthMiddleware;
 
@@ -21,6 +25,12 @@ $app->router->get('/api/movies', [MovieCatalogController::class, 'listMovies']);
 $app->router->get('/api/movies/{slug}', [MovieCatalogController::class, 'getMovieDetail']);
 $app->router->get('/api/showtimes', [ShowtimeCatalogController::class, 'listShowtimes']);
 $app->router->get('/api/showtimes/{id}/seat-map', [ShowtimeCatalogController::class, 'getSeatMap']);
+$app->router->post('/api/tickets/holds', [TicketHoldController::class, 'createHold']);
+$app->router->delete('/api/tickets/holds/{showtimeId}', [TicketHoldController::class, 'releaseHold']);
+$app->router->post('/api/ticket-orders/preview', [TicketOrderController::class, 'previewOrder']);
+$app->router->post('/api/ticket-orders', [TicketOrderController::class, 'createOrder']);
+$app->router->get('/api/me/tickets', [UserTicketController::class, 'listMyTickets'], [AuthMiddleware::class]);
+$app->router->get('/api/me/ticket-orders', [UserTicketController::class, 'listMyOrders'], [AuthMiddleware::class]);
 
 $app->router->post('/api/admin/auth/login', [AuthController::class, 'adminLogin']);
 $app->router->post('/api/admin/auth/logout', [AuthController::class, 'adminLogout'], [AdminMiddleware::class]);
@@ -69,3 +79,8 @@ $app->router->get('/api/admin/showtimes/{id}', [ShowtimeManagementController::cl
 $app->router->post('/api/admin/showtimes', [ShowtimeManagementController::class, 'createShowtime'], [AdminMiddleware::class]);
 $app->router->put('/api/admin/showtimes/{id}', [ShowtimeManagementController::class, 'updateShowtime'], [AdminMiddleware::class]);
 $app->router->delete('/api/admin/showtimes/{id}', [ShowtimeManagementController::class, 'archiveShowtime'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/ticket-orders', [TicketManagementController::class, 'listTicketOrders'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/ticket-orders/{id}', [TicketManagementController::class, 'getTicketOrder'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/ticket-details', [TicketManagementController::class, 'listTicketDetails'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/ticket-details/{id}', [TicketManagementController::class, 'getTicketDetail'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/ticket-holds', [TicketManagementController::class, 'listActiveHolds'], [AdminMiddleware::class]);

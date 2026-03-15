@@ -1999,6 +1999,22 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
   color: var(--text3);
   cursor: not-allowed;
 }
+.seat.held {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.45);
+  color: rgba(221, 214, 254, 0.92);
+  cursor: not-allowed;
+}
+.seat.held-current {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.48);
+  color: rgba(186, 230, 253, 0.95);
+}
+.seat.held-current:hover {
+  background: rgba(56, 189, 248, 0.28);
+  border-color: rgba(125, 211, 252, 0.98);
+  transform: scale(1.1);
+}
 .seat.maintenance {
   background: rgba(245, 158, 11, 0.16);
   border-color: rgba(245, 158, 11, 0.45);
@@ -2065,6 +2081,10 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
 .legend-seat.booked {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(255, 255, 255, 0.1);
+}
+.legend-seat.held {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: rgba(168, 85, 247, 0.45);
 }
 .legend-seat.maintenance {
   background: rgba(245, 158, 11, 0.16);
