@@ -1,5 +1,5 @@
 (function () {
-  const MAX_SEATS_PER_HOLD = 10;
+  const MAX_SEATS_PER_HOLD = 6;
   const SURCHARGES = {
     normal: 0,
     vip: 15000,
@@ -213,7 +213,7 @@
     if (index === -1) {
       if (state.selectedSeatIds.length >= MAX_SEATS_PER_HOLD) {
         if (typeof showToast === 'function') {
-          showToast('!', 'Seat Limit', 'A single hold can include up to 10 seats.');
+          showToast('!', 'Seat Limit', `A single hold can include up to ${MAX_SEATS_PER_HOLD} seats.`);
         }
         return;
       }
@@ -265,7 +265,7 @@
     }
     if (selectedSeats.length > MAX_SEATS_PER_HOLD) {
       if (typeof showToast === 'function') {
-        showToast('!', 'Seat Limit', 'A single hold can include up to 10 seats.');
+        showToast('!', 'Seat Limit', `A single hold can include up to ${MAX_SEATS_PER_HOLD} seats.`);
       }
       return;
     }
@@ -309,6 +309,13 @@
         window.location.href = `${appUrl('/checkout')}?${params.toString()}`;
       }, 250);
     } catch (error) {
+      if (/checkout waiting for payment/i.test(String(error.message || ''))) {
+        const resumed = await redirectToActiveCheckout();
+        if (resumed) {
+          return;
+        }
+      }
+
       if (typeof showToast === 'function') {
         showToast('!', 'Seat Hold Failed', error.message || 'Unable to hold the selected seats.');
       }
@@ -341,6 +348,12 @@
     }
     if (seat.is_booked) {
       return 'booked';
+    }
+    if (seat.is_payment_pending && seat.pending_by_current_session) {
+      return 'payment-pending-current';
+    }
+    if (seat.is_payment_pending) {
+      return 'payment-pending';
     }
     if (seat.is_held && !seat.held_by_current_session) {
       return 'held';
@@ -380,16 +393,23 @@
 
   function currentSessionHoldExpiry(seats) {
     const heldSeats = Array.isArray(seats)
-      ? seats.filter(seat => seat.held_by_current_session && seat.hold_expires_at)
+      ? seats.filter(seat => (
+        (seat.held_by_current_session && seat.hold_expires_at)
+        || (seat.pending_by_current_session && seat.pending_expires_at)
+      ))
       : [];
 
     if (heldSeats.length === 0) {
       return null;
     }
 
-    heldSeats.sort((left, right) => String(left.hold_expires_at).localeCompare(String(right.hold_expires_at)));
+    heldSeats.sort((left, right) => {
+      const leftExpiry = String(left.pending_expires_at || left.hold_expires_at || '');
+      const rightExpiry = String(right.pending_expires_at || right.hold_expires_at || '');
+      return leftExpiry.localeCompare(rightExpiry);
+    });
 
-    return String(heldSeats[0].hold_expires_at || '').trim() || null;
+    return String(heldSeats[0].pending_expires_at || heldSeats[0].hold_expires_at || '').trim() || null;
   }
 
   function setCheckoutBusy(isBusy) {
@@ -445,6 +465,24 @@
     }
 
     return payload || {};
+  }
+
+  async function redirectToActiveCheckout() {
+    try {
+      const payload = await fetchJson('/api/ticket-orders/active-checkout');
+      if (!payload?.data?.resume_available) {
+        return false;
+      }
+
+      if (typeof showToast === 'function') {
+        showToast('i', 'Resume Checkout', 'Your previous checkout is still active. Restoring it now.');
+      }
+
+      window.location.href = appUrl('/checkout');
+      return true;
+    } catch (error) {
+      return false;
+    }
   }
 
   function renderStateCard(title, message) {
@@ -535,7 +573,13 @@
 
   function humanizeSeatStatus(seat) {
     if (seat?.is_booked) {
-      return 'Booked';
+      return 'Paid';
+    }
+    if (seat?.is_payment_pending && seat?.pending_by_current_session) {
+      return 'Pending payment by you';
+    }
+    if (seat?.is_payment_pending) {
+      return 'Pending payment';
     }
     if (seat?.is_held && seat?.held_by_current_session) {
       return 'Held by you';

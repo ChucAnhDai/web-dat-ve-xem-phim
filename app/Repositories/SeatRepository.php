@@ -32,10 +32,16 @@ class SeatRepository
                 se.status,
                 MAX(
                     CASE
-                        WHEN td.id IS NOT NULL AND o.status IN ('pending', 'paid') THEN 1
+                        WHEN td.id IS NOT NULL AND o.status = 'paid' THEN 1
                         ELSE 0
                     END
                 ) AS is_booked,
+                MAX(
+                    CASE
+                        WHEN td.id IS NOT NULL AND o.status = 'pending' THEN 1
+                        ELSE 0
+                    END
+                ) AS is_payment_pending,
                 MAX(
                     CASE
                         WHEN th.id IS NOT NULL THEN 1
@@ -48,6 +54,21 @@ class SeatRepository
                         ELSE 0
                     END
                 ) AS held_by_current_session,
+                MAX(
+                    CASE
+                        WHEN td.id IS NOT NULL
+                             AND o.status = 'pending'
+                             AND :session_token <> ''
+                             AND o.session_token = :session_token THEN 1
+                        ELSE 0
+                    END
+                ) AS pending_by_current_session,
+                MAX(
+                    CASE
+                        WHEN td.id IS NOT NULL AND o.status = 'pending' THEN o.hold_expires_at
+                        ELSE NULL
+                    END
+                ) AS pending_expires_at,
                 MAX(th.hold_expires_at) AS hold_expires_at
             FROM showtimes s
             INNER JOIN rooms r ON r.id = s.room_id

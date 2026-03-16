@@ -74,7 +74,8 @@ $backToSeatSelection = $publicBase . '/seat-selection' . ($backQuery !== [] ? '?
           <div style="margin-top:6px;color:var(--text2);font-size:14px;line-height:1.6;">
             Pricing, seat validation, order creation, ticket issuance, and payment snapshots are now computed on the server.
             If the hold expires or a seat becomes invalid, checkout will stop before any order is written.
-            VNPay now creates a pending ticket order, redirects you to the gateway, and waits for a verified callback before the order is marked as paid.
+            VNPay now creates a short-lived pending ticket order, redirects you to the gateway, and waits for a verified callback before the order is marked as paid.
+            Unfinished checkout sessions are released automatically after the payment window closes, and active pending checkouts can be restored if the customer returns before expiry.
           </div>
         </div>
       </div>

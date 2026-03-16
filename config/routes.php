@@ -30,6 +30,7 @@ $app->router->post('/api/tickets/holds', [TicketHoldController::class, 'createHo
 $app->router->delete('/api/tickets/holds/{showtimeId}', [TicketHoldController::class, 'releaseHold']);
 $app->router->post('/api/ticket-orders/preview', [TicketOrderController::class, 'previewOrder']);
 $app->router->post('/api/ticket-orders', [TicketOrderController::class, 'createOrder']);
+$app->router->get('/api/ticket-orders/active-checkout', [TicketOrderController::class, 'activeCheckout']);
 $app->router->post('/api/payments/ticket-intents', [PaymentController::class, 'createTicketVnpayIntent']);
 $app->router->get('/api/payments/vnpay/return', [PaymentController::class, 'handleVnpayReturn']);
 $app->router->get('/api/payments/vnpay/ipn', [PaymentController::class, 'handleVnpayIpn']);

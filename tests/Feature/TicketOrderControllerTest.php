@@ -68,6 +68,31 @@ class TicketOrderControllerTest extends TestCase
         $this->assertSame('42', $service->payload['showtime_id']);
         $this->assertSame('TKT-123', $response->payload['data']['order']['order_code']);
     }
+
+    public function testActiveCheckoutReturnsServicePayload(): void
+    {
+        $service = new FeatureFakeTicketCheckoutService();
+        $service->result = [
+            'status' => 200,
+            'data' => [
+                'resume_available' => true,
+                'order' => ['order_code' => 'TKT-RESUME'],
+            ],
+        ];
+        $sessions = new FeatureFakeTicketOrderSessionManager();
+        $sessions->resolvedToken = str_repeat('f', 48);
+
+        $controller = new TicketOrderController($service, $sessions, new FeatureFakeTicketOrderAuth());
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $response = new FeatureCapturingTicketOrderResponse();
+
+        $controller->activeCheckout(new Request(), $response);
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame(str_repeat('f', 48), $service->sessionToken);
+        $this->assertTrue($response->payload['data']['resume_available']);
+        $this->assertSame('TKT-RESUME', $response->payload['data']['order']['order_code']);
+    }
 }
 
 class FeatureFakeTicketCheckoutService extends TicketCheckoutService
@@ -93,6 +118,14 @@ class FeatureFakeTicketCheckoutService extends TicketCheckoutService
     public function createOrder(array $payload, string $sessionToken, ?int $userId = null): array
     {
         $this->payload = $payload;
+        $this->sessionToken = $sessionToken;
+        $this->userId = $userId;
+
+        return $this->result;
+    }
+
+    public function activeCheckout(?string $sessionToken, ?int $userId = null): array
+    {
         $this->sessionToken = $sessionToken;
         $this->userId = $userId;
 

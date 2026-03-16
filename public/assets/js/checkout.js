@@ -6,7 +6,9 @@
     selectedFulfillment: 'e_ticket',
     selectedPayment: 'momo',
     preview: null,
+    activeResume: null,
     isSubmitting: false,
+    hasCommittedCheckout: false,
   };
 
   const dom = {};
@@ -24,9 +26,10 @@
 
     if (!state.showtimeId || state.seatIds.length === 0) {
       renderStateCard(
-        'Checkout is missing ticket data.',
-        'Select seats from a published showtime before opening the checkout screen.'
+        'Checking your pending checkout...',
+        'Looking for any unfinished ticket payment tied to this browser session.'
       );
+      void loadActiveCheckout({ showEmptyState: true });
       return;
     }
 
@@ -60,6 +63,7 @@
     document.querySelectorAll('[data-group="payment"]').forEach(option => {
       option.addEventListener('click', () => selectOption('payment', option));
     });
+    dom.backLink?.addEventListener('click', handleBackNavigation);
     dom.submit?.addEventListener('click', handleCreateOrder);
   }
 
@@ -83,9 +87,18 @@
       });
 
       state.preview = payload?.data || null;
+      state.activeResume = null;
       renderCheckoutPreview();
       void hydrateProfileDefaults();
     } catch (error) {
+      const resumed = await loadActiveCheckout({ silent: true });
+      if (resumed) {
+        if (typeof showToast === 'function') {
+          showToast('i', 'Checkout Restored', 'Your unfinished checkout was restored so you can continue payment.');
+        }
+        return;
+      }
+
       renderStateCard(
         'Checkout unavailable.',
         error.message || 'The selected seat hold could not be confirmed.'
@@ -106,8 +119,11 @@
     renderPoster(state.preview.showtime);
     renderHeader(state.preview.showtime);
     renderOrderSummary();
+    syncCheckoutControls();
 
-    dom.state.innerHTML = '';
+    dom.state.innerHTML = state.activeResume?.resume_available
+      ? buildResumeNotice()
+      : '';
     dom.content.hidden = false;
     setSubmitBusy(false);
   }
@@ -169,6 +185,10 @@
   }
 
   function selectOption(group, selectedOption) {
+    if (state.activeResume?.resume_available) {
+      return;
+    }
+
     document.querySelectorAll(`[data-group="${group}"]`).forEach(option => {
       option.classList.toggle('selected', option === selectedOption);
     });
@@ -219,6 +239,10 @@
       return;
     }
 
+    if (state.activeResume?.resume_available) {
+      return handleResumeCheckout();
+    }
+
     const name = String(dom.name?.value || '').trim();
     const email = String(dom.email?.value || '').trim();
     const phone = String(dom.phone?.value || '').trim();
@@ -255,6 +279,7 @@
           throw new Error('VNPay checkout URL is missing.');
         }
 
+        state.hasCommittedCheckout = true;
         renderRedirectState(data.order || null, data.payment || null, data.redirect_url);
         window.location.href = data.redirect_url;
         return;
@@ -274,6 +299,7 @@
       });
 
       const data = payload?.data || {};
+      state.hasCommittedCheckout = true;
       renderSuccessState(data.order || null, Array.isArray(data.tickets) ? data.tickets : []);
 
       if (typeof showToast === 'function') {
@@ -338,6 +364,138 @@
     }
   }
 
+  async function loadActiveCheckout(options = {}) {
+    try {
+      const payload = await fetchJson('/api/ticket-orders/active-checkout');
+      const data = payload?.data || {};
+      if (!data.resume_available) {
+        state.activeResume = null;
+        if (options.showEmptyState) {
+          renderStateCard(
+            'Checkout is missing ticket data.',
+            'Select seats from a published showtime before opening the checkout screen.'
+          );
+        }
+        return false;
+      }
+
+      applyActiveCheckout(data);
+      renderCheckoutPreview();
+      return true;
+    } catch (error) {
+      if (!options.silent) {
+        renderStateCard(
+          'Checkout unavailable.',
+          error.message || 'The active checkout could not be restored right now.'
+        );
+      }
+
+      return false;
+    }
+  }
+
+  function applyActiveCheckout(data) {
+    state.activeResume = data;
+    state.preview = {
+      showtime: data.showtime || null,
+      seats: Array.isArray(data.seats) ? data.seats : [],
+      order: data.order || null,
+      payment: data.payment || null,
+    };
+    state.showtimeId = Number(data.order?.showtime_id || data.showtime?.id || 0);
+    state.slug = String(data.order?.movie_slug || data.showtime?.movie_slug || state.slug || '').trim();
+    state.seatIds = Array.isArray(data.seats)
+      ? data.seats.map(seat => Number(seat.id)).filter(id => Number.isFinite(id) && id > 0)
+      : [];
+    state.selectedFulfillment = String(data.order?.fulfillment_method || state.selectedFulfillment);
+    state.selectedPayment = String(data.payment?.payment_method || data.order?.payment_method || state.selectedPayment);
+  }
+
+  function syncCheckoutControls() {
+    const order = state.preview?.order || {};
+    const isResume = Boolean(state.activeResume?.resume_available);
+
+    if (dom.name) {
+      dom.name.value = String(order.contact_name || dom.name.value || '').trim();
+      dom.name.readOnly = isResume;
+    }
+    if (dom.email) {
+      dom.email.value = String(order.contact_email || dom.email.value || '').trim();
+      dom.email.readOnly = isResume;
+    }
+    if (dom.phone) {
+      dom.phone.value = String(order.contact_phone || dom.phone.value || '').trim();
+      dom.phone.readOnly = isResume;
+    }
+
+    document.querySelectorAll('[data-group="fulfillment"]').forEach(option => {
+      const selected = String(option.dataset.value || '') === state.selectedFulfillment;
+      option.classList.toggle('selected', selected);
+      option.disabled = isResume;
+    });
+
+    document.querySelectorAll('[data-group="payment"]').forEach(option => {
+      const selected = String(option.dataset.value || '') === state.selectedPayment;
+      option.classList.toggle('selected', selected);
+      option.disabled = isResume;
+    });
+  }
+
+  function buildResumeNotice() {
+    const order = state.preview?.order || {};
+    const seats = Array.isArray(order.seats) ? order.seats.join(', ') : 'N/A';
+    const redirectUrl = String(state.activeResume?.redirect_url || '').trim();
+    const expiresAt = String(state.activeResume?.resume_expires_at || order.hold_expires_at || '').trim();
+    const expiryLabel = expiresAt ? formatDateTime(expiresAt) : 'Soon';
+
+    return `
+      <div class="detail-state-card">
+        <div>
+          <strong>Unfinished checkout restored.</strong>
+          <div>Order ${escapeHtml(order.order_code || 'N/A')} is still waiting for payment for seats ${escapeHtml(seats)}.</div>
+          <div style="margin-top:8px;color:var(--text2);">This checkout will remain available until ${escapeHtml(expiryLabel)}.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:18px;">
+            ${redirectUrl ? `<a class="btn btn-primary btn-sm" href="${escapeHtmlAttr(redirectUrl)}">Continue to VNPay</a>` : ''}
+            <a class="btn btn-ghost btn-sm" href="${escapeHtmlAttr(buildSeatSelectionUrl())}">Back to Seat Selection</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function handleResumeCheckout() {
+    const redirectUrl = String(state.activeResume?.redirect_url || '').trim();
+    if (!redirectUrl) {
+      return showCheckoutError('This pending checkout can no longer be resumed. Please return to seat selection.');
+    }
+
+    state.hasCommittedCheckout = true;
+    renderRedirectState(state.preview?.order || null, state.preview?.payment || null, redirectUrl);
+    window.location.href = redirectUrl;
+  }
+
+  async function handleBackNavigation(event) {
+    if (state.hasCommittedCheckout || state.activeResume?.resume_available || !state.showtimeId || state.seatIds.length === 0) {
+      return;
+    }
+
+    event.preventDefault();
+
+    try {
+      await releaseHeldSeats();
+    } catch (error) {
+      // Releasing a temporary hold should not trap the user on the page.
+    }
+
+    window.location.href = dom.backLink?.href || buildSeatSelectionUrl();
+  }
+
+  async function releaseHeldSeats() {
+    await fetchJson(`/api/tickets/holds/${encodeURIComponent(state.showtimeId)}`, {
+      method: 'DELETE',
+    });
+  }
+
   function setSubmitBusy(isBusy) {
     state.isSubmitting = Boolean(isBusy);
     if (!dom.submit) {
@@ -347,6 +505,13 @@
     dom.submit.disabled = state.isSubmitting;
     if (state.isSubmitting) {
       dom.submit.textContent = state.selectedPayment === 'vnpay' ? 'Redirecting to VNPay...' : 'Creating Ticket Order...';
+      return;
+    }
+
+    if (state.activeResume?.resume_available) {
+      dom.submit.textContent = state.activeResume.resume_target === 'payment'
+        ? 'Continue to VNPay'
+        : 'Open Pending Checkout';
       return;
     }
 

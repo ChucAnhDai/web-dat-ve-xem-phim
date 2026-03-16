@@ -6,7 +6,13 @@ use App\Core\Validator;
 
 class TicketHoldValidator
 {
-    private const MAX_SEATS_PER_HOLD = 10;
+    private int $maxSeatsPerHold;
+
+    public function __construct(?array $config = null)
+    {
+        $config = $config ?? require dirname(__DIR__, 2) . '/config/tickets.php';
+        $this->maxSeatsPerHold = max(1, (int) ($config['max_seats_per_hold'] ?? 6));
+    }
 
     public function validateCreatePayload(array $input): array
     {
@@ -23,8 +29,8 @@ class TicketHoldValidator
         }
         if ($seatIds === null) {
             $errors['seat_ids'][] = 'Seat IDs must be a non-empty array of positive integers.';
-        } elseif (count($seatIds) > self::MAX_SEATS_PER_HOLD) {
-            $errors['seat_ids'][] = 'A single hold can reserve up to 10 seats.';
+        } elseif (count($seatIds) > $this->maxSeatsPerHold) {
+            $errors['seat_ids'][] = sprintf('A single hold can reserve up to %d seats.', $this->maxSeatsPerHold);
         }
 
         return [

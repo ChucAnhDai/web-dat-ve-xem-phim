@@ -24,8 +24,11 @@ $backToMovieDetail = $selectedMovieSlug !== ''
       <div class="seat-legend">
         <div class="legend-item"><div class="legend-seat available"></div> Available</div>
         <div class="legend-item"><div class="legend-seat selected"></div> Selected</div>
-        <div class="legend-item"><div class="legend-seat booked"></div> Booked</div>
+        <div class="legend-item"><div class="legend-seat booked"></div> Paid</div>
+        <div class="legend-item"><div class="legend-seat payment-pending"></div> Pending Payment</div>
+        <div class="legend-item"><div class="legend-seat payment-pending-current"></div> Pending By You</div>
         <div class="legend-item"><div class="legend-seat held"></div> Held</div>
+        <div class="legend-item"><div class="legend-seat held-current"></div> Held By You</div>
         <div class="legend-item"><div class="legend-seat maintenance"></div> Maintenance</div>
         <div class="legend-item"><div class="legend-seat disabled"></div> Disabled</div>
         <div class="legend-item"><div class="legend-seat vip"></div> VIP (+15,000 VND)</div>
@@ -53,7 +56,7 @@ $backToMovieDetail = $selectedMovieSlug !== ''
       <div class="divider"></div>
       <div class="summary-row total"><label>Total</label><span id="seatTotal" style="color:var(--red)">0 VND</span></div>
       <div style="margin-top:10px;color:var(--text2);font-size:12px;line-height:1.6;">
-        Seats are held for your session before checkout so another customer cannot take them while you continue.
+        Seats are held briefly for your session before checkout. Unfinished checkout sessions are released automatically so inventory can return to sale quickly.
       </div>
       <div style="margin-top:16px">
         <button class="btn btn-primary btn-full btn-lg" id="seatSelectionCheckoutBtn" type="button">Proceed to Checkout</button>

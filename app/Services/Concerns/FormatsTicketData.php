@@ -33,6 +33,7 @@ trait FormatsTicketData
             'payment_status' => $header['payment_status'] ?? null,
             'transaction_code' => $header['transaction_code'] ?? null,
             'movie_id' => isset($first['movie_id']) ? (int) $first['movie_id'] : null,
+            'movie_slug' => $first['movie_slug'] ?? null,
             'movie_title' => $first['movie_title'] ?? null,
             'poster_url' => $first['poster_url'] ?? null,
             'cinema_id' => isset($first['cinema_id']) ? (int) $first['cinema_id'] : null,

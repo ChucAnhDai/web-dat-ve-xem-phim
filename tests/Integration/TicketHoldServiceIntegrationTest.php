@@ -81,6 +81,32 @@ class TicketHoldServiceIntegrationTest extends TestCase
         $this->assertSame([4], $this->activeSeatIdsForSession(str_repeat('e', 48)));
     }
 
+    public function testCreateHoldRejectsWhenSessionAlreadyHasPendingCheckout(): void
+    {
+        $sessionToken = str_repeat('f', 48);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+        $stmt = $this->db->prepare("
+            INSERT INTO ticket_orders (id, order_code, session_token, status, hold_expires_at)
+            VALUES (2, 'TKT-BLOCKED', :session_token, 'pending', :hold_expires_at)
+        ");
+        $stmt->execute([
+            'session_token' => $sessionToken,
+            'hold_expires_at' => $expiresAt,
+        ]);
+
+        $result = $this->makeService()->createHold([
+            'showtime_id' => 100,
+            'seat_ids' => [1],
+        ], $sessionToken);
+
+        $this->assertSame(409, $result['status']);
+        $this->assertSame(
+            ["You already have a checkout waiting for payment (TKT-BLOCKED). It will be released at {$expiresAt}."],
+            $result['errors']['checkout']
+        );
+    }
+
     private function makeService(): TicketHoldService
     {
         return new TicketHoldService(
@@ -161,7 +187,11 @@ class TicketHoldServiceIntegrationTest extends TestCase
         $this->db->exec('
             CREATE TABLE ticket_orders (
                 id INTEGER PRIMARY KEY,
-                status TEXT NOT NULL
+                order_code TEXT NULL,
+                user_id INTEGER NULL,
+                session_token TEXT NULL,
+                status TEXT NOT NULL,
+                hold_expires_at TEXT NULL
             )
         ');
 
@@ -189,6 +219,14 @@ class TicketHoldServiceIntegrationTest extends TestCase
                 FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
                 FOREIGN KEY (seat_id) REFERENCES seats(id),
                 FOREIGN KEY (user_id) REFERENCES users(id)
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE payments (
+                id INTEGER PRIMARY KEY,
+                ticket_order_id INTEGER NULL,
+                payment_status TEXT NOT NULL
             )
         ');
     }

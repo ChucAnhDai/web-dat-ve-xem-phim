@@ -173,6 +173,7 @@ CREATE TABLE ticket_orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
     order_code VARCHAR(32) NOT NULL UNIQUE,
     user_id INT NULL,
+    session_token VARCHAR(100) NULL,
     contact_name VARCHAR(120) NULL,
     contact_email VARCHAR(150) NULL,
     contact_phone VARCHAR(20) NULL,
@@ -192,6 +193,7 @@ CREATE TABLE ticket_orders (
     INDEX idx_ticket_orders_user_status (user_id, status),
     INDEX idx_ticket_orders_status_order_date (status, order_date),
     INDEX idx_ticket_orders_hold_expires (hold_expires_at),
+    INDEX idx_ticket_orders_session_status_hold (session_token, status, hold_expires_at),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
@@ -365,7 +367,7 @@ CREATE TABLE payments (
     provider_response_code VARCHAR(50) NULL,
     provider_message VARCHAR(255) NULL,
     idempotency_key VARCHAR(80) NULL,
-    checkout_url VARCHAR(500) NULL,
+    checkout_url TEXT NULL,
     request_payload LONGTEXT NULL,
     callback_payload LONGTEXT NULL,
     initiated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

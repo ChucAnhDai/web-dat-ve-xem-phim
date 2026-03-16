@@ -125,6 +125,37 @@ class PaymentServiceIntegrationTest extends TestCase
         $this->assertSame(['paid', 'paid'], $ticketStatuses);
     }
 
+    public function testCreateTicketVnpayIntentRejectsSecondPendingCheckoutForSameSession(): void
+    {
+        $sessionToken = str_repeat('e', 48);
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+        $this->db->exec("
+            INSERT INTO ticket_orders (
+                id, order_code, user_id, session_token, status, hold_expires_at
+            ) VALUES (
+                9, 'TKT-ACTIVE', 9, '{$sessionToken}', 'pending', '{$expiresAt}'
+            )
+        ");
+        $this->seedHoldRows($sessionToken, [1, 2]);
+
+        $result = $this->makeService()->createTicketVnpayIntent([
+            'showtime_id' => 100,
+            'seat_ids' => [1, 2],
+            'contact_name' => 'VNPay Guest',
+            'contact_email' => 'vnpay@example.com',
+            'contact_phone' => '0901234567',
+            'payment_method' => 'vnpay',
+            'fulfillment_method' => 'e_ticket',
+        ], $sessionToken, 9, [
+            'base_url' => 'http://localhost/web-dat-ve-xem-phim',
+            'client_ip' => '127.0.0.1',
+        ]);
+
+        $this->assertSame(409, $result['status']);
+        $this->assertSame(['You already have a checkout waiting for payment in this session.'], $result['errors']['checkout']);
+    }
+
     private function makeService(): PaymentService
     {
         $holds = new TicketSeatHoldRepository($this->db);
@@ -216,6 +247,7 @@ class PaymentServiceIntegrationTest extends TestCase
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 order_code TEXT NOT NULL UNIQUE,
                 user_id INTEGER NULL,
+                session_token TEXT NULL,
                 contact_name TEXT,
                 contact_email TEXT,
                 contact_phone TEXT,

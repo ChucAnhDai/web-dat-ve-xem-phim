@@ -166,6 +166,7 @@ class CinemaManagementListScopeIntegrationTest extends TestCase
         $this->db->exec('
             CREATE TABLE ticket_orders (
                 id INTEGER PRIMARY KEY,
+                session_token TEXT NULL,
                 status TEXT NOT NULL
             )
         ');

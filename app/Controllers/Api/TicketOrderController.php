@@ -51,6 +51,14 @@ class TicketOrderController
         );
     }
 
+    public function activeCheckout(Request $request, Response $response)
+    {
+        return $this->respond(
+            $response,
+            $this->service->activeCheckout($this->sessions->resolve($request), $this->optionalUserId($request))
+        );
+    }
+
     private function respond(Response $response, array $result, ?string $successMessage = null)
     {
         $status = (int) ($result['status'] ?? 200);

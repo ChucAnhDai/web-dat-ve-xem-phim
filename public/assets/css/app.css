@@ -2015,6 +2015,18 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
   border-color: rgba(125, 211, 252, 0.98);
   transform: scale(1.1);
 }
+.seat.payment-pending {
+  background: rgba(249, 115, 22, 0.16);
+  border-color: rgba(249, 115, 22, 0.45);
+  color: rgba(254, 215, 170, 0.95);
+  cursor: not-allowed;
+}
+.seat.payment-pending-current {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: rgba(14, 165, 233, 0.5);
+  color: rgba(224, 242, 254, 0.96);
+  cursor: not-allowed;
+}
 .seat.maintenance {
   background: rgba(245, 158, 11, 0.16);
   border-color: rgba(245, 158, 11, 0.45);
@@ -2085,6 +2097,18 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
 .legend-seat.held {
   background: rgba(168, 85, 247, 0.16);
   border-color: rgba(168, 85, 247, 0.45);
+}
+.legend-seat.held-current {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.48);
+}
+.legend-seat.payment-pending {
+  background: rgba(249, 115, 22, 0.16);
+  border-color: rgba(249, 115, 22, 0.45);
+}
+.legend-seat.payment-pending-current {
+  background: rgba(14, 165, 233, 0.18);
+  border-color: rgba(14, 165, 233, 0.5);
 }
 .legend-seat.maintenance {
   background: rgba(245, 158, 11, 0.16);

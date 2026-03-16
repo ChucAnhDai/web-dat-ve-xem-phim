@@ -6,6 +6,7 @@ use App\Core\Logger;
 use App\Repositories\SeatRepository;
 use App\Repositories\ShowtimeRepository;
 use App\Services\ShowtimeCatalogService;
+use App\Services\TicketLifecycleService;
 use App\Validators\ShowtimeManagementValidator;
 use PHPUnit\Framework\TestCase;
 
@@ -42,7 +43,7 @@ class ShowtimeCatalogServiceTest extends TestCase
             ['id' => 3, 'seat_row' => 'B', 'seat_number' => 1, 'seat_type' => 'normal', 'status' => 'maintenance', 'is_booked' => 0, 'is_held' => 1, 'held_by_current_session' => 0],
         ];
 
-        $service = new ShowtimeCatalogService($showtimes, $seats, new ShowtimeManagementValidator(), new UnitFakeSeatLogger());
+        $service = new ShowtimeCatalogService($showtimes, $seats, new ShowtimeManagementValidator(), new UnitFakeSeatLogger(), new UnitFakeShowtimeLifecycleService());
         $result = $service->getSeatMap(501);
 
         $this->assertSame(200, $result['status']);
@@ -63,7 +64,8 @@ class ShowtimeCatalogServiceTest extends TestCase
             new UnitFakeSeatShowtimeRepository(),
             new UnitFakeSeatRepository(),
             new ShowtimeManagementValidator(),
-            new UnitFakeSeatLogger()
+            new UnitFakeSeatLogger(),
+            new UnitFakeShowtimeLifecycleService()
         );
 
         $result = $service->getSeatMap(999);
@@ -113,7 +115,8 @@ class ShowtimeCatalogServiceTest extends TestCase
             $showtimes,
             new UnitFakeSeatRepository(),
             new ShowtimeManagementValidator(),
-            new UnitFakeSeatLogger()
+            new UnitFakeSeatLogger(),
+            new UnitFakeShowtimeLifecycleService()
         );
 
         $result = $service->listShowtimes([
@@ -193,5 +196,22 @@ class UnitFakeSeatLogger extends Logger
 
     public function error(string $message, array $context = []): void
     {
+    }
+}
+
+class UnitFakeShowtimeLifecycleService extends TicketLifecycleService
+{
+    public function __construct()
+    {
+    }
+
+    public function runMaintenance(): array
+    {
+        return [
+            'purged_holds' => 0,
+            'expired_orders' => 0,
+            'expired_tickets' => 0,
+            'expired_payments' => 0,
+        ];
     }
 }

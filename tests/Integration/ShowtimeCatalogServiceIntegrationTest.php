@@ -6,6 +6,7 @@ use App\Core\Logger;
 use App\Repositories\SeatRepository;
 use App\Repositories\ShowtimeRepository;
 use App\Services\ShowtimeCatalogService;
+use App\Services\TicketLifecycleService;
 use App\Validators\ShowtimeManagementValidator;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -69,13 +70,38 @@ class ShowtimeCatalogServiceIntegrationTest extends TestCase
         $this->assertTrue($result['data']['seats'][1]['is_selectable']);
     }
 
+    public function testGetSeatMapMarksPendingPaymentSeparatelyFromPaidSeats(): void
+    {
+        $expiresAt = date('Y-m-d H:i:s', strtotime('+5 minutes'));
+
+        $this->db->exec("
+            INSERT INTO ticket_orders (id, order_code, session_token, status, hold_expires_at)
+            VALUES (2, 'TKT-PENDING', '" . str_repeat('f', 48) . "', 'pending', '{$expiresAt}')
+        ");
+        $this->db->exec("
+            INSERT INTO ticket_details (id, order_id, showtime_id, seat_id)
+            VALUES (2, 2, 11, 1)
+        ");
+
+        $result = $this->makeService()->getSeatMapForSession(11, str_repeat('f', 48));
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame(1, $result['data']['summary']['payment_pending_seats']);
+        $this->assertFalse($result['data']['seats'][0]['is_booked']);
+        $this->assertTrue($result['data']['seats'][0]['is_payment_pending']);
+        $this->assertTrue($result['data']['seats'][0]['pending_by_current_session']);
+        $this->assertFalse($result['data']['seats'][0]['is_selectable']);
+        $this->assertSame($expiresAt, $result['data']['seats'][0]['pending_expires_at']);
+    }
+
     private function makeService(): ShowtimeCatalogService
     {
         return new ShowtimeCatalogService(
             new ShowtimeRepository($this->db),
             new SeatRepository($this->db),
             new ShowtimeManagementValidator(),
-            new IntegrationShowtimeCatalogLogger()
+            new IntegrationShowtimeCatalogLogger(),
+            new TicketLifecycleService($this->db, null, null, null, new IntegrationShowtimeCatalogLogger())
         );
     }
 
@@ -145,7 +171,10 @@ class ShowtimeCatalogServiceIntegrationTest extends TestCase
         $this->db->exec('
             CREATE TABLE ticket_orders (
                 id INTEGER PRIMARY KEY,
-                status TEXT NOT NULL
+                order_code TEXT NULL,
+                session_token TEXT NULL,
+                status TEXT NOT NULL,
+                hold_expires_at TEXT NULL
             )
         ');
 
@@ -171,6 +200,14 @@ class ShowtimeCatalogServiceIntegrationTest extends TestCase
                 UNIQUE (showtime_id, seat_id),
                 FOREIGN KEY (showtime_id) REFERENCES showtimes(id),
                 FOREIGN KEY (seat_id) REFERENCES seats(id)
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE payments (
+                id INTEGER PRIMARY KEY,
+                ticket_order_id INTEGER NULL,
+                payment_status TEXT NOT NULL
             )
         ');
     }

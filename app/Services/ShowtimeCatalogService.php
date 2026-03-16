@@ -14,17 +14,20 @@ class ShowtimeCatalogService
     private SeatRepository $seats;
     private ShowtimeManagementValidator $validator;
     private Logger $logger;
+    private TicketLifecycleService $lifecycle;
 
     public function __construct(
         ?ShowtimeRepository $showtimes = null,
         ?SeatRepository $seats = null,
         ?ShowtimeManagementValidator $validator = null,
-        ?Logger $logger = null
+        ?Logger $logger = null,
+        ?TicketLifecycleService $lifecycle = null
     ) {
         $this->showtimes = $showtimes ?? new ShowtimeRepository();
         $this->seats = $seats ?? new SeatRepository();
         $this->validator = $validator ?? new ShowtimeManagementValidator();
         $this->logger = $logger ?? new Logger();
+        $this->lifecycle = $lifecycle ?? new TicketLifecycleService();
     }
 
     public function listShowtimes(array $filters): array
@@ -32,6 +35,7 @@ class ShowtimeCatalogService
         $normalizedFilters = $this->validator->normalizePublicFilters($filters);
 
         try {
+            $this->lifecycle->runMaintenance();
             $page = $this->showtimes->paginatePublicCatalog($normalizedFilters);
             $options = $this->showtimes->listPublicFilterOptions();
         } catch (Throwable $exception) {
@@ -87,6 +91,7 @@ class ShowtimeCatalogService
         }
 
         try {
+            $this->lifecycle->runMaintenance();
             $showtime = $this->showtimes->findPublicDetail($showtimeId);
             if ($showtime === null) {
                 return $this->error(['showtime' => ['Showtime not found.']], 404);
@@ -107,6 +112,9 @@ class ShowtimeCatalogService
         $bookedCount = count(array_filter($mappedSeats, static function (array $seat): bool {
             return (bool) ($seat['is_booked'] ?? false);
         }));
+        $paymentPendingCount = count(array_filter($mappedSeats, static function (array $seat): bool {
+            return (bool) ($seat['is_payment_pending'] ?? false);
+        }));
         $availableCount = count(array_filter($mappedSeats, static function (array $seat): bool {
             return (bool) ($seat['is_selectable'] ?? false) && !($seat['is_booked'] ?? false);
         }));
@@ -124,6 +132,7 @@ class ShowtimeCatalogService
             'summary' => [
                 'total_seats' => count($mappedSeats),
                 'booked_seats' => $bookedCount,
+                'payment_pending_seats' => max(0, $paymentPendingCount),
                 'available_seats' => max(0, $availableCount),
                 'held_seats' => max(0, $heldCount),
                 'held_by_current_session_seats' => max(0, $heldByCurrentSessionCount),
@@ -171,9 +180,14 @@ class ShowtimeCatalogService
         $seatNumber = (int) ($row['seat_number'] ?? 0);
         $status = $row['status'] ?? 'available';
         $isBooked = (bool) ($row['is_booked'] ?? false);
+        $isPaymentPending = (bool) ($row['is_payment_pending'] ?? false);
         $isHeld = (bool) ($row['is_held'] ?? false);
         $heldByCurrentSession = (bool) ($row['held_by_current_session'] ?? false);
-        $isSelectable = $status === 'available' && $isBooked === false && ($isHeld === false || $heldByCurrentSession);
+        $pendingByCurrentSession = (bool) ($row['pending_by_current_session'] ?? false);
+        $isSelectable = $status === 'available'
+            && $isBooked === false
+            && $isPaymentPending === false
+            && ($isHeld === false || $heldByCurrentSession);
 
         return [
             'id' => (int) ($row['id'] ?? 0),
@@ -183,9 +197,12 @@ class ShowtimeCatalogService
             'type' => $row['seat_type'] ?? 'normal',
             'status' => $status,
             'is_booked' => $isBooked,
+            'is_payment_pending' => $isPaymentPending,
             'is_held' => $isHeld,
             'held_by_current_session' => $heldByCurrentSession,
+            'pending_by_current_session' => $pendingByCurrentSession,
             'hold_expires_at' => $row['hold_expires_at'] ?? null,
+            'pending_expires_at' => $row['pending_expires_at'] ?? null,
             'is_selectable' => $isSelectable,
         ];
     }

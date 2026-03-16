@@ -38,22 +38,22 @@ class TicketLifecycleService
         $expiredOrderIds = $this->orders->listExpiredPendingOrderIds();
         $expiredOrders = 0;
         $expiredTickets = 0;
-        $failedPayments = 0;
+        $expiredPayments = 0;
 
         if ($expiredOrderIds !== []) {
-            $this->transactional(function () use ($expiredOrderIds, &$expiredOrders, &$expiredTickets, &$failedPayments) {
+            $this->transactional(function () use ($expiredOrderIds, &$expiredOrders, &$expiredTickets, &$expiredPayments) {
                 $expiredOrders = $this->orders->expireOrders($expiredOrderIds);
                 $expiredTickets = $this->orders->expireTicketDetailsForOrderIds($expiredOrderIds);
-                $failedPayments = $this->payments->markTicketPaymentsFailed($expiredOrderIds);
+                $expiredPayments = $this->payments->markTicketPaymentsExpired($expiredOrderIds);
             });
         }
 
-        if ($purgedHolds > 0 || $expiredOrders > 0 || $expiredTickets > 0 || $failedPayments > 0) {
+        if ($purgedHolds > 0 || $expiredOrders > 0 || $expiredTickets > 0 || $expiredPayments > 0) {
             $this->logger->info('Ticket lifecycle maintenance completed', [
                 'purged_holds' => $purgedHolds,
                 'expired_orders' => $expiredOrders,
                 'expired_tickets' => $expiredTickets,
-                'failed_payments' => $failedPayments,
+                'expired_payments' => $expiredPayments,
             ]);
         }
 
@@ -61,7 +61,7 @@ class TicketLifecycleService
             'purged_holds' => $purgedHolds,
             'expired_orders' => $expiredOrders,
             'expired_tickets' => $expiredTickets,
-            'failed_payments' => $failedPayments,
+            'expired_payments' => $expiredPayments,
         ];
     }
 

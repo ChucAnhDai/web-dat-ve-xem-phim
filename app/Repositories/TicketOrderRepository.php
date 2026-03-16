@@ -23,6 +23,7 @@ class TicketOrderRepository
             INSERT INTO ticket_orders (
                 order_code,
                 user_id,
+                session_token,
                 contact_name,
                 contact_email,
                 contact_phone,
@@ -40,6 +41,7 @@ class TicketOrderRepository
             VALUES (
                 :order_code,
                 :user_id,
+                :session_token,
                 :contact_name,
                 :contact_email,
                 :contact_phone,
@@ -58,6 +60,7 @@ class TicketOrderRepository
         $stmt->execute([
             'order_code' => $data['order_code'],
             'user_id' => $data['user_id'],
+            'session_token' => $data['session_token'] ?? null,
             'contact_name' => $data['contact_name'],
             'contact_email' => $data['contact_email'],
             'contact_phone' => $data['contact_phone'],
@@ -74,6 +77,56 @@ class TicketOrderRepository
         ]);
 
         return (int) $this->db->lastInsertId();
+    }
+
+    public function findActivePendingOrderBySession(string $sessionToken): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                id,
+                order_code,
+                user_id,
+                status,
+                hold_expires_at
+            FROM ticket_orders
+            WHERE session_token = :session_token
+              AND status = 'pending'
+              AND hold_expires_at IS NOT NULL
+              AND hold_expires_at > CURRENT_TIMESTAMP
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'session_token' => $sessionToken,
+        ]);
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
+    public function findActivePendingOrderByUser(int $userId): ?array
+    {
+        $stmt = $this->db->prepare("
+            SELECT
+                id,
+                order_code,
+                user_id,
+                status,
+                hold_expires_at
+            FROM ticket_orders
+            WHERE user_id = :user_id
+              AND status = 'pending'
+              AND hold_expires_at IS NOT NULL
+              AND hold_expires_at > CURRENT_TIMESTAMP
+            ORDER BY id DESC
+            LIMIT 1
+        ");
+        $stmt->execute([
+            'user_id' => $userId,
+        ]);
+        $row = $stmt->fetch();
+
+        return $row ?: null;
     }
 
     public function createTicketDetails(array $rows): void
@@ -227,6 +280,7 @@ class TicketOrderRepository
             UPDATE ticket_orders
             SET status = :status_value,
                 cancelled_at = CASE WHEN :status_value = 'cancelled' THEN :cancelled_at ELSE cancelled_at END,
+                hold_expires_at = NULL,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id IN ({$placeholders})
               AND status NOT IN ('paid', 'refunded')
@@ -304,6 +358,7 @@ class TicketOrderRepository
                 o.id,
                 o.order_code,
                 o.user_id,
+                o.session_token,
                 o.contact_name,
                 o.contact_email,
                 o.contact_phone,
@@ -357,6 +412,7 @@ class TicketOrderRepository
                 o.id,
                 o.order_code,
                 o.user_id,
+                o.session_token,
                 o.contact_name,
                 o.contact_email,
                 o.contact_phone,
@@ -461,6 +517,7 @@ class TicketOrderRepository
                 s.presentation_type,
                 s.language_version,
                 m.id AS movie_id,
+                m.slug AS movie_slug,
                 m.title AS movie_title,
                 m.poster_url,
                 c.id AS cinema_id,
@@ -528,6 +585,7 @@ class TicketOrderRepository
                 td.created_at,
                 o.order_code,
                 o.user_id,
+                o.session_token,
                 o.contact_name,
                 o.contact_email,
                 o.contact_phone,
@@ -561,6 +619,7 @@ class TicketOrderRepository
                 s.presentation_type,
                 s.language_version,
                 m.title AS movie_title,
+                m.slug AS movie_slug,
                 m.poster_url,
                 c.name AS cinema_name,
                 c.city AS cinema_city,
@@ -595,6 +654,7 @@ class TicketOrderRepository
                 o.id,
                 o.order_code,
                 o.user_id,
+                o.session_token,
                 o.contact_name,
                 o.contact_email,
                 o.contact_phone,

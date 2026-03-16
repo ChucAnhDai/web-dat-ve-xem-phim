@@ -201,6 +201,21 @@ class PaymentRepository
         ]);
     }
 
+    public function updateCheckoutUrl(int $paymentId, string $checkoutUrl): void
+    {
+        $stmt = $this->db->prepare('
+            UPDATE payments
+            SET
+                checkout_url = :checkout_url,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id
+        ');
+        $stmt->execute([
+            'id' => $paymentId,
+            'checkout_url' => $checkoutUrl,
+        ]);
+    }
+
     public function markPaymentSuccess(int $paymentId, array $data): void
     {
         $stmt = $this->db->prepare('
@@ -253,7 +268,7 @@ class PaymentRepository
         ]);
     }
 
-    public function markTicketPaymentsFailed(array $orderIds): int
+    public function markTicketPaymentsExpired(array $orderIds): int
     {
         if ($orderIds === []) {
             return 0;
@@ -263,7 +278,8 @@ class PaymentRepository
         $placeholders = $this->orderIdPlaceholders($orderIds, $params);
         $stmt = $this->db->prepare("
             UPDATE payments
-            SET payment_status = 'failed',
+            SET payment_status = 'expired',
+                provider_message = COALESCE(provider_message, 'Payment expired before confirmation.'),
                 failed_at = COALESCE(failed_at, CURRENT_TIMESTAMP)
             WHERE ticket_order_id IN ({$placeholders})
               AND payment_status = 'pending'

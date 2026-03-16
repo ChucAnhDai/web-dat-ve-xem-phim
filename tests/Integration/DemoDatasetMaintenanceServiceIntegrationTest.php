@@ -141,6 +141,7 @@ class DemoDatasetMaintenanceServiceIntegrationTest extends TestCase
             CREATE TABLE ticket_orders (
                 id INTEGER PRIMARY KEY,
                 order_code TEXT NOT NULL,
+                session_token TEXT NULL,
                 status TEXT NOT NULL
             )
         ');

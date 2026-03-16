@@ -39,9 +39,9 @@ class TicketHoldValidatorTest extends TestCase
 
         $result = $validator->validateCreatePayload([
             'showtime_id' => 10,
-            'seat_ids' => range(1, 11),
+            'seat_ids' => range(1, 7),
         ]);
 
-        $this->assertSame(['A single hold can reserve up to 10 seats.'], $result['errors']['seat_ids']);
+        $this->assertSame(['A single hold can reserve up to 6 seats.'], $result['errors']['seat_ids']);
     }
 }

@@ -5,8 +5,10 @@ namespace Tests\Unit;
 use App\Core\Logger;
 use App\Repositories\SeatRepository;
 use App\Repositories\ShowtimeRepository;
+use App\Repositories\TicketOrderRepository;
 use App\Repositories\TicketSeatHoldRepository;
 use App\Services\TicketHoldService;
+use App\Services\TicketLifecycleService;
 use App\Validators\TicketHoldValidator;
 use PDO;
 use PHPUnit\Framework\TestCase;
@@ -43,7 +45,9 @@ class TicketHoldServiceTest extends TestCase
             $seats,
             $holds,
             new TicketHoldValidator(),
-            new UnitFakeTicketHoldLogger()
+            new UnitFakeTicketHoldLogger(),
+            new UnitFakeTicketOrderRepository(),
+            new UnitFakeTicketLifecycleService()
         );
 
         $result = $service->createHold([
@@ -54,7 +58,7 @@ class TicketHoldServiceTest extends TestCase
         $this->assertSame(200, $result['status']);
         $this->assertSame(['A1', 'A2'], $result['data']['seat_labels']);
         $this->assertCount(2, $holds->createdRows);
-        $this->assertSame([501, str_repeat('a', 48)], $holds->releasedArgs);
+        $this->assertSame(str_repeat('a', 48), $holds->releasedSessionToken);
     }
 
     public function testCreateHoldRejectsBookedSeats(): void
@@ -77,7 +81,9 @@ class TicketHoldServiceTest extends TestCase
             $seats,
             new UnitFakeTicketSeatHoldRepository(),
             new TicketHoldValidator(),
-            new UnitFakeTicketHoldLogger()
+            new UnitFakeTicketHoldLogger(),
+            new UnitFakeTicketOrderRepository(),
+            new UnitFakeTicketLifecycleService()
         );
 
         $result = $service->createHold([
@@ -113,7 +119,9 @@ class TicketHoldServiceTest extends TestCase
             $seats,
             $holds,
             new TicketHoldValidator(),
-            new UnitFakeTicketHoldLogger()
+            new UnitFakeTicketHoldLogger(),
+            new UnitFakeTicketOrderRepository(),
+            new UnitFakeTicketLifecycleService()
         );
 
         $result = $service->createHold([
@@ -164,7 +172,7 @@ class UnitFakeTicketSeatHoldRepository extends TicketSeatHoldRepository
 {
     public array $conflicts = [];
     public array $createdRows = [];
-    public array $releasedArgs = [];
+    public ?string $releasedSessionToken = null;
 
     public function __construct()
     {
@@ -180,9 +188,9 @@ class UnitFakeTicketSeatHoldRepository extends TicketSeatHoldRepository
         return $this->conflicts;
     }
 
-    public function releaseForSessionAndShowtime(int $showtimeId, string $sessionToken): int
+    public function releaseForSession(string $sessionToken): int
     {
-        $this->releasedArgs = [$showtimeId, $sessionToken];
+        $this->releasedSessionToken = $sessionToken;
 
         return 0;
     }
@@ -194,6 +202,42 @@ class UnitFakeTicketSeatHoldRepository extends TicketSeatHoldRepository
             'seat_id' => $seatId,
             'session_token' => $sessionToken,
             'hold_expires_at' => $holdExpiresAt,
+        ];
+    }
+}
+
+class UnitFakeTicketOrderRepository extends TicketOrderRepository
+{
+    public ?array $pendingOrder = null;
+
+    public function __construct()
+    {
+    }
+
+    public function findActivePendingOrderBySession(string $sessionToken): ?array
+    {
+        return $this->pendingOrder;
+    }
+
+    public function findActivePendingOrderByUser(int $userId): ?array
+    {
+        return null;
+    }
+}
+
+class UnitFakeTicketLifecycleService extends TicketLifecycleService
+{
+    public function __construct()
+    {
+    }
+
+    public function runMaintenance(): array
+    {
+        return [
+            'purged_holds' => 0,
+            'expired_orders' => 0,
+            'expired_tickets' => 0,
+            'expired_payments' => 0,
         ];
     }
 }

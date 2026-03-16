@@ -30,6 +30,7 @@ class PaymentService
     private TicketLifecycleService $lifecycle;
     private VnpayGateway $gateway;
     private array $config;
+    private array $ticketConfig;
     private Logger $logger;
 
     public function __construct(
@@ -43,7 +44,8 @@ class PaymentService
         ?TicketLifecycleService $lifecycle = null,
         ?VnpayGateway $gateway = null,
         ?array $config = null,
-        ?Logger $logger = null
+        ?Logger $logger = null,
+        ?array $ticketConfig = null
     ) {
         $this->db = $db ?? Database::getInstance();
         $this->holds = $holds ?? new TicketSeatHoldRepository($this->db);
@@ -54,6 +56,7 @@ class PaymentService
         $this->lifecycle = $lifecycle ?? new TicketLifecycleService($this->db, $this->holds, $this->orders, $this->payments, $logger);
         $this->context = $context ?? new TicketCheckoutContextService($this->db, null, null, $this->holds);
         $this->config = $config ?? require dirname(__DIR__, 2) . '/config/payments.php';
+        $this->ticketConfig = $ticketConfig ?? require dirname(__DIR__, 2) . '/config/tickets.php';
         $this->gateway = $gateway ?? new VnpayGateway($this->config);
         $this->logger = $logger ?? new Logger();
     }
@@ -72,16 +75,18 @@ class PaymentService
         try {
             $this->assertVnpayReady();
             $this->lifecycle->runMaintenance();
+            $this->assertPendingCheckoutCapacity($sessionToken, $userId);
             $baseUrl = $this->resolveBaseUrl($requestContext);
             $result = $this->transactional(function () use ($data, $sessionToken, $userId, $requestContext, $baseUrl, $showtimeId): array {
                 $context = $this->context->buildContext($showtimeId, $data['seat_ids'] ?? [], $sessionToken);
                 $createdAt = date('Y-m-d H:i:s');
-                $holdExpiresAt = $this->resolveHoldExpiry($context['hold_expires_at'] ?? null, $createdAt);
+                $holdExpiresAt = $this->resolvePendingExpiry($createdAt);
                 $orderCode = $this->generateOrderCode();
 
                 $orderId = $this->orders->createOrder([
                     'order_code' => $orderCode,
                     'user_id' => $userId,
+                    'session_token' => $sessionToken,
                     'contact_name' => $data['contact_name'],
                     'contact_email' => $data['contact_email'],
                     'contact_phone' => $data['contact_phone'],
@@ -401,16 +406,28 @@ class PaymentService
         return $payload;
     }
 
-    private function resolveHoldExpiry(?string $holdExpiresAt, string $fallback): string
+    private function resolvePendingExpiry(string $fallback): string
     {
-        $candidate = trim((string) ($holdExpiresAt ?? ''));
-        if ($candidate !== '') {
-            return $candidate;
-        }
-
-        $minutes = (int) (($this->config['vnpay']['expire_minutes'] ?? 15) ?: 15);
+        $minutes = (int) (($this->ticketConfig['pending_payment_ttl_minutes'] ?? 5) ?: 5);
 
         return date('Y-m-d H:i:s', strtotime('+' . max(1, $minutes) . ' minutes', strtotime($fallback)));
+    }
+
+    private function assertPendingCheckoutCapacity(string $sessionToken, ?int $userId): void
+    {
+        $maxPerSession = max(1, (int) ($this->ticketConfig['max_active_pending_orders_per_session'] ?? 1));
+        if ($maxPerSession <= 1 && $this->orders->findActivePendingOrderBySession($sessionToken) !== null) {
+            throw new PaymentDomainException([
+                'checkout' => ['You already have a checkout waiting for payment in this session.'],
+            ], 409);
+        }
+
+        $maxPerUser = max(1, (int) ($this->ticketConfig['max_active_pending_orders_per_user'] ?? 1));
+        if ($userId !== null && $userId > 0 && $maxPerUser <= 1 && $this->orders->findActivePendingOrderByUser($userId) !== null) {
+            throw new PaymentDomainException([
+                'checkout' => ['Your account already has a checkout waiting for payment.'],
+            ], 409);
+        }
     }
 
     private function resolveBaseUrl(array $requestContext): string

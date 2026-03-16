@@ -67,6 +67,19 @@ class TicketSeatHoldRepository
         return $stmt->rowCount();
     }
 
+    public function releaseForSession(string $sessionToken): int
+    {
+        $stmt = $this->db->prepare('
+            DELETE FROM ticket_seat_holds
+            WHERE session_token = :session_token
+        ');
+        $stmt->execute([
+            'session_token' => $sessionToken,
+        ]);
+
+        return $stmt->rowCount();
+    }
+
     public function createHold(int $showtimeId, int $seatId, ?int $userId, string $sessionToken, string $holdExpiresAt): void
     {
         $stmt = $this->db->prepare('
