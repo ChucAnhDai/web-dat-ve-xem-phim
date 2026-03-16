@@ -162,7 +162,7 @@
     const seats = Array.isArray(state.preview?.seats) ? state.preview.seats : [];
 
     if (dom.seatList) {
-      dom.seatList.innerHTML = seats.map(seat => `<span class="seat-tag has-seat">${escapeHtml(seat.label)}</span>`).join('');
+      dom.seatList.innerHTML = seats.map(seat => `<span class="seat-tag-pill has-seat">${escapeHtml(seat.label)}</span>`).join('');
     }
     if (dom.status) {
       dom.status.textContent = humanizeStatus(order.status || 'paid');

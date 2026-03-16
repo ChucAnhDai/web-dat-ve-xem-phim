@@ -493,3 +493,4 @@
 [2026-03-16T22:16:01+07:00] INFO: Ticket seats held {"showtime_id":4,"seat_ids":[136],"seat_count":1,"session_token":"e971b37e6160","user_id":1,"hold_expires_at":"2026-03-16 22:21:01","duration_ms":2.17}
 [2026-03-16T22:16:15+07:00] INFO: Ticket order created {"order_id":18,"order_code":"TKT-3F9287A91C","showtime_id":4,"seat_ids":[136],"seat_count":1,"user_id":1,"session_token":"e971b37e6160","duration_ms":122.78}
 [2026-03-16T22:16:22+07:00] INFO: Ticket seats held {"showtime_id":4,"seat_ids":[171],"seat_count":1,"session_token":"e971b37e6160","user_id":1,"hold_expires_at":"2026-03-16 22:21:22","duration_ms":4.35}
+[2026-03-16T23:00:20+07:00] INFO: Ticket seats held {"showtime_id":4,"seat_ids":[139],"seat_count":1,"session_token":"19e6c0e5d85c","user_id":1,"hold_expires_at":"2026-03-16 23:05:20","duration_ms":4.5}

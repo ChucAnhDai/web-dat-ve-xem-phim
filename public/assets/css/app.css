@@ -22,6 +22,11 @@
   --radius: 12px;
   --radius-sm: 8px;
   --transition: 0.25s cubic-bezier(0.4,0,0.2,1);
+  /* SaaS Additions */
+  --saas-border: rgba(255, 255, 255, 0.1);
+  --saas-bg-elevated: #16161a;
+  --saas-accent: #3b82f6;
+  --saas-accent-glow: rgba(59, 130, 246, 0.2);
 }
 
 /* ═══════════════════════════════════════════
@@ -2032,6 +2037,299 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
   border-color: rgba(245, 158, 11, 0.45);
   color: rgba(253, 186, 116, 0.95);
   cursor: not-allowed;
+}
+/* ═══════════════════════════════════════════
+   CHECKOUT PAGE (REMASTERED)
+   Modern SaaS Interface
+═══════════════════════════════════════════ */
+.checkout-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+.checkout-section-card {
+  background: var(--saas-bg-elevated);
+  border: 1px solid var(--saas-border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.checkout-step-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.checkout-step-number {
+  width: 32px;
+  height: 32px;
+  background: var(--saas-accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.checkout-step-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+}
+
+.radio-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.radio-option {
+  background: var(--bg3);
+  border: 1px solid var(--saas-border);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.radio-option:hover {
+  background: var(--bg4);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.radio-option.selected {
+  border-color: var(--saas-accent);
+  background: rgba(59, 130, 246, 0.05);
+  box-shadow: 0 0 0 1px var(--saas-accent);
+}
+
+.radio-option-icon {
+  font-size: 24px;
+  color: var(--saas-accent);
+}
+
+.radio-option-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.radio-option-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.radio-option-desc {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+/* Payment Methods Grid */
+.payment-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.payment-item {
+  background: var(--bg3);
+  border: 1px solid var(--saas-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.payment-item:hover {
+  background: var(--bg4);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.payment-item.selected {
+  border-color: var(--saas-accent);
+  background: rgba(59, 130, 246, 0.05);
+  box-shadow: 0 0 0 1px var(--saas-accent);
+}
+
+.payment-brand-logo {
+  width: 40px;
+  height: 40px;
+  background: #fff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #000;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.payment-brand-info {
+  flex: 1;
+}
+
+.payment-brand-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.payment-brand-desc {
+  font-size: 11px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+/* Order Summary Box */
+.checkout-summary-container {
+  position: sticky;
+  top: calc(var(--header-h) + 28px);
+}
+
+.checkout-summary-card {
+  background: var(--saas-bg-elevated);
+  border: 1px solid var(--saas-border);
+  border-radius: 16px;
+  padding: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+.summary-movie-card {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-movie-poster {
+  width: 80px;
+  height: 110px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.summary-movie-details h4 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.summary-movie-info-text {
+  font-size: 12px;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.summary-cost-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--text2);
+}
+
+.cost-row.total {
+  margin-top: 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--saas-border);
+  color: var(--text);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cost-row.total span {
+  color: var(--red);
+}
+
+.checkout-submit-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px var(--red-glow);
+}
+
+.checkout-submit-btn:hover {
+  background: var(--red-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px var(--red-glow);
+}
+
+.checkout-submit-btn:active {
+  transform: translateY(0);
+}
+
+.checkout-rules-box {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  color: var(--text3);
+  line-height: 1.6;
+  border-left: 3px solid var(--saas-accent);
+}
+
+.seat-tag-pill {
+  display: inline-block;
+  background: var(--bg4);
+  color: var(--text);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+
+@media(max-width:992px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
 }
 .seat.disabled {
   background: rgba(255, 255, 255, 0.03);
