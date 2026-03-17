@@ -15,7 +15,7 @@
   </div>
   <div class="nav-item <?php echo ($activePage ?? '') === 'cart' ? 'active' : ''; ?>" onclick="navigateTo('cart')">
     <span class="nav-icon">🛒</span> Cart
-    <span class="nav-badge" id="cartNavBadge">3</span>
+    <span class="nav-badge" id="cartNavBadge">0</span>
   </div>
 
   <div class="sidebar-section">

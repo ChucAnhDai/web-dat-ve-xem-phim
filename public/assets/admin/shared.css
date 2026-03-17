@@ -422,6 +422,118 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
 .upload-zone svg { width: 32px; height: 32px; color: var(--text-dim); margin: 0 auto 10px; display: block; }
 .upload-zone p { font-size: 13px; color: var(--text-muted); }
 .upload-zone span { color: var(--red); font-weight: 600; }
+.product-media-stack { display: flex; flex-direction: column; gap: 12px; }
+.product-media-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.product-media-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.product-media-bulk-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.product-media-empty {
+  padding: 18px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+  text-align: center;
+  color: var(--text-muted);
+}
+.product-media-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255,255,255,0.02);
+  overflow: hidden;
+}
+.product-media-card-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.product-media-card-body {
+  padding: 16px;
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 16px;
+}
+.product-media-preview {
+  min-height: 180px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.product-media-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.product-media-placeholder {
+  width: 100%;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 2px;
+  font-size: 28px;
+}
+.product-media-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-content: start;
+}
+.product-preview-media-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 12px;
+}
+.product-preview-media-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.product-preview-media-frame {
+  height: 120px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.product-preview-media-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .table-empty-row td {
   padding: 28px 16px;
 }
@@ -844,6 +956,8 @@ tbody tr:hover td { background: rgba(255,255,255,0.02); }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .form-grid { grid-template-columns: 1fr; }
+  .product-media-card-body { grid-template-columns: 1fr; }
+  .product-media-fields { grid-template-columns: 1fr; }
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   table { min-width: 700px; }
 }

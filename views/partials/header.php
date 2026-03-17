@@ -20,7 +20,7 @@
   <div class="header-actions">
     <button class="icon-btn" onclick="navigateTo('cart')">
       🛒
-      <span class="badge" id="cartBadge">3</span>
+      <span class="badge" id="cartBadge">0</span>
     </button>
     <button class="icon-btn">
       🔔

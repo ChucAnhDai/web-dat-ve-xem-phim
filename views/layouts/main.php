@@ -6,8 +6,16 @@ $scriptName = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
 $publicBase = rtrim(dirname($scriptName), '/');
 $publicBase = $publicBase === '.' ? '' : $publicBase;
 $appBase = preg_replace('#/public$#', '', $publicBase) ?: '';
+$shopConfig = require __DIR__ . '/../../config/shop.php';
+$shopRuntimeConfig = [
+  'currency' => (string) ($shopConfig['currency'] ?? 'VND'),
+  'cart' => [
+    'max_quantity_per_item' => (int) ($shopConfig['cart']['max_quantity_per_item'] ?? 10),
+  ],
+];
 $appCssVersion = @filemtime(__DIR__ . '/../../public/assets/css/app.css') ?: time();
 $appJsVersion = @filemtime(__DIR__ . '/../../public/assets/js/app.js') ?: time();
+$shopCartJsVersion = @filemtime(__DIR__ . '/../../public/assets/js/shop-cart.js') ?: time();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -33,7 +41,9 @@ $appJsVersion = @filemtime(__DIR__ . '/../../public/assets/js/app.js') ?: time()
 <script>
 window.APP_BASE_PATH = <?php echo json_encode($appBase, JSON_UNESCAPED_UNICODE); ?>;
 window.PUBLIC_BASE_PATH = <?php echo json_encode($publicBase, JSON_UNESCAPED_UNICODE); ?>;
+window.SHOP_RUNTIME_CONFIG = <?php echo json_encode($shopRuntimeConfig, JSON_UNESCAPED_UNICODE); ?>;
 </script>
 <script src="<?php echo htmlspecialchars($publicBase); ?>/assets/js/app.js?v=<?php echo urlencode((string) $appJsVersion); ?>"></script>
+<script src="<?php echo htmlspecialchars($publicBase); ?>/assets/js/shop-cart.js?v=<?php echo urlencode((string) $shopCartJsVersion); ?>"></script>
 </body>
 </html>

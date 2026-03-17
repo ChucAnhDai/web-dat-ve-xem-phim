@@ -3,10 +3,13 @@
 use App\Controllers\Auth\AuthController;
 use App\Controllers\Admin\CinemaManagementController;
 use App\Controllers\Admin\MovieManagementController;
+use App\Controllers\Admin\ProductManagementController;
 use App\Controllers\Admin\ShowtimeManagementController;
 use App\Controllers\Admin\TicketManagementController;
 use App\Controllers\Api\MovieCatalogController;
 use App\Controllers\Api\PaymentController;
+use App\Controllers\Api\ShopCatalogController;
+use App\Controllers\Api\ShopCartController;
 use App\Controllers\Api\ShowtimeCatalogController;
 use App\Controllers\Api\TicketHoldController;
 use App\Controllers\Api\TicketOrderController;
@@ -24,6 +27,14 @@ $app->router->post('/api/auth/update-password', [AuthController::class, 'updateP
 
 $app->router->get('/api/movies', [MovieCatalogController::class, 'listMovies']);
 $app->router->get('/api/movies/{slug}', [MovieCatalogController::class, 'getMovieDetail']);
+$app->router->get('/api/shop/categories', [ShopCatalogController::class, 'listCategories']);
+$app->router->get('/api/shop/cart', [ShopCartController::class, 'getCart']);
+$app->router->post('/api/shop/cart/items', [ShopCartController::class, 'addItem']);
+$app->router->put('/api/shop/cart/items/{productId}', [ShopCartController::class, 'updateItem']);
+$app->router->delete('/api/shop/cart/items/{productId}', [ShopCartController::class, 'removeItem']);
+$app->router->delete('/api/shop/cart', [ShopCartController::class, 'clearCart']);
+$app->router->get('/api/shop/products', [ShopCatalogController::class, 'listProducts']);
+$app->router->get('/api/shop/products/{slug}', [ShopCatalogController::class, 'getProductDetail']);
 $app->router->get('/api/showtimes', [ShowtimeCatalogController::class, 'listShowtimes']);
 $app->router->get('/api/showtimes/{id}/seat-map', [ShowtimeCatalogController::class, 'getSeatMap']);
 $app->router->post('/api/tickets/holds', [TicketHoldController::class, 'createHold']);
@@ -64,6 +75,23 @@ $app->router->delete('/api/admin/movie-assets/{id}', [MovieManagementController:
 $app->router->get('/api/admin/movie-reviews', [MovieManagementController::class, 'listReviews'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/movie-reviews/{id}', [MovieManagementController::class, 'getReview'], [AdminMiddleware::class]);
 $app->router->put('/api/admin/movie-reviews/{id}/moderate', [MovieManagementController::class, 'moderateReview'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/product-categories', [ProductManagementController::class, 'listCategories'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/product-categories/{id}', [ProductManagementController::class, 'getCategory'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/product-categories', [ProductManagementController::class, 'createCategory'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/product-categories/{id}', [ProductManagementController::class, 'updateCategory'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/product-categories/{id}', [ProductManagementController::class, 'archiveCategory'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/products', [ProductManagementController::class, 'listProducts'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/products/{id}', [ProductManagementController::class, 'getProduct'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/products', [ProductManagementController::class, 'createProduct'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/products/{id}', [ProductManagementController::class, 'updateProduct'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/products/{id}', [ProductManagementController::class, 'archiveProduct'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/product-images', [ProductManagementController::class, 'listImages'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/product-images/bulk', [ProductManagementController::class, 'createImagesBatch'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/product-images/{id}', [ProductManagementController::class, 'getImage'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/product-images', [ProductManagementController::class, 'createImage'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/product-images/{id}', [ProductManagementController::class, 'updateImage'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/product-images/{id}', [ProductManagementController::class, 'archiveImage'], [AdminMiddleware::class]);
 
 $app->router->get('/api/admin/cinemas', [CinemaManagementController::class, 'listCinemas'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/cinemas/{id}', [CinemaManagementController::class, 'getCinema'], [AdminMiddleware::class]);

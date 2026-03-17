@@ -87,6 +87,28 @@ class Request
         return $body;
     }
 
+    public function getFiles(): array
+    {
+        $normalized = [];
+
+        foreach ($_FILES as $field => $fileSpec) {
+            if (!is_array($fileSpec)) {
+                continue;
+            }
+
+            $normalized[$field] = $this->normalizeFileSpec($fileSpec);
+        }
+
+        return $normalized;
+    }
+
+    public function getFile(string $field)
+    {
+        $files = $this->getFiles();
+
+        return $files[$field] ?? null;
+    }
+
     private function sanitizeInputValue($value)
     {
         if (is_array($value)) {
@@ -103,6 +125,43 @@ class Request
         }
 
         return $value;
+    }
+
+    private function normalizeFileSpec(array $fileSpec)
+    {
+        if (!array_key_exists('name', $fileSpec)) {
+            $normalized = [];
+            foreach ($fileSpec as $key => $value) {
+                if (is_array($value)) {
+                    $normalized[$key] = $this->normalizeFileSpec($value);
+                }
+            }
+
+            return $normalized;
+        }
+
+        if (!is_array($fileSpec['name'])) {
+            return [
+                'name' => $fileSpec['name'] ?? null,
+                'type' => $fileSpec['type'] ?? null,
+                'tmp_name' => $fileSpec['tmp_name'] ?? null,
+                'error' => $fileSpec['error'] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $fileSpec['size'] ?? 0,
+            ];
+        }
+
+        $normalized = [];
+        foreach (array_keys($fileSpec['name']) as $key) {
+            $normalized[$key] = $this->normalizeFileSpec([
+                'name' => $fileSpec['name'][$key] ?? null,
+                'type' => $fileSpec['type'][$key] ?? null,
+                'tmp_name' => $fileSpec['tmp_name'][$key] ?? null,
+                'error' => $fileSpec['error'][$key] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $fileSpec['size'][$key] ?? 0,
+            ]);
+        }
+
+        return $normalized;
     }
 
     public function bearerToken(): ?string

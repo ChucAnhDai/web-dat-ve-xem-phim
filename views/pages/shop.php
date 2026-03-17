@@ -4,42 +4,38 @@
 </div>
 
 <div class="category-tabs" id="categoryTabs">
-  <div class="cat-tab active" data-cat="all">
-    <span class="cat-tab-icon">🌟</span> All Products
-  </div>
-  <div class="cat-tab" data-cat="combo">
-    <span class="cat-tab-icon">🎉</span> Combo Deals
-  </div>
-  <div class="cat-tab" data-cat="popcorn">
-    <span class="cat-tab-icon">🍿</span> Popcorn
-  </div>
-  <div class="cat-tab" data-cat="drinks">
-    <span class="cat-tab-icon">🥤</span> Drinks
-  </div>
-  <div class="cat-tab" data-cat="snacks">
-    <span class="cat-tab-icon">🍫</span> Snacks
-  </div>
-  <div class="cat-tab" data-cat="merch">
-    <span class="cat-tab-icon">👕</span> Merchandise
-  </div>
+  <button class="cat-tab active" type="button" data-category-slug="all">
+    <span class="cat-tab-icon">All</span> All Products
+  </button>
 </div>
 
 <div class="filter-bar">
-  <input type="text" class="search-input-full" placeholder="🔍 Search products..." style="max-width:260px">
-  <select class="filter-select">
-    <option>All Prices</option>
-    <option>Under $10</option>
-    <option>$10 - $20</option>
-    <option>$20+</option>
+  <input id="shopSearchInput" type="text" class="search-input-full" placeholder="Search products..." style="max-width:260px">
+  <select id="shopPriceFilter" class="filter-select">
+    <option value="all">All Prices</option>
+    <option value="under_100000">Under 100,000 VND</option>
+    <option value="100000_200000">100,000 - 200,000 VND</option>
+    <option value="over_200000">Over 200,000 VND</option>
   </select>
-  <select class="filter-select">
-    <option>Sort by</option>
-    <option>Most Popular</option>
-    <option>Price: Low-High</option>
-    <option>Price: High-Low</option>
-    <option>Newest</option>
-    <option>Oldest</option>
+  <select id="shopSortSelect" class="filter-select">
+    <option value="featured">Featured First</option>
+    <option value="price_asc">Price: Low to High</option>
+    <option value="price_desc">Price: High to Low</option>
+    <option value="newest">Newest</option>
+    <option value="oldest">Oldest</option>
+    <option value="name_asc">Name: A to Z</option>
   </select>
 </div>
 
+<div class="catalog-meta">
+  <div id="shopCatalogMetaText">Loading products...</div>
+  <div class="catalog-request-status" id="shopRequestStatus">Connecting to catalog</div>
+</div>
+
 <div class="products-grid" id="shopGrid"></div>
+<div class="catalog-empty-state" id="shopCatalogEmpty" hidden></div>
+
+<div class="catalog-pagination" id="shopPagination" hidden>
+  <div class="catalog-pagination-info" id="shopPaginationInfo"></div>
+  <div class="catalog-pagination-buttons" id="shopPaginationButtons"></div>
+</div>

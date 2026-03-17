@@ -93,7 +93,8 @@ class UserRepository
                 COALESCE((
                     SELECT SUM(total_price)
                     FROM shop_orders
-                    WHERE user_id = :shop_user_id AND status <> :shop_cancelled
+                    WHERE user_id = :shop_user_id
+                      AND status NOT IN (:shop_cancelled, :shop_expired, :shop_refunded)
                 ), 0)',
             [
                 'ticket_user_id' => $userId,
@@ -102,6 +103,8 @@ class UserRepository
                 'ticket_refunded' => 'refunded',
                 'shop_user_id' => $userId,
                 'shop_cancelled' => 'cancelled',
+                'shop_expired' => 'expired',
+                'shop_refunded' => 'refunded',
             ]
         );
 
@@ -133,7 +136,7 @@ class UserRepository
                 UNION ALL
 
                 SELECT
-                    CONCAT('S-', o.id) AS order_code,
+                    COALESCE(NULLIF(o.order_code, ''), CONCAT('S-', o.id)) AS order_code,
                     'shop' AS order_type,
                     COALESCE(SUM(od.quantity), 0) AS items_count,
                     o.order_date AS order_date,

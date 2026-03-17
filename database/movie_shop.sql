@@ -259,72 +259,146 @@ CREATE TABLE movie_reviews (
 
 CREATE TABLE product_categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(100),
-    description TEXT
+    name VARCHAR(100) NOT NULL,
+    slug VARCHAR(140) NOT NULL UNIQUE,
+    description TEXT,
+    display_order INT NOT NULL DEFAULT 0,
+    visibility ENUM('featured','standard','hidden') NOT NULL DEFAULT 'standard',
+    status ENUM('active','inactive','archived') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_product_categories_status_display (status, visibility, display_order)
 );
 
 CREATE TABLE products (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    category_id INT,
-    name VARCHAR(255),
+    category_id INT NULL,
+    slug VARCHAR(180) NOT NULL UNIQUE,
+    sku VARCHAR(64) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    short_description VARCHAR(255) NULL,
     description TEXT,
-    price DECIMAL(10,2),
-    stock INT,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    compare_at_price DECIMAL(10,2) NULL,
+    stock INT NOT NULL DEFAULT 0,
+    currency CHAR(3) NOT NULL DEFAULT 'VND',
+    track_inventory TINYINT(1) NOT NULL DEFAULT 1,
+    status ENUM('draft','active','inactive','archived') NOT NULL DEFAULT 'draft',
+    visibility ENUM('featured','standard','hidden') NOT NULL DEFAULT 'standard',
+    sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_products_category_status (category_id, status, visibility, sort_order),
+    INDEX idx_products_status_updated (status, updated_at),
     FOREIGN KEY (category_id) REFERENCES product_categories(id)
 );
 
 CREATE TABLE product_images (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT,
-    image VARCHAR(255),
+    product_id INT NOT NULL,
+    asset_type ENUM('thumbnail','gallery','banner','lifestyle') NOT NULL DEFAULT 'gallery',
+    image_url VARCHAR(255) NOT NULL,
+    alt_text VARCHAR(255) NULL,
+    sort_order INT NOT NULL DEFAULT 0,
+    is_primary TINYINT(1) NOT NULL DEFAULT 0,
+    status ENUM('draft','active','archived') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_product_images_product_status (product_id, status, asset_type, sort_order),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 CREATE TABLE product_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT,
-    brand VARCHAR(100),
-    weight VARCHAR(50),
-    origin VARCHAR(100),
+    product_id INT NOT NULL,
+    brand VARCHAR(100) NULL,
+    weight VARCHAR(50) NULL,
+    origin VARCHAR(100) NULL,
     description TEXT,
+    attributes_json LONGTEXT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_product_details_product (product_id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 CREATE TABLE carts (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
+    user_id INT NULL,
+    session_token VARCHAR(64) NULL,
+    currency CHAR(3) NOT NULL DEFAULT 'VND',
+    status ENUM('active','converted','abandoned') NOT NULL DEFAULT 'active',
+    expires_at TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_carts_user_status (user_id, status),
+    INDEX idx_carts_session_status (session_token, status),
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE cart_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    cart_id INT,
-    product_id INT,
-    quantity INT,
-    price DECIMAL(10,2),
+    cart_id INT NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_cart_items_cart_product (cart_id, product_id),
+    INDEX idx_cart_items_product (product_id),
     FOREIGN KEY (cart_id) REFERENCES carts(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
 
 CREATE TABLE shop_orders (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT,
-    address_id INT,
-    total_price DECIMAL(10,2),
-    status ENUM('pending','shipping','completed','cancelled'),
+    order_code VARCHAR(32) NOT NULL UNIQUE,
+    user_id INT NULL,
+    session_token VARCHAR(64) NULL,
+    address_id INT NULL,
+    contact_name VARCHAR(120) NULL,
+    contact_email VARCHAR(150) NULL,
+    contact_phone VARCHAR(20) NULL,
+    fulfillment_method ENUM('pickup','delivery') NOT NULL DEFAULT 'delivery',
+    shipping_address_text TEXT NULL,
+    shipping_city VARCHAR(100) NULL,
+    shipping_district VARCHAR(100) NULL,
+    item_count INT NOT NULL DEFAULT 0,
+    subtotal_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    fee_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    shipping_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    total_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    currency CHAR(3) NOT NULL DEFAULT 'VND',
+    status ENUM('pending','confirmed','preparing','ready','shipping','completed','cancelled','expired','refunded') NOT NULL DEFAULT 'pending',
     order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    payment_due_at TIMESTAMP NULL DEFAULT NULL,
+    confirmed_at TIMESTAMP NULL DEFAULT NULL,
+    fulfilled_at TIMESTAMP NULL DEFAULT NULL,
+    cancelled_at TIMESTAMP NULL DEFAULT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_shop_orders_user_status (user_id, status),
+    INDEX idx_shop_orders_session_status (session_token, status),
+    INDEX idx_shop_orders_status_order_date (status, order_date),
+    INDEX idx_shop_orders_payment_due (payment_due_at),
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (address_id) REFERENCES addresses(id)
 );
 
 CREATE TABLE order_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    order_id INT,
-    product_id INT,
-    quantity INT,
-    price DECIMAL(10,2),
+    order_id INT NOT NULL,
+    product_id INT NULL,
+    product_name_snapshot VARCHAR(255) NOT NULL,
+    product_sku_snapshot VARCHAR(64) NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    discount_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    line_total DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_order_details_order (order_id),
+    INDEX idx_order_details_product (product_id),
     FOREIGN KEY (order_id) REFERENCES shop_orders(id),
     FOREIGN KEY (product_id) REFERENCES products(id)
 );
@@ -400,16 +474,33 @@ CREATE TABLE banners (
 
 CREATE TABLE promotions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255),
-    discount_percent INT,
-    start_date DATE,
-    end_date DATE
+    code VARCHAR(50) NOT NULL UNIQUE,
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    discount_type ENUM('percent','fixed') NOT NULL DEFAULT 'percent',
+    discount_value DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    max_discount_amount DECIMAL(10,2) NULL,
+    min_order_amount DECIMAL(10,2) NULL,
+    start_at TIMESTAMP NULL DEFAULT NULL,
+    end_at TIMESTAMP NULL DEFAULT NULL,
+    status ENUM('draft','scheduled','active','expired','archived') NOT NULL DEFAULT 'draft',
+    usage_limit INT NULL,
+    usage_count INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_promotions_status_window (status, start_at, end_at)
 );
 
 CREATE TABLE product_promotions (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    product_id INT,
-    promotion_id INT,
+    product_id INT NOT NULL,
+    promotion_id INT NOT NULL,
+    priority TINYINT UNSIGNED NOT NULL DEFAULT 1,
+    status ENUM('active','archived') NOT NULL DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_product_promotions_pair (product_id, promotion_id),
+    INDEX idx_product_promotions_promotion_status (promotion_id, status),
     FOREIGN KEY (product_id) REFERENCES products(id),
     FOREIGN KEY (promotion_id) REFERENCES promotions(id)
 );
