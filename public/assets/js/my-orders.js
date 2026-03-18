@@ -83,7 +83,8 @@
       if (dom.lookupCode) dom.lookupCode.value = '';
       if (dom.lookupEmail) dom.lookupEmail.value = '';
       if (dom.lookupPhone) dom.lookupPhone.value = '';
-      setLookupStatus('Guest lookup form was cleared.', false);
+      clearLookupResult({ closeModal: true });
+      setLookupStatus('Guest lookup form and results were cleared.', false);
     });
   }
 
@@ -118,8 +119,7 @@
         }
       }
 
-      const payload = await fetchJson('/api/shop/orders/session?per_page=100');
-      applyOrderSource(payload?.data || payload || {}, 'session');
+      applyGuestLookupOnlyState();
     } catch (error) {
       state.source = 'none';
       state.orders = [];
@@ -146,12 +146,22 @@
 
     if (state.source === 'member') {
       setAccessStatus('Signed-in account orders loaded.', false);
-    } else if (payload.session_attached) {
-      setAccessStatus('Guest orders for this browser session loaded.', false);
     } else {
-      setAccessStatus('No account session detected. Use guest lookup if needed.', false);
+      setAccessStatus(guestLookupInstructions(), false);
     }
 
+    void maybeAutoOpenRequestedOrder();
+  }
+
+  function applyGuestLookupOnlyState() {
+    state.source = 'none';
+    state.orders = [];
+    state.summary = null;
+    updateSummary(null);
+    updateSubtitle();
+    updateAccessMeta();
+    renderOrders();
+    setAccessStatus(guestLookupInstructions(), false);
     void maybeAutoOpenRequestedOrder();
   }
 
@@ -173,15 +183,10 @@
       return;
     }
 
-    if (state.source === 'session') {
-      dom.subtitle.textContent = 'These guest shop orders were detected from the current browser session cookie.';
-      return;
-    }
-
-    dom.subtitle.textContent = 'Use guest lookup or sign in to review your shop orders.';
+    dom.subtitle.textContent = 'Guest orders are only shown after a manual lookup with the checkout order code, email, and phone.';
   }
 
-  function updateAccessMeta(payload) {
+  function updateAccessMeta() {
     if (!dom.accessMeta) {
       return;
     }
@@ -191,12 +196,7 @@
       return;
     }
 
-    if (state.source === 'session' && payload?.session_attached) {
-      dom.accessMeta.textContent = 'Guest session mode is active. Pending guest orders on this browser can be resumed from checkout or cancelled from the detail view.';
-      return;
-    }
-
-    dom.accessMeta.textContent = 'No member token or guest session order was found. Use the lookup form with your order code and checkout contact information.';
+    dom.accessMeta.textContent = 'For guest orders, automatic browser-session access is disabled. Enter the order code together with the same checkout email and phone number to view the order.';
   }
 
   function renderLoadingState() {
@@ -229,10 +229,8 @@
     if (!availableOrders.length) {
       if (state.source === 'member') {
         renderEmptyState('No account orders found.', 'Place a shop order while signed in and it will appear here.');
-      } else if (state.source === 'session') {
-        renderEmptyState('No guest orders found on this browser.', 'You can still use the guest lookup form with your order code and checkout contact details.');
       } else {
-        renderEmptyState('No orders available.', 'Use guest lookup or sign in to review your orders.');
+        renderEmptyState('No orders loaded.', 'Use the guest lookup form with your order code, checkout email, and checkout phone, or sign in to review member orders.');
       }
       return;
     }
@@ -288,10 +286,15 @@
         return;
       }
 
+      if (state.source !== 'member') {
+        setLookupStatus(guestLookupInstructions(), true);
+        state.pendingLookupFocus = true;
+        maybeFocusLookupForm();
+        return;
+      }
+
       setStatus('Loading order detail...', false);
-      const path = state.source === 'member'
-        ? `/api/me/shop-orders/${orderId}`
-        : `/api/shop/orders/session/${orderId}`;
+      const path = `/api/me/shop-orders/${orderId}`;
       const payload = await fetchJson(path);
       const data = payload?.data || payload || {};
       const order = data.order || null;
@@ -327,9 +330,26 @@
       setLookupStatus('Please enter an order code.', true);
       return;
     }
+    if (!credentials.contact_email) {
+      setLookupStatus('Please enter the checkout email used for this order.', true);
+      return;
+    }
+    if (!credentials.contact_phone) {
+      setLookupStatus('Please enter the checkout phone used for this order.', true);
+      return;
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(credentials.contact_email)) {
+      setLookupStatus('Checkout email is invalid.', true);
+      return;
+    }
+    if (!/^[0-9+\s().-]{9,20}$/.test(credentials.contact_phone)) {
+      setLookupStatus('Checkout phone is invalid.', true);
+      return;
+    }
 
     state.isLookingUp = true;
     try {
+      clearLookupResult({ closeModal: true });
       setLookupStatus('Looking up guest order...', false);
       const payload = await fetchJson('/api/shop/orders/lookup', {
         method: 'POST',
@@ -355,6 +375,7 @@
       setLookupStatus(`Guest order ${order.order_code || ''} loaded.`, false);
       toast('+', 'Guest order found', `Order ${order.order_code || ''} is ready to review.`);
     } catch (error) {
+      clearLookupResult({ closeModal: true });
       setLookupStatus(error.message || 'Guest lookup failed.', true);
       // Removed redundant toast to match user's UI preference if they find it "absurd"
       // But actually the red text in the panel is usually enough for local errors
@@ -378,7 +399,7 @@
         <div class="order-detail-top">
           <div>
             <div class="summary-title" style="margin-bottom:6px;">${escapeHtml(order.order_code || 'Order detail')}</div>
-            <div class="lookup-help">${escapeHtml(formatDateTime(order.order_date))} • ${escapeHtml(orderSourceLabel(order))}</div>
+            <div class="lookup-help">${escapeHtml(formatDateTime(order.order_date))} - ${escapeHtml(orderSourceLabel(order))}</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-start;">
             <span class="ticket-status status-${escapeHtml(statusClass(order.status))}">${escapeHtml(humanizeStatus(order.status))}</span>
@@ -416,7 +437,7 @@
                 <div class="order-detail-media">${item.primary_image_url ? `<img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" loading="lazy" onerror="this.remove()">` : ''}</div>
                 <div>
                   <div style="font-weight:700;">${escapeHtml(item.product_name || 'Product')}</div>
-                  <div class="lookup-help">${escapeHtml(item.product_sku || 'No SKU')} • Qty ${Number(item.quantity || 0)}</div>
+                  <div class="lookup-help">${escapeHtml(item.product_sku || 'No SKU')} - Qty ${Number(item.quantity || 0)}</div>
                 </div>
                 <div class="order-detail-total">${escapeHtml(formatCurrency(item.line_total, item.currency || order.currency))}</div>
               </div>
@@ -461,12 +482,6 @@
 
       if (state.modalAccess.source === 'member') {
         payload = await fetchJson(`/api/me/shop-orders/${Number(state.modalAccess.orderId || 0)}/cancel`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: {}
-        });
-      } else if (state.modalAccess.source === 'session') {
-        payload = await fetchJson(`/api/shop/orders/session/${Number(state.modalAccess.orderId || 0)}/cancel`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: {}
@@ -576,6 +591,14 @@
 
     state.pendingOpenOrderId = null;
     replaceQueryParam('open', null);
+
+    if (state.source !== 'member') {
+      setAccessStatus(guestLookupInstructions(), false);
+      state.pendingLookupFocus = true;
+      maybeFocusLookupForm();
+      return;
+    }
+
     await openOrderDetail(requestedOrderId);
   }
 
@@ -629,9 +652,25 @@
     return Boolean(typeof getAuthToken === 'function' && getAuthToken());
   }
 
+  function clearLookupResult(options = {}) {
+    state.lookupOrder = null;
+    state.lookupCredentials = null;
+
+    if (options.closeModal && state.modalAccess?.source === 'lookup') {
+      closeModal();
+    }
+
+    activateFilter('all');
+    renderOrders();
+  }
+
+  function guestLookupInstructions() {
+    return 'Guest automatic access is disabled. Use order lookup with the order code, checkout email, and checkout phone.';
+  }
+
   function itemSummary(order) {
     const count = Number(order.item_count || 0);
-    return `${count} item${count === 1 ? '' : 's'} • ${humanizeStatus(order.payment_method || 'payment')}`;
+    return `${count} item${count === 1 ? '' : 's'} - ${humanizeStatus(order.payment_method || 'payment')}`;
   }
 
   function orderSourceLabel(order) {

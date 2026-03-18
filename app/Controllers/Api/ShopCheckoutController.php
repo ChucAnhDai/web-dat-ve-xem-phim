@@ -59,7 +59,7 @@ class ShopCheckoutController
     {
         $token = $request->bearerToken();
         if (!is_string($token) || trim($token) === '') {
-            error_log('[ShopCheckout] bearerToken() returned empty — no Authorization header or auth cookie found');
+            error_log('[ShopCheckout] bearerToken() returned empty - no Authorization header or auth cookie found');
             return null;
         }
 
@@ -100,6 +100,14 @@ class ShopCheckoutController
 
     private function applyCartCookie(Request $request, Response $response, array $result): void
     {
+        if (!empty($result['clear_session_cookie'])) {
+            $response->clearCookie($this->service->cartCookieName(), [
+                'path' => $request->appBasePath() !== '' ? $request->appBasePath() : '/',
+            ]);
+
+            return;
+        }
+
         $sessionToken = trim((string) ($result['session_token'] ?? ''));
         if ($sessionToken === '') {
             return;

@@ -80,6 +80,41 @@ class ShopCheckoutControllerTest extends TestCase
         $this->assertSame('shop-idem-001', $service->lastIdempotencyKey);
         $this->assertSame(str_repeat('c', 64), $service->lastSessionToken);
     }
+
+    public function testCreateGuestCheckoutClearsGuestCartCookieAfterSuccess(): void
+    {
+        $service = new FeatureFakeShopCheckoutService();
+        $service->result = [
+            'status' => 201,
+            'data' => [
+                'order' => ['order_code' => 'SHP-GUEST-002', 'user_id' => null],
+                'payment' => ['payment_method' => 'cash'],
+                'redirect_url' => null,
+            ],
+            'clear_session_cookie' => true,
+        ];
+        $controller = new ShopCheckoutController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = [
+            'contact_name' => 'Guest Checkout',
+            'contact_email' => 'guest@example.com',
+            'contact_phone' => '0901234567',
+            'fulfillment_method' => 'pickup',
+            'payment_method' => 'cash',
+        ];
+        $_COOKIE = [
+            'cinemax_cart' => str_repeat('d', 64),
+        ];
+        $response = new ShopCheckoutCapturingResponse();
+
+        $controller->createCheckout(new Request(), $response);
+
+        $this->assertSame(201, $response->statusCode);
+        $this->assertSame('cinemax_cart', $response->clearedCookies[0]['name'] ?? null);
+        $this->assertArrayNotHasKey('cinemax_cart', $_COOKIE);
+        $this->assertSame([], $response->cookies);
+    }
 }
 
 class FeatureFakeShopCheckoutService extends ShopCheckoutService
@@ -123,6 +158,7 @@ class ShopCheckoutCapturingResponse extends Response
     public int $statusCode = 200;
     public array $payload = [];
     public array $cookies = [];
+    public array $clearedCookies = [];
 
     public function setStatusCode(int $code): void
     {
@@ -143,5 +179,14 @@ class ShopCheckoutCapturingResponse extends Response
             'options' => $options,
         ];
         $_COOKIE[$name] = $value;
+    }
+
+    public function clearCookie(string $name, array $options = []): void
+    {
+        $this->clearedCookies[] = [
+            'name' => $name,
+            'options' => $options,
+        ];
+        unset($_COOKIE[$name]);
     }
 }

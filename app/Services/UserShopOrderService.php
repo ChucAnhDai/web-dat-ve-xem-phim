@@ -17,6 +17,8 @@ class UserShopOrderService
 {
     use FormatsShopOrderData;
 
+    private const GUEST_SESSION_ACCESS_DISABLED_MESSAGE = 'Guest session order access has been disabled. Use order lookup with the order code, checkout email, and checkout phone.';
+
     private PDO $db;
     private ShopOrderRepository $orders;
     private OrderDetailRepository $details;
@@ -162,114 +164,23 @@ class UserShopOrderService
 
     public function listSessionOrders(?string $sessionToken, array $filters): array
     {
-        $normalized = $this->validator->normalizeOrderFilters($filters);
-        $normalizedToken = $this->normalizeSessionToken($sessionToken);
-        if ($normalizedToken === null) {
-            return $this->success([
-                'source' => 'session',
-                'session_attached' => false,
-                'items' => [],
-                'meta' => $this->paginationMeta(['page' => 1, 'per_page' => $normalized['per_page'], 'total' => 0]),
-                'summary' => $this->emptySummary(),
-                'filters' => $normalized,
-            ]);
-        }
-
-        try {
-            $this->lifecycle->runMaintenance();
-            $page = $this->orders->paginateSessionOrders($normalizedToken, $normalized);
-            $summary = $this->orders->summarizeSessionOrders($normalizedToken, $normalized);
-            $detailLookup = $this->detailLookup($page['items']);
-        } catch (Throwable $exception) {
-            $this->logger->error('Guest session shop order history load failed', [
-                'session_token' => $this->sessionTokenPreview($normalizedToken),
-                'filters' => $normalized,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return $this->error(['server' => ['Failed to load guest orders for this browser.']], 500);
-        }
-
-        return $this->success([
-            'source' => 'session',
-            'session_attached' => true,
-            'items' => array_map(function (array $header) use ($detailLookup): array {
-                return $this->decorateSummaryOrder(
-                    $this->formatShopOrderSummary($header),
-                    $detailLookup[(int) ($header['id'] ?? 0)] ?? []
-                );
-            }, $page['items']),
-            'meta' => $this->paginationMeta($page),
-            'summary' => $summary,
-            'filters' => $normalized,
+        return $this->denyGuestSessionAccess('list', $sessionToken, [
+            'filters' => $this->validator->normalizeOrderFilters($filters),
         ]);
     }
 
     public function getSessionOrder(?string $sessionToken, int $orderId): array
     {
-        $normalizedToken = $this->normalizeSessionToken($sessionToken);
-        if ($normalizedToken === null) {
-            return $this->error(['order' => ['Guest order was not found.']], 404);
-        }
-
-        try {
-            $this->lifecycle->runMaintenance();
-            $header = $this->orders->findOrderHeaderById($orderId);
-            if (!$this->isSessionOwner($header, $normalizedToken)) {
-                return $this->error(['order' => ['Guest order was not found.']], 404);
-            }
-
-            $detailRows = $this->details->listByOrderIds([$orderId]);
-        } catch (Throwable $exception) {
-            $this->logger->error('Guest session shop order detail load failed', [
-                'session_token' => $this->sessionTokenPreview($normalizedToken),
-                'order_id' => $orderId,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return $this->error(['server' => ['Failed to load the guest order.']], 500);
-        }
-
-        return $this->success([
-            'source' => 'session',
-            'order' => $this->decorateDetailOrder($this->formatShopOrderDetail($header, $detailRows)),
+        return $this->denyGuestSessionAccess('detail', $sessionToken, [
+            'order_id' => $orderId,
         ]);
     }
 
     public function cancelSessionOrder(?string $sessionToken, int $orderId): array
     {
-        $normalizedToken = $this->normalizeSessionToken($sessionToken);
-        if ($normalizedToken === null) {
-            return $this->error(['order' => ['Guest order was not found.']], 404);
-        }
-
-        try {
-            $this->lifecycle->runMaintenance();
-            $header = $this->orders->findOrderHeaderById($orderId);
-            if (!$this->isSessionOwner($header, $normalizedToken)) {
-                return $this->error(['order' => ['Guest order was not found.']], 404);
-            }
-
-            return $this->performCancellation($header, 'session', [
-                'session_token' => $this->sessionTokenPreview($normalizedToken),
-            ]);
-        } catch (UserShopOrderAccessException $exception) {
-            $this->logger->info('Guest session shop order cancellation blocked', [
-                'session_token' => $this->sessionTokenPreview($normalizedToken),
-                'order_id' => $orderId,
-                'errors' => $exception->errors(),
-            ]);
-
-            return $this->error($exception->errors(), $exception->status());
-        } catch (Throwable $exception) {
-            $this->logger->error('Guest session shop order cancellation failed', [
-                'session_token' => $this->sessionTokenPreview($normalizedToken),
-                'order_id' => $orderId,
-                'error' => $exception->getMessage(),
-            ]);
-
-            return $this->error(['server' => ['Failed to cancel the guest order.']], 500);
-        }
+        return $this->denyGuestSessionAccess('cancel', $sessionToken, [
+            'order_id' => $orderId,
+        ]);
     }
 
     public function lookupGuestOrder(array $payload, int $userId = 0): array
@@ -648,6 +559,18 @@ class UserShopOrderService
         }
 
         return substr($normalized, 0, 12);
+    }
+
+    private function denyGuestSessionAccess(string $action, ?string $sessionToken, array $context = []): array
+    {
+        $this->logger->info('Guest session shop order access denied by policy', array_merge($context, [
+            'action' => $action,
+            'session_token' => $this->sessionTokenPreview($sessionToken),
+        ]));
+
+        return $this->error([
+            'lookup' => [self::GUEST_SESSION_ACCESS_DISABLED_MESSAGE],
+        ], 403);
     }
 
     private function paginationMeta(array $page): array

@@ -53,7 +53,7 @@ class UserShopOrderServiceIntegrationTest extends TestCase
         $this->assertCount(1, $result['data']['items'][0]['preview_items']);
     }
 
-    public function testListSessionOrdersReturnsOnlyGuestOrdersForCookieSession(): void
+    public function testListSessionOrdersIsDeniedByPolicy(): void
     {
         $token = str_repeat('s', 64);
         $this->seedOrder([
@@ -81,11 +81,11 @@ class UserShopOrderServiceIntegrationTest extends TestCase
 
         $result = $this->makeService()->listSessionOrders($token, ['per_page' => 20]);
 
-        $this->assertSame(200, $result['status']);
-        $this->assertTrue($result['data']['session_attached']);
-        $this->assertCount(1, $result['data']['items']);
-        $this->assertSame('SHP-GUEST-SESSION', $result['data']['items'][0]['order_code']);
-        $this->assertTrue($result['data']['items'][0]['is_guest_order']);
+        $this->assertSame(403, $result['status']);
+        $this->assertSame(
+            'Guest session order access has been disabled. Use order lookup with the order code, checkout email, and checkout phone.',
+            $result['errors']['lookup'][0] ?? null
+        );
     }
 
     public function testLookupGuestOrderReturnsDetailWhenContactMatches(): void
@@ -106,12 +106,39 @@ class UserShopOrderServiceIntegrationTest extends TestCase
         $result = $this->makeService()->lookupGuestOrder([
             'order_code' => 'SHP-GUEST-LOOKUP',
             'contact_email' => 'guest@example.com',
+            'contact_phone' => '0901234567',
         ]);
 
         $this->assertSame(200, $result['status']);
         $this->assertSame('lookup', $result['data']['source']);
         $this->assertSame('SHP-GUEST-LOOKUP', $result['data']['order']['order_code']);
         $this->assertSame('guest@example.com', $result['data']['order']['contact_email']);
+    }
+
+    public function testCancelSessionOrderIsDeniedByPolicyAndDoesNotMutateOrder(): void
+    {
+        $token = str_repeat('q', 64);
+        $this->seedOrder([
+            'id' => 8,
+            'order_code' => 'SHP-GUEST-NO-SESSION-CANCEL',
+            'user_id' => null,
+            'session_token' => $token,
+            'status' => 'pending',
+            'payment_method' => 'cash',
+            'payment_status' => 'pending',
+            'quantity' => 1,
+            'stock_after_reserve' => 9,
+        ]);
+
+        $result = $this->makeService()->cancelSessionOrder($token, 8);
+
+        $this->assertSame(403, $result['status']);
+        $this->assertSame(
+            'Guest session order access has been disabled. Use order lookup with the order code, checkout email, and checkout phone.',
+            $result['errors']['lookup'][0] ?? null
+        );
+        $this->assertSame('pending', $this->db->query("SELECT status FROM shop_orders WHERE id = 8")->fetchColumn());
+        $this->assertSame('pending', $this->db->query("SELECT payment_status FROM payments WHERE shop_order_id = 8")->fetchColumn());
     }
 
     public function testLookupGuestOrderReturnsHelpfulErrorWhenMatchingOrderBelongsToMember(): void
@@ -136,7 +163,7 @@ class UserShopOrderServiceIntegrationTest extends TestCase
 
         $this->assertSame(403, $result['status']);
         $this->assertSame(
-            'This order is linked to a member account. Please sign in to view it.',
+            'Đơn này thuộc tài khoản thành viên, vui lòng đăng nhập để xem',
             $result['errors']['lookup'][0] ?? null
         );
     }
@@ -163,7 +190,7 @@ class UserShopOrderServiceIntegrationTest extends TestCase
 
         $this->assertSame(403, $result['status']);
         $this->assertSame(
-            'This order is linked to a member account. Please sign in to manage it.',
+            'Đơn này thuộc tài khoản thành viên, vui lòng đăng nhập để xem',
             $result['errors']['lookup'][0] ?? null
         );
         $this->assertSame('pending', $this->db->query("SELECT status FROM shop_orders WHERE id = 7")->fetchColumn());

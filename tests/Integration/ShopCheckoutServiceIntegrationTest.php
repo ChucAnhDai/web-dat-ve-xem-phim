@@ -70,6 +70,7 @@ class ShopCheckoutServiceIntegrationTest extends TestCase
         ]);
 
         $this->assertSame(201, $result['status']);
+        $this->assertTrue($result['clear_session_cookie']);
         $this->assertSame('pending', $result['data']['order']['status']);
         $this->assertSame('cash', $result['data']['payment']['payment_method']);
         $this->assertNull($result['data']['redirect_url']);

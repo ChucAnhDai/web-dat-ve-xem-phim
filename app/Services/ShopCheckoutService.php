@@ -179,7 +179,10 @@ class ShopCheckoutService
             $snapshot['payload'],
             $snapshot['status'],
             $context['session_token'],
-            $context['session_cookie_expires_at']
+            $context['session_cookie_expires_at'],
+            [
+                'clear_session_cookie' => $userId === null,
+            ]
         );
     }
 
@@ -800,13 +803,20 @@ class ShopCheckoutService
         return (int) round((microtime(true) - $startedAt) * 1000);
     }
 
-    private function success(array $data, int $status = 200, ?string $sessionToken = null, ?int $expiresAt = null): array
+    private function success(
+        array $data,
+        int $status = 200,
+        ?string $sessionToken = null,
+        ?int $expiresAt = null,
+        array $options = []
+    ): array
     {
         return [
             'status' => $status,
             'data' => $data,
             'session_token' => $sessionToken,
             'session_cookie_expires_at' => $expiresAt,
+            'clear_session_cookie' => (bool) ($options['clear_session_cookie'] ?? false),
         ];
     }
 

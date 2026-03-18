@@ -16,10 +16,11 @@ $paymentResultSecondaryHref = $paymentResultRouteBase . '/movies';
 $paymentResultSecondaryLabel = 'Back to Movies';
 
 if ($paymentResultOrderType === 'shop') {
-    $paymentResultPrimaryHref = $paymentResultRouteBase . '/my-orders';
-    $paymentResultPrimaryLabel = 'Open My Orders';
+    $paymentResultPrimaryHref = $paymentResultRouteBase . '/my-orders?lookup=1';
+    $paymentResultPrimaryLabel = 'Open Order Lookup';
     $paymentResultSecondaryHref = $paymentResultRouteBase . '/shop';
     $paymentResultSecondaryLabel = 'Back to Shop';
+    $paymentResultSubtitle = 'Use the order code below to review the latest shop order. Guest orders require manual lookup with the same checkout email and phone.';
 }
 
 if ($paymentResultStatus === 'success') {

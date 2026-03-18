@@ -30,20 +30,24 @@ class ShopOrderAccessValidator
         $orderCode = $this->normalizeOrderCode($payload['order_code'] ?? null);
         $contactEmail = $this->normalizeEmail($payload['contact_email'] ?? null);
         $contactPhone = $this->normalizePhone($payload['contact_phone'] ?? null);
+        $rawEmail = trim((string) ($payload['contact_email'] ?? ''));
+        $rawPhone = trim((string) ($payload['contact_phone'] ?? ''));
 
         if ($orderCode === null) {
             $errors['order_code'][] = 'Order code is required.';
         }
 
-        if ($contactEmail === null && $contactPhone === null) {
-            $errors['lookup'][] = 'Provide the checkout email or phone number used for this order.';
+        if ($rawEmail === '') {
+            $errors['contact_email'][] = 'Checkout email is required.';
         }
-
-        if (($payload['contact_email'] ?? null) !== null && trim((string) $payload['contact_email']) !== '' && $contactEmail === null) {
+        if ($rawEmail !== '' && $contactEmail === null) {
             $errors['contact_email'][] = 'Contact email is invalid.';
         }
 
-        if (($payload['contact_phone'] ?? null) !== null && trim((string) $payload['contact_phone']) !== '' && $contactPhone === null) {
+        if ($rawPhone === '') {
+            $errors['contact_phone'][] = 'Checkout phone is required.';
+        }
+        if ($rawPhone !== '' && $contactPhone === null) {
             $errors['contact_phone'][] = 'Contact phone is invalid.';
         }
 

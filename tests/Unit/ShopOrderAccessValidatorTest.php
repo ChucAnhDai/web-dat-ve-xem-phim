@@ -42,7 +42,7 @@ class ShopOrderAccessValidatorTest extends TestCase
         $this->assertSame('0901 234 567', $result['data']['contact_phone']);
     }
 
-    public function testValidateLookupPayloadRequiresOrderCodeAndAnyContact(): void
+    public function testValidateLookupPayloadRequiresOrderCodeEmailAndPhone(): void
     {
         $validator = new ShopOrderAccessValidator();
 
@@ -53,6 +53,21 @@ class ShopOrderAccessValidatorTest extends TestCase
         ]);
 
         $this->assertArrayHasKey('order_code', $result['errors']);
-        $this->assertArrayHasKey('lookup', $result['errors']);
+        $this->assertArrayHasKey('contact_email', $result['errors']);
+        $this->assertArrayHasKey('contact_phone', $result['errors']);
+    }
+
+    public function testValidateLookupPayloadRejectsInvalidEmailAndPhoneFormats(): void
+    {
+        $validator = new ShopOrderAccessValidator();
+
+        $result = $validator->validateLookupPayload([
+            'order_code' => 'SHP-LIVE-001',
+            'contact_email' => 'not-an-email',
+            'contact_phone' => '12',
+        ]);
+
+        $this->assertSame(['Contact email is invalid.'], $result['errors']['contact_email'] ?? []);
+        $this->assertSame(['Contact phone is invalid.'], $result['errors']['contact_phone'] ?? []);
     }
 }

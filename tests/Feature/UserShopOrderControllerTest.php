@@ -82,6 +82,7 @@ class UserShopOrderControllerTest extends TestCase
         $_POST = [
             'order_code' => 'SHP-GUEST-001',
             'contact_email' => 'guest@example.com',
+            'contact_phone' => '0901234567',
         ];
         $response = new UserShopOrderCapturingResponse();
 
@@ -90,6 +91,7 @@ class UserShopOrderControllerTest extends TestCase
         $this->assertSame(200, $response->statusCode);
         $this->assertSame('SHP-GUEST-001', $service->lastPayload['order_code'] ?? null);
         $this->assertSame('guest@example.com', $service->lastPayload['contact_email'] ?? null);
+        $this->assertSame('0901234567', $service->lastPayload['contact_phone'] ?? null);
     }
 }
 
@@ -126,8 +128,9 @@ class FeatureFakeUserShopOrderService extends UserShopOrderService
         return $this->result;
     }
 
-    public function lookupGuestOrder(array $payload): array
+    public function lookupGuestOrder(array $payload, int $userId = 0): array
     {
+        $this->lastUserId = $userId;
         $this->lastPayload = $payload;
 
         return $this->result;

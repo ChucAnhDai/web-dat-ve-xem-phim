@@ -343,6 +343,12 @@
         headers: { 'Content-Type': 'application/json', 'X-Idempotency-Key': idempotencyKey },
         body
       });
+      const guestOrder = isGuestCheckoutOrder(result?.order);
+      const primaryHref = guestOrder ? guestLookupUrl() : appUrl('/my-orders');
+      const primaryLabel = guestOrder ? 'Open Order Lookup' : 'Open My Orders';
+      const guestLookupCopy = guestOrder
+        ? ` Save order ${result.order?.order_code || ''} and use the same checkout email and phone on the guest lookup page whenever you need to view or manage it.`
+        : '';
 
       if (window.shopCartRuntime?.refresh) {
         void window.shopCartRuntime.refresh();
@@ -351,7 +357,7 @@
       if (result.redirect_url) {
         renderStateCard(
           'Redirecting to VNPay...',
-          `Order ${result.order?.order_code || ''} was created successfully and is now being handed off to the payment gateway.`,
+          `Order ${result.order?.order_code || ''} was created successfully and is now being handed off to the payment gateway.${guestLookupCopy}`,
           `<a class="btn btn-primary btn-sm" href="${escapeHtml(result.redirect_url)}">Open VNPay Checkout</a>`
         );
         window.location.href = result.redirect_url;
@@ -360,8 +366,8 @@
 
       renderStateCard(
         'Order created successfully.',
-        `Order ${result.order?.order_code || ''} is pending confirmation with payment method ${humanize(result.payment?.payment_method || state.selectedPayment)}.`,
-        `<a class="btn btn-primary btn-sm" href="${appUrl('/my-orders')}">Open My Orders</a><a class="btn btn-ghost btn-sm" href="${appUrl('/shop')}">Continue Shopping</a>`
+        `Order ${result.order?.order_code || ''} is pending confirmation with payment method ${humanize(result.payment?.payment_method || state.selectedPayment)}.${guestLookupCopy}`,
+        `<a class="btn btn-primary btn-sm" href="${primaryHref}">${primaryLabel}</a><a class="btn btn-ghost btn-sm" href="${appUrl('/shop')}">Continue Shopping</a>`
       );
       if (typeof showToast === 'function') {
         showToast('+', 'Order created', 'Your shop order has been created successfully.');
@@ -376,16 +382,29 @@
   function renderActiveOrderState(activeOrder) {
     const orderCode = activeOrder?.order?.order_code || 'N/A';
     const paymentMethod = humanize(activeOrder?.payment?.payment_method || 'payment');
+    const guestOrder = isGuestCheckoutOrder(activeOrder?.order);
     const actionPrimary = activeOrder?.redirect_url
       ? `<a class="btn btn-primary btn-sm" href="${escapeHtml(activeOrder.redirect_url)}">Continue to VNPay</a>`
-      : `<a class="btn btn-primary btn-sm" href="${appUrl('/my-orders')}">Open My Orders</a>`;
+      : `<a class="btn btn-primary btn-sm" href="${guestOrder ? guestLookupUrl() : appUrl('/my-orders')}">${guestOrder ? 'Open Order Lookup' : 'Open My Orders'}</a>`;
+    const restoreCopy = guestOrder
+      ? `A ${paymentMethod} guest checkout is already waiting for payment confirmation. Browser-session access is disabled, so use the same checkout email and phone on the lookup page if you need to review it later.`
+      : `A ${paymentMethod} checkout is already waiting for payment confirmation. Resume that flow instead of creating a duplicate order.`;
 
     renderStateCard(
       `Pending order ${orderCode} restored.`,
-      `A ${paymentMethod} checkout is already waiting for payment confirmation. Resume that flow instead of creating a duplicate order.`,
+      restoreCopy,
       `${actionPrimary}<a class="btn btn-ghost btn-sm" href="${appUrl('/cart')}">Back to Cart</a>`
     );
     setStatus('Pending checkout restored', false);
+  }
+
+  function isGuestCheckoutOrder(order) {
+    const userId = Number(order?.user_id || 0);
+    return !Number.isInteger(userId) || userId <= 0;
+  }
+
+  function guestLookupUrl() {
+    return appUrl('/my-orders?lookup=1');
   }
 
   function setSubmitState(isBusy) {

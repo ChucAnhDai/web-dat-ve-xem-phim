@@ -1,13 +1,13 @@
 <div class="page-header">
   <h1 class="page-title">My Orders</h1>
-  <p class="page-subtitle" id="myOrdersSubtitle">Track live member orders, guest session orders, and guest lookups from the same checkout data.</p>
+  <p class="page-subtitle" id="myOrdersSubtitle">Review signed-in orders or look up a guest order manually with the exact checkout contact details.</p>
 </div>
 
 <div class="card" style="margin-bottom:20px;">
   <div style="padding:20px;">
     <div style="font-weight:700;font-size:16px;">Order Access & Control</div>
     <div style="margin-top:6px;color:var(--text2);font-size:14px;line-height:1.6;">
-      Signed-in members see shop orders tied to their account. Guests can still review orders from this browser session, or look up a guest order using the order code with the same email or phone used at checkout.
+      Signed-in members see shop orders tied to their account. Guest browser-session access is disabled for security, so guest orders are only shown after a manual lookup using the order code together with the exact checkout email and phone number.
     </div>
   </div>
 </div>
@@ -16,7 +16,7 @@
   <div class="card orders-panel-card">
     <div class="summary-title" style="margin-bottom:8px;">Current Access</div>
     <div class="catalog-request-status" id="myOrdersAccessStatus">Resolving order access...</div>
-    <div class="lookup-help" id="myOrdersAccessMeta" style="margin-top:10px;">Checking whether account orders or guest session orders should be loaded.</div>
+    <div class="lookup-help" id="myOrdersAccessMeta" style="margin-top:10px;">Checking whether signed-in account orders can be loaded or whether manual guest lookup is required.</div>
     <div class="orders-summary-grid" style="margin-top:18px;">
       <div class="orders-summary-metric">
         <div class="orders-summary-label">Total</div>
@@ -40,7 +40,7 @@
   <div class="card orders-panel-card">
     <div class="summary-title" style="margin-bottom:8px;">Guest Lookup</div>
     <div class="lookup-help">
-      Use the guest checkout order code with the same email or phone entered during checkout. If both fields are provided, both must match the stored order contact data.
+      Guest orders are not auto-loaded. Enter the guest checkout order code together with the same checkout email and checkout phone number used when placing the order.
     </div>
     <div class="catalog-request-status" id="guestOrderLookupStatus" style="margin-top:12px;">Guest lookup is available for orders placed without signing in.</div>
     <form id="guestOrderLookupForm" class="lookup-form-grid" autocomplete="off">
