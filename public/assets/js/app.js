@@ -1060,17 +1060,134 @@ function shopCartMaxQuantity() {
   return Math.max(1, Number(window.SHOP_RUNTIME_CONFIG?.cart?.max_quantity_per_item || 10));
 }
 
-function changeQty(delta) {
-  const product = shopCatalogState.currentProduct || {};
-  const maxByConfig = shopCartMaxQuantity();
-  const maxByStock = Number(product?.track_inventory) === 1
-    ? Math.max(1, Number(product?.stock || 0))
-    : maxByConfig;
-  const maxQuantity = Math.max(1, Math.min(maxByConfig, maxByStock));
+function shopStockInsufficientMessage() {
+  return 'Số lượng sản phẩm còn lại không đủ.';
+}
 
-  productQty = Math.max(1, Math.min(maxQuantity, productQty + delta));
+function productAvailableQuantity(product = shopCatalogState.currentProduct) {
+  const currentProduct = product || {};
+  const explicitMaxQuantity = Number(currentProduct?.max_quantity_available);
+
+  if (Number.isFinite(explicitMaxQuantity) && explicitMaxQuantity >= 0) {
+    return Math.max(0, Math.trunc(explicitMaxQuantity));
+  }
+
+  if (Number(currentProduct?.track_inventory) === 1) {
+    return Math.max(0, Math.trunc(Number(currentProduct?.stock || 0)));
+  }
+
+  return shopCartMaxQuantity();
+}
+
+function canAddCurrentProduct(product = shopCatalogState.currentProduct) {
+  return product?.is_available !== false
+    && String(product?.stock_state || 'in_stock') !== 'out_of_stock'
+    && productAvailableQuantity(product) > 0;
+}
+
+function setProductQuantityValue(value) {
   const quantityEl = document.getElementById('productQty');
-  if (quantityEl) quantityEl.textContent = String(productQty);
+  if (!quantityEl) return;
+
+  if (quantityEl.tagName === 'INPUT') {
+    quantityEl.value = String(value);
+    return;
+  }
+
+  quantityEl.textContent = String(value);
+}
+
+function syncProductDetailQuantityControls(product = shopCatalogState.currentProduct) {
+  const quantityEl = document.getElementById('productQty');
+  const decreaseButton = document.getElementById('productQtyDecrease');
+  const increaseButton = document.getElementById('productQtyIncrease');
+  const maxQuantity = productAvailableQuantity(product);
+  const canAddToCart = canAddCurrentProduct(product);
+
+  if (!canAddToCart) {
+    productQty = 1;
+  } else {
+    productQty = Math.max(1, Math.min(maxQuantity, Number(productQty || 1)));
+  }
+
+  if (quantityEl) {
+    if (quantityEl.tagName === 'INPUT') {
+      quantityEl.min = '1';
+      quantityEl.max = String(canAddToCart ? maxQuantity : 1);
+      quantityEl.value = String(productQty);
+      quantityEl.disabled = !canAddToCart;
+    } else {
+      quantityEl.textContent = String(productQty);
+    }
+  }
+
+  if (decreaseButton) {
+    decreaseButton.disabled = !canAddToCart || productQty <= 1;
+  }
+  if (increaseButton) {
+    increaseButton.disabled = !canAddToCart || productQty >= maxQuantity;
+  }
+}
+
+function handleProductQuantityInput(event) {
+  const input = event?.target;
+  if (!input) return;
+
+  const canAddToCart = canAddCurrentProduct();
+  const maxQuantity = productAvailableQuantity();
+  const parsedValue = Number(input.value);
+
+  if (!canAddToCart) {
+    productQty = 1;
+    setProductQuantityValue(1);
+    syncProductDetailQuantityControls();
+    return;
+  }
+
+  if (!Number.isFinite(parsedValue) || parsedValue < 1) {
+    productQty = 1;
+    setProductQuantityValue(1);
+    syncProductDetailQuantityControls();
+    return;
+  }
+
+  if (parsedValue > maxQuantity) {
+    productQty = maxQuantity;
+    setProductQuantityValue(productQty);
+    syncProductDetailQuantityControls();
+    showToast('!', 'Tồn kho không đủ', shopStockInsufficientMessage());
+    return;
+  }
+
+  productQty = Math.max(1, Math.trunc(parsedValue));
+  setProductQuantityValue(productQty);
+  syncProductDetailQuantityControls();
+}
+
+function bindProductQuantityInput() {
+  const quantityEl = document.getElementById('productQty');
+  if (!quantityEl || quantityEl.dataset.bound === '1' || quantityEl.tagName !== 'INPUT') {
+    return;
+  }
+
+  quantityEl.addEventListener('input', () => {
+    quantityEl.value = String(quantityEl.value || '').replace(/[^\d]/g, '');
+  });
+  quantityEl.addEventListener('change', handleProductQuantityInput);
+  quantityEl.addEventListener('blur', handleProductQuantityInput);
+  quantityEl.dataset.bound = '1';
+}
+
+function changeQty(delta) {
+  const maxQuantity = productAvailableQuantity();
+  if (!canAddCurrentProduct()) {
+    syncProductDetailQuantityControls();
+    return;
+  }
+
+  productQty = Math.max(1, Math.min(maxQuantity, Number(productQty || 1) + Number(delta || 0)));
+  setProductQuantityValue(productQty);
+  syncProductDetailQuantityControls();
 }
 
 function renderProductCard(product) {
@@ -1085,6 +1202,7 @@ function renderProductCard(product) {
   const price = formatShopCurrency(product?.price || 0, product?.currency || 'VND');
   const canAddToCart = product?.is_available !== false && String(product?.stock_state || 'in_stock') !== 'out_of_stock';
   const addButtonText = canAddToCart ? 'Add to Cart' : 'Out of Stock';
+  const soldOutBadge = canAddToCart ? '' : '<div class="product-card-soldout-badge">Sản phẩm đã hết hàng</div>';
   const compareAtPrice = product?.compare_at_price
     ? `<span class="price-old">${formatShopCurrency(product.compare_at_price, product.currency || 'VND')}</span>`
     : '';
@@ -1095,6 +1213,7 @@ function renderProductCard(product) {
         ${imageUrl
           ? `<img src="${escapeHtml(imageUrl)}" alt="${imageAlt}" loading="lazy" onerror="this.onerror=null;this.insertAdjacentHTML('afterend','<div class=&quot;product-img-fallback&quot;>Item</div>');this.remove()">`
           : '<div class="product-img-fallback">Item</div>'}
+        ${soldOutBadge}
       </div>
       <div class="product-info">
         <div class="product-cat">${categoryName}</div>
@@ -1402,9 +1521,12 @@ function renderProductDetailView(product, gallery, relatedProducts) {
   const categoryLabel = document.getElementById('productCategoryLabel');
   const title = document.getElementById('productDetailTitle');
   const price = document.getElementById('productDetailPrice');
+  const inventoryInfo = document.getElementById('productInventoryInfo');
   const description = document.getElementById('productDetailDesc');
   const highlights = document.getElementById('productHighlightList');
   const mainImage = document.getElementById('mainProductImg');
+  const mainImageWrap = document.getElementById('productMainImageWrap');
+  const soldOutBanner = document.getElementById('productSoldOutBanner');
   const thumbs = document.getElementById('productThumbs');
   const relatedGrid = document.getElementById('relatedProductsGrid');
   const relatedEmpty = document.getElementById('relatedProductsEmpty');
@@ -1415,14 +1537,10 @@ function renderProductDetailView(product, gallery, relatedProducts) {
   const detailGallery = Array.isArray(gallery) && gallery.length ? gallery : [];
   const firstImage = detailGallery[0]?.image_url || product?.primary_image_url || '';
   const detailHighlights = Array.isArray(product?.highlights) ? product.highlights : [];
-  const maxByConfig = shopCartMaxQuantity();
-  const maxByStock = Number(product?.track_inventory) === 1
-    ? Math.max(0, Number(product?.stock || 0))
-    : maxByConfig;
-  const maxQuantity = Number(product?.track_inventory) === 1
-    ? Math.max(1, Math.min(maxByConfig, maxByStock || 1))
-    : maxByConfig;
-  const canAddToCart = product?.is_available !== false && String(product?.stock_state || 'in_stock') !== 'out_of_stock' && maxByStock !== 0;
+  const maxQuantity = productAvailableQuantity(product);
+  const canAddToCart = canAddCurrentProduct(product);
+  const isTrackedInventory = Number(product?.track_inventory) === 1;
+  const stockCount = Math.max(0, Math.trunc(Number(product?.stock || 0)));
 
   productQty = 1;
 
@@ -1443,15 +1561,26 @@ function renderProductDetailView(product, gallery, relatedProducts) {
         : ''}
     `;
   }
+  if (inventoryInfo) {
+    const inventoryClass = String(product?.stock_state || 'in_stock') === 'out_of_stock'
+      ? 'out-of-stock'
+      : (String(product?.stock_state || 'in_stock') === 'low_stock' ? 'low-stock' : '');
+    inventoryInfo.className = `product-inventory-info ${inventoryClass}`.trim();
+    inventoryInfo.textContent = isTrackedInventory
+      ? (canAddToCart
+        ? `Còn lại ${stockCount} sản phẩm`
+        : 'Sản phẩm đã hết hàng')
+      : 'Sản phẩm luôn sẵn hàng';
+  }
   if (description) {
     description.textContent = product?.detail_description || product?.description || product?.summary || 'No description available for this product yet.';
   }
   if (qtyHint) {
-    qtyHint.textContent = Number(product?.track_inventory) === 1
+    qtyHint.textContent = isTrackedInventory
       ? (canAddToCart
-        ? `Up to ${maxQuantity} item${maxQuantity === 1 ? '' : 's'} available right now`
-        : 'Currently unavailable')
-      : `Max ${maxByConfig} per order`;
+        ? `Bạn có thể thêm tối đa ${maxQuantity} sản phẩm vào giỏ hàng.`
+        : 'Sản phẩm đã hết hàng.')
+      : `Giới hạn ${shopCartMaxQuantity()} sản phẩm cho mỗi lần thêm vào giỏ.`;
   }
   if (highlights) {
     highlights.innerHTML = detailHighlights.length
@@ -1461,6 +1590,12 @@ function renderProductDetailView(product, gallery, relatedProducts) {
   if (mainImage) {
     mainImage.src = firstImage;
     mainImage.alt = product?.primary_image_alt || product?.name || 'Product';
+  }
+  if (mainImageWrap) {
+    mainImageWrap.classList.toggle('is-out-of-stock', !canAddToCart);
+  }
+  if (soldOutBanner) {
+    soldOutBanner.hidden = canAddToCart;
   }
   if (thumbs) {
     thumbs.innerHTML = detailGallery.map((item, index) => `
@@ -1488,8 +1623,8 @@ function renderProductDetailView(product, gallery, relatedProducts) {
     statusText.style.color = '';
   }
 
-  const qtyEl = document.getElementById('productQty');
-  if (qtyEl) qtyEl.textContent = '1';
+  bindProductQuantityInput();
+  syncProductDetailQuantityControls(product);
 
   [addToCartButton, buyNowButton].forEach(button => {
     if (!button) return;
@@ -1513,6 +1648,9 @@ function renderProductDetailEmpty(message) {
   const relatedEmpty = document.getElementById('relatedProductsEmpty');
   const metaText = document.getElementById('productDetailMetaText');
   const statusText = document.getElementById('productRequestStatus');
+  const inventoryInfo = document.getElementById('productInventoryInfo');
+  const mainImageWrap = document.getElementById('productMainImageWrap');
+  const soldOutBanner = document.getElementById('productSoldOutBanner');
 
   if (layout) layout.hidden = true;
   if (emptyState) {
@@ -1526,6 +1664,16 @@ function renderProductDetailEmpty(message) {
     statusText.textContent = 'Unavailable';
     statusText.style.color = '#fca5a5';
   }
+  if (inventoryInfo) {
+    inventoryInfo.className = 'product-inventory-info out-of-stock';
+    inventoryInfo.textContent = 'Sản phẩm không khả dụng';
+  }
+  if (mainImageWrap) {
+    mainImageWrap.classList.remove('is-out-of-stock');
+  }
+  if (soldOutBanner) {
+    soldOutBanner.hidden = true;
+  }
 }
 
 async function initializeProductDetailPage() {
@@ -1534,8 +1682,8 @@ async function initializeProductDetailPage() {
 
   const slug = new URLSearchParams(window.location.search).get('slug');
   productQty = 1;
-  const qtyEl = document.getElementById('productQty');
-  if (qtyEl) qtyEl.textContent = '1';
+  bindProductQuantityInput();
+  setProductQuantityValue(1);
 
   if (!slug) {
     renderProductDetailEmpty('Missing product slug in URL.');

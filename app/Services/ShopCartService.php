@@ -14,6 +14,9 @@ use Throwable;
 
 class ShopCartService
 {
+    private const STOCK_NOT_ENOUGH_MESSAGE = 'Số lượng sản phẩm còn lại không đủ.';
+    private const OUT_OF_STOCK_MESSAGE = 'Sản phẩm đã hết hàng.';
+
     private PDO $db;
     private CartRepository $carts;
     private CartItemRepository $items;
@@ -120,6 +123,13 @@ class ShopCartService
 
             $payload = $this->buildCartPayload($context['cart'], $userId, $context['sync']);
         } catch (ShopCartDomainException $exception) {
+            $this->logBusinessRuleBlock('Shop cart add item blocked', [
+                'user_id' => $userId,
+                'session_token' => $this->sessionTokenPreview($sessionToken),
+                'product_id' => $data['product_id'] ?? null,
+                'quantity' => $data['quantity'] ?? null,
+            ], $exception, $startedAt);
+
             return $this->error($exception->errors(), $exception->status());
         } catch (Throwable $exception) {
             $this->logger->error('Shop cart add item failed', [
@@ -191,6 +201,13 @@ class ShopCartService
 
             $payload = $this->buildCartPayload($context['cart'], $userId, $context['sync']);
         } catch (ShopCartDomainException $exception) {
+            $this->logBusinessRuleBlock('Shop cart update item blocked', [
+                'user_id' => $userId,
+                'session_token' => $this->sessionTokenPreview($sessionToken),
+                'product_id' => $normalizedProductId,
+                'quantity' => $data['quantity'] ?? null,
+            ], $exception, $startedAt);
+
             return $this->error($exception->errors(), $exception->status());
         } catch (Throwable $exception) {
             $this->logger->error('Shop cart update item failed', [
@@ -248,6 +265,12 @@ class ShopCartService
 
             $payload = $this->buildCartPayload($context['cart'], $userId, $context['sync']);
         } catch (ShopCartDomainException $exception) {
+            $this->logBusinessRuleBlock('Shop cart remove item blocked', [
+                'user_id' => $userId,
+                'session_token' => $this->sessionTokenPreview($sessionToken),
+                'product_id' => $normalizedProductId,
+            ], $exception, $startedAt);
+
             return $this->error($exception->errors(), $exception->status());
         } catch (Throwable $exception) {
             $this->logger->error('Shop cart remove item failed', [
@@ -395,23 +418,42 @@ class ShopCartService
             $userItemsByProduct[(int) ($item['product_id'] ?? 0)] = $item;
         }
 
+        $guestItems = $this->items->listByCartId($guestCartId);
+        $productsById = $this->mapProductsById($this->products->listPublicCartProductsByIds(
+            array_map(static function (array $item): int {
+                return (int) ($item['product_id'] ?? 0);
+            }, $guestItems),
+            $this->lowStockThreshold()
+        ));
+
         $lineCount = count($userItems);
-        foreach ($this->items->listByCartId($guestCartId) as $guestItem) {
+        foreach ($guestItems as $guestItem) {
             $productId = (int) ($guestItem['product_id'] ?? 0);
             if ($productId <= 0) {
                 continue;
             }
 
+            $product = $productsById[$productId] ?? null;
+            if ($product === null) {
+                continue;
+            }
+
+            $allowedQuantity = $this->maxQuantityAvailable($product);
+            if ($allowedQuantity <= 0) {
+                continue;
+            }
+
+            $currentPrice = round((float) ($product['price'] ?? $guestItem['price'] ?? 0), 2);
             if (isset($userItemsByProduct[$productId])) {
                 $existing = $userItemsByProduct[$productId];
                 $mergedQuantity = min(
-                    $this->validator->maxQuantityPerItem(),
+                    $allowedQuantity,
                     (int) ($existing['quantity'] ?? 0) + (int) ($guestItem['quantity'] ?? 0)
                 );
                 $this->items->updateQuantityAndPrice(
                     (int) $existing['id'],
                     $mergedQuantity,
-                    round((float) ($guestItem['price'] ?? $existing['price'] ?? 0), 2)
+                    $currentPrice
                 );
                 continue;
             }
@@ -423,8 +465,8 @@ class ShopCartService
             $this->items->create([
                 'cart_id' => $userCartId,
                 'product_id' => $productId,
-                'quantity' => min($this->validator->maxQuantityPerItem(), (int) ($guestItem['quantity'] ?? 1)),
-                'price' => round((float) ($guestItem['price'] ?? 0), 2),
+                'quantity' => min($allowedQuantity, (int) ($guestItem['quantity'] ?? 1)),
+                'price' => $currentPrice,
             ]);
             $lineCount += 1;
         }
@@ -472,13 +514,13 @@ class ShopCartService
                 continue;
             }
 
-            $stock = (int) ($product['stock'] ?? 0);
             $trackInventory = (int) ($product['track_inventory'] ?? 1) === 1;
             $storedQuantity = (int) ($item['quantity'] ?? 0);
             $storedPrice = round((float) ($item['price'] ?? 0), 2);
             $currentPrice = round((float) ($product['price'] ?? 0), 2);
+            $allowedQuantity = $this->maxQuantityAvailable($product);
 
-            if ($trackInventory && $stock <= 0) {
+            if ($trackInventory && $allowedQuantity <= 0) {
                 $mutations[] = [
                     'type' => 'remove',
                     'product_id' => $productId,
@@ -487,10 +529,7 @@ class ShopCartService
                 continue;
             }
 
-            $targetQuantity = min($storedQuantity, $this->validator->maxQuantityPerItem());
-            if ($trackInventory) {
-                $targetQuantity = min($targetQuantity, $stock);
-            }
+            $targetQuantity = min($storedQuantity, $allowedQuantity);
 
             if ($targetQuantity <= 0) {
                 $mutations[] = [
@@ -644,22 +683,20 @@ class ShopCartService
 
     private function validateRequestedQuantity(array $product, int $quantity): int
     {
-        if ($quantity > $this->validator->maxQuantityPerItem()) {
+        $trackInventory = (int) ($product['track_inventory'] ?? 1) === 1;
+        $allowedQuantity = $this->maxQuantityAvailable($product);
+
+        if ($trackInventory && $allowedQuantity <= 0) {
             throw new ShopCartDomainException([
-                'quantity' => ['Quantity exceeds the per-item cart limit.'],
+                'stock' => [self::OUT_OF_STOCK_MESSAGE],
             ], 409);
         }
 
-        $trackInventory = (int) ($product['track_inventory'] ?? 1) === 1;
-        $stock = (int) ($product['stock'] ?? 0);
-        if ($trackInventory && $stock <= 0) {
+        if ($quantity > $allowedQuantity) {
             throw new ShopCartDomainException([
-                'stock' => ['Product is out of stock.'],
-            ], 409);
-        }
-        if ($trackInventory && $quantity > $stock) {
-            throw new ShopCartDomainException([
-                'quantity' => ['Requested quantity exceeds available stock.'],
+                'quantity' => [$trackInventory
+                    ? self::STOCK_NOT_ENOUGH_MESSAGE
+                    : 'Quantity exceeds the per-item cart limit.'],
             ], 409);
         }
 
@@ -767,12 +804,24 @@ class ShopCartService
 
     private function maxQuantityAvailable(array $product): int
     {
-        $limit = $this->validator->maxQuantityPerItem();
-        if ((int) ($product['track_inventory'] ?? 1) !== 1) {
-            return $limit;
+        if ((int) ($product['track_inventory'] ?? 1) === 1) {
+            return max(0, (int) ($product['stock'] ?? 0));
         }
 
-        return max(0, min($limit, (int) ($product['stock'] ?? 0)));
+        return $this->validator->maxQuantityPerItem();
+    }
+
+    private function logBusinessRuleBlock(
+        string $message,
+        array $context,
+        ShopCartDomainException $exception,
+        float $startedAt
+    ): void {
+        $this->logger->info($message, array_merge($context, [
+            'errors' => $exception->errors(),
+            'status' => $exception->status(),
+            'duration_ms' => $this->durationMs($startedAt),
+        ]));
     }
 
     private function findCartItemByProductId(array $items, int $productId): ?array

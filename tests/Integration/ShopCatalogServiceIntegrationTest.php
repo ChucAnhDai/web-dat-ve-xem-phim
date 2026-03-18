@@ -63,6 +63,8 @@ class ShopCatalogServiceIntegrationTest extends TestCase
         $this->assertSame(200, $result['status']);
         $this->assertSame('Large Popcorn Combo', $result['data']['product']['name']);
         $this->assertSame('CineShop', $result['data']['product']['brand']);
+        $this->assertSame(25, $result['data']['product']['stock']);
+        $this->assertSame(25, $result['data']['product']['max_quantity_available']);
         $this->assertCount(2, $result['data']['gallery']);
         $this->assertNotEmpty($result['data']['product']['highlights']);
         $this->assertSame('Nacho Dip Set', $result['data']['related_products'][0]['name']);

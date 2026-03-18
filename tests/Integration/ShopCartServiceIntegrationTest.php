@@ -46,6 +46,34 @@ class ShopCartServiceIntegrationTest extends TestCase
         $this->assertSame('active', $cartRow['status']);
     }
 
+    public function testAddItemAllowsTrackedInventoryBeyondLegacyConfigLimit(): void
+    {
+        $service = $this->makeService();
+
+        $result = $service->addItem([
+            'product_id' => 1,
+            'quantity' => 12,
+        ], null, str_repeat('e', 64));
+
+        $this->assertSame(201, $result['status']);
+        $this->assertSame(12, $result['data']['cart']['item_count']);
+        $this->assertSame(12, $result['data']['cart']['items'][0]['quantity']);
+        $this->assertSame(25, $result['data']['cart']['items'][0]['max_quantity_available']);
+    }
+
+    public function testAddItemRejectsQuantityAboveAvailableStock(): void
+    {
+        $service = $this->makeService();
+
+        $result = $service->addItem([
+            'product_id' => 1,
+            'quantity' => 26,
+        ], null, str_repeat('f', 64));
+
+        $this->assertSame(409, $result['status']);
+        $this->assertSame(['Số lượng sản phẩm còn lại không đủ.'], $result['errors']['quantity']);
+    }
+
     public function testGetCartMergesGuestCartIntoAuthenticatedUserCart(): void
     {
         $guestToken = str_repeat('b', 64);

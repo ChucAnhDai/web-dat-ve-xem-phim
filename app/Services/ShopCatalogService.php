@@ -190,6 +190,8 @@ class ShopCatalogService
             'price' => $price,
             'compare_at_price' => $compareAtPrice,
             'currency' => $row['currency'] ?? ($this->config['currency'] ?? 'VND'),
+            'track_inventory' => (int) ($row['track_inventory'] ?? 1),
+            'max_quantity_available' => $this->maxQuantityAvailable($row),
             'stock_state' => $row['stock_state'] ?? 'in_stock',
             'is_available' => ($row['stock_state'] ?? 'in_stock') !== 'out_of_stock',
             'visibility' => $row['visibility'] ?? 'standard',
@@ -340,6 +342,15 @@ class ShopCatalogService
     private function lowStockThreshold(): int
     {
         return max(1, (int) ($this->config['products']['low_stock_threshold'] ?? 10));
+    }
+
+    private function maxQuantityAvailable(array $row): int
+    {
+        if ((int) ($row['track_inventory'] ?? 1) === 1) {
+            return max(0, (int) ($row['stock'] ?? 0));
+        }
+
+        return max(1, (int) ($this->config['cart']['max_quantity_per_item'] ?? 10));
     }
 
     private function durationMs(float $startedAt): float

@@ -20,7 +20,7 @@ class ShopCartValidatorTest extends TestCase
         $this->assertArrayHasKey('quantity', $result['errors']);
     }
 
-    public function testValidateAddItemPayloadRejectsQuantityAboveConfiguredLimit(): void
+    public function testValidateAddItemPayloadAcceptsLargePositiveQuantityForStockCheckedProducts(): void
     {
         $validator = new ShopCartValidator();
 
@@ -29,8 +29,8 @@ class ShopCartValidatorTest extends TestCase
             'quantity' => '99',
         ]);
 
-        $this->assertArrayHasKey('quantity', $result['errors']);
-        $this->assertContains('Quantity exceeds the per-item cart limit.', $result['errors']['quantity']);
+        $this->assertSame([], $result['errors']);
+        $this->assertSame(99, $result['data']['quantity']);
     }
 
     public function testValidateUpdateItemPayloadAcceptsPositiveQuantity(): void

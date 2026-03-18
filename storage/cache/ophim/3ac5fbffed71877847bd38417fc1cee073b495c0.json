@@ -1,0 +1,158 @@
+{
+    "cached_at": 1773847408,
+    "payload": {
+        "success": true,
+        "message": "success",
+        "status_code": 200,
+        "data": {
+            "tmdb_id": 285788,
+            "tmdb_type": "tv",
+            "ophim_id": "69009acd33ba6a339b7d5c4a",
+            "slug": "tojima-muon-tro-thanh-kamen-rider",
+            "imdb_id": "tt37532319",
+            "image_sizes": {
+                "backdrop": {
+                    "original": "https:\/\/image.tmdb.org\/t\/p\/original",
+                    "w1280": "https:\/\/image.tmdb.org\/t\/p\/w1280",
+                    "w300": "https:\/\/image.tmdb.org\/t\/p\/w300",
+                    "w780": "https:\/\/image.tmdb.org\/t\/p\/w780"
+                },
+                "poster": {
+                    "original": "https:\/\/image.tmdb.org\/t\/p\/original",
+                    "w154": "https:\/\/image.tmdb.org\/t\/p\/w154",
+                    "w185": "https:\/\/image.tmdb.org\/t\/p\/w185",
+                    "w342": "https:\/\/image.tmdb.org\/t\/p\/w342",
+                    "w500": "https:\/\/image.tmdb.org\/t\/p\/w500",
+                    "w780": "https:\/\/image.tmdb.org\/t\/p\/w780",
+                    "w92": "https:\/\/image.tmdb.org\/t\/p\/w92"
+                }
+            },
+            "images": [
+                {
+                    "width": 3831,
+                    "height": 2155,
+                    "aspect_ratio": 1.778,
+                    "type": "backdrop",
+                    "file_path": "\/qFODG6ZkEnpyDGCMuELo9Jgv086.jpg"
+                },
+                {
+                    "width": 3840,
+                    "height": 2160,
+                    "aspect_ratio": 1.778,
+                    "type": "backdrop",
+                    "file_path": "\/tL6poVqvcXtZkUJnhwqicKj7wWq.jpg",
+                    "iso_639_1": "en"
+                },
+                {
+                    "width": 3840,
+                    "height": 2160,
+                    "aspect_ratio": 1.778,
+                    "type": "backdrop",
+                    "file_path": "\/auvbxrKXSZDaZ8Tbexn0Z2pJuzY.jpg"
+                },
+                {
+                    "width": 1920,
+                    "height": 1080,
+                    "aspect_ratio": 1.778,
+                    "type": "backdrop",
+                    "file_path": "\/hPYlTczDtllJfU0SY3sA96s7Uy6.jpg",
+                    "iso_639_1": "zh"
+                },
+                {
+                    "width": 3840,
+                    "height": 2160,
+                    "aspect_ratio": 1.778,
+                    "type": "backdrop",
+                    "file_path": "\/kQhGJux2TA7Q3kAgC9Yj69PmbUv.jpg",
+                    "iso_639_1": "ja"
+                },
+                {
+                    "width": 3840,
+                    "height": 2160,
+                    "aspect_ratio": 1.778,
+                    "type": "backdrop",
+                    "file_path": "\/pAakEc9zIM5Y7nfkk5PTEPvhaCv.jpg",
+                    "iso_639_1": "fr"
+                },
+                {
+                    "width": 1080,
+                    "height": 1440,
+                    "aspect_ratio": 0.75,
+                    "type": "poster",
+                    "file_path": "\/y2zZ7GUDhvFt8CiM8RhsQRAurr3.jpg",
+                    "iso_639_1": "zh"
+                },
+                {
+                    "width": 2000,
+                    "height": 2667,
+                    "aspect_ratio": 0.75,
+                    "type": "poster",
+                    "file_path": "\/rpZIWYIFv1crMfZgS3ieDuEAqki.jpg",
+                    "iso_639_1": "zh"
+                },
+                {
+                    "width": 849,
+                    "height": 1200,
+                    "aspect_ratio": 0.708,
+                    "type": "poster",
+                    "file_path": "\/J6CA6ZyFG9F1Ml99ND6K2Ad1Vw.jpg",
+                    "iso_639_1": "ja"
+                },
+                {
+                    "width": 920,
+                    "height": 1300,
+                    "aspect_ratio": 0.708,
+                    "type": "poster",
+                    "file_path": "\/9o8i3LiRNdsVztmshckNlGJo8e3.jpg"
+                },
+                {
+                    "width": 849,
+                    "height": 1200,
+                    "aspect_ratio": 0.708,
+                    "type": "poster",
+                    "file_path": "\/GBRHxhdyPb16pLDdKflPjvfWQg.jpg",
+                    "iso_639_1": "ja"
+                },
+                {
+                    "width": 2000,
+                    "height": 2831,
+                    "aspect_ratio": 0.706,
+                    "type": "poster",
+                    "file_path": "\/k100PXhWefiCkGcO8rnnGnK1SzK.jpg",
+                    "iso_639_1": "zh"
+                },
+                {
+                    "width": 1997,
+                    "height": 2992,
+                    "aspect_ratio": 0.667,
+                    "type": "poster",
+                    "file_path": "\/wqczcoNCokVreXw4QA4nyDlxkal.jpg",
+                    "iso_639_1": "ja"
+                },
+                {
+                    "width": 500,
+                    "height": 750,
+                    "aspect_ratio": 0.667,
+                    "type": "poster",
+                    "file_path": "\/ceMou1uBynqPGHs5Es6Fw4xcL6i.jpg",
+                    "iso_639_1": "ja"
+                },
+                {
+                    "width": 2000,
+                    "height": 3000,
+                    "aspect_ratio": 0.667,
+                    "type": "poster",
+                    "file_path": "\/bD80ugDX7krshLcWxnqRYCOQPoo.jpg",
+                    "iso_639_1": "en"
+                },
+                {
+                    "width": 1997,
+                    "height": 2992,
+                    "aspect_ratio": 0.667,
+                    "type": "poster",
+                    "file_path": "\/6YMFXP2cCmg19bgkotTG6jKpvhP.jpg"
+                }
+            ]
+        }
+    }
+}

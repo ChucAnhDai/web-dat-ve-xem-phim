@@ -25,8 +25,6 @@ class ShopCartValidator
         }
         if ($quantity === null) {
             $errors['quantity'][] = 'Quantity must be a positive integer.';
-        } elseif ($quantity > $this->maxQuantityPerItem()) {
-            $errors['quantity'][] = 'Quantity exceeds the per-item cart limit.';
         }
 
         return [
@@ -45,8 +43,6 @@ class ShopCartValidator
 
         if ($quantity === null) {
             $errors['quantity'][] = 'Quantity must be a positive integer.';
-        } elseif ($quantity > $this->maxQuantityPerItem()) {
-            $errors['quantity'][] = 'Quantity exceeds the per-item cart limit.';
         }
 
         return [

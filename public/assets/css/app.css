@@ -496,6 +496,24 @@ input,select,textarea{font-family:inherit}
   overflow:hidden;
   position:relative;
 }
+.product-card-soldout-badge{
+  position:absolute;
+  left:12px;
+  right:12px;
+  bottom:12px;
+  padding:9px 12px;
+  border-radius:999px;
+  background:linear-gradient(135deg, rgba(127,29,29,0.92), rgba(239,68,68,0.92));
+  border:1px solid rgba(248,113,113,0.65);
+  color:#fff1f2;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.8px;
+  text-transform:uppercase;
+  text-align:center;
+  text-shadow:0 1px 10px rgba(127,29,29,0.55);
+  box-shadow:0 12px 24px rgba(127,29,29,0.35);
+}
 .product-card .product-img img{
   width:100%;height:100%;
   object-fit:cover;
@@ -1107,6 +1125,7 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
 }
 .product-gallery{display:flex;flex-direction:column;gap:12px}
 .product-main-img{
+  position:relative;
   border-radius:var(--radius);
   overflow:hidden;
   background:var(--surface);
@@ -1114,6 +1133,27 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
   aspect-ratio:1;
 }
 .product-main-img img{width:100%;height:100%;object-fit:cover}
+.product-main-img.is-out-of-stock img{filter:grayscale(0.18) brightness(0.62)}
+.product-soldout-banner{
+  position:absolute;
+  left:20px;
+  right:20px;
+  top:20px;
+  padding:14px 18px;
+  border-radius:14px;
+  background:linear-gradient(135deg, rgba(127,29,29,0.94), rgba(220,38,38,0.92));
+  border:1px solid rgba(248,113,113,0.72);
+  color:#fff1f2;
+  font-size:18px;
+  font-weight:800;
+  letter-spacing:1px;
+  text-transform:uppercase;
+  text-align:center;
+  text-shadow:0 2px 16px rgba(127,29,29,0.7);
+  box-shadow:0 18px 40px rgba(127,29,29,0.38);
+  backdrop-filter:blur(8px);
+}
+.product-soldout-banner[hidden]{display:none!important}
 .product-thumbs{display:flex;gap:8px}
 .product-thumb{
   width:72px;height:72px;
@@ -1161,8 +1201,29 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
 .product-detail-price{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;
   font-size:32px;font-weight:700;color:var(--red);
+  margin-bottom:8px;
+}
+.product-inventory-info{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-size:14px;
+  font-weight:600;
+  color:#86efac;
   margin-bottom:16px;
 }
+.product-inventory-info::before{
+  content:'';
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 0 6px rgba(134,239,172,0.08);
+}
+.product-inventory-info.low-stock{color:#fbbf24}
+.product-inventory-info.low-stock::before{box-shadow:0 0 0 6px rgba(251,191,36,0.08)}
+.product-inventory-info.out-of-stock{color:#f87171}
+.product-inventory-info.out-of-stock::before{box-shadow:0 0 0 6px rgba(248,113,113,0.08)}
 .product-detail-desc{
   font-size:14px;color:var(--text2);line-height:1.7;
   margin-bottom:18px;
@@ -1183,8 +1244,28 @@ body[data-active-page="movies"] #allMoviesGrid .movie-card:hover .movie-poster i
   font-size:20px;transition:var(--transition);
 }
 .qty-big button:hover{background:var(--surface);color:var(--text)}
-.qty-big span{
-  width:52px;text-align:center;font-size:15px;font-weight:700;
+.qty-big button:disabled{
+  background:rgba(255,255,255,0.03);
+  color:var(--text3);
+  cursor:not-allowed;
+}
+.qty-big input{
+  width:64px;
+  height:42px;
+  text-align:center;
+  font-size:15px;
+  font-weight:700;
+  color:var(--text);
+  background:transparent;
+  border:none;
+  outline:none;
+  -moz-appearance:textfield;
+}
+.qty-big input::-webkit-outer-spin-button,
+.qty-big input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.qty-big input:disabled{
+  color:var(--text3);
+  cursor:not-allowed;
 }
 .action-row{display:flex;gap:10px;flex-wrap:wrap}
 

@@ -1,6 +1,7 @@
 (function shopCartModule() {
   const CART_API_BASE = appUrl('/api/shop/cart');
   const DEFAULT_CURRENCY = String(window.SHOP_RUNTIME_CONFIG?.currency || 'VND');
+  const STOCK_INSUFFICIENT_MESSAGE = 'Số lượng sản phẩm còn lại không đủ.';
 
   const state = {
     cart: createEmptyCart(),
@@ -378,6 +379,25 @@
       : 1;
   }
 
+  function isInventoryConflictMessage(message) {
+    const normalized = String(message || '').trim().toLowerCase();
+
+    return normalized.includes('số lượng sản phẩm còn lại không đủ')
+      || normalized.includes('sản phẩm đã hết hàng')
+      || normalized.includes('available stock');
+  }
+
+  function refreshInventoryViewsOnConflict(message) {
+    if (!isInventoryConflictMessage(message)) {
+      return;
+    }
+
+    void loadCart({ showSyncToast: false });
+    if (typeof initializeProductDetailPage === 'function') {
+      void initializeProductDetailPage();
+    }
+  }
+
   function markItemPending(productId, isPending) {
     const key = String(productId);
     if (isPending) {
@@ -401,7 +421,7 @@
     const existingItem = state.cart.items.find(item => item.product_id === payload.productId);
     if (existingItem && payload.quantity + existingItem.quantity > existingItem.max_quantity_available) {
       if (typeof showToast === 'function') {
-        showToast('!', 'Quantity limit', 'Requested quantity exceeds the available stock for this item.');
+        showToast('!', 'Tồn kho không đủ', STOCK_INSUFFICIENT_MESSAGE);
       }
       return;
     }
@@ -422,6 +442,7 @@
         navigateTo('cart');
       }
     } catch (error) {
+      refreshInventoryViewsOnConflict(error.message);
       if (typeof showToast === 'function') {
         showToast('!', 'Cart update failed', error.message || 'Unable to add this item to the cart.');
       }
@@ -443,7 +464,7 @@
     }
     if (nextQuantity > item.max_quantity_available) {
       if (typeof showToast === 'function') {
-        showToast('!', 'Quantity limit', 'Requested quantity exceeds the available stock for this item.');
+        showToast('!', 'Tồn kho không đủ', STOCK_INSUFFICIENT_MESSAGE);
       }
       return;
     }
@@ -457,6 +478,7 @@
 
       applyCartPayload(data, { showSyncToast: true });
     } catch (error) {
+      refreshInventoryViewsOnConflict(error.message);
       if (typeof showToast === 'function') {
         showToast('!', 'Cart update failed', error.message || 'Unable to update cart quantity.');
       }

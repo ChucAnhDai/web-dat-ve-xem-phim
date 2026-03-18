@@ -625,3 +625,152 @@
 [2026-03-18T15:18:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
 [2026-03-18T15:18:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
 [2026-03-18T15:18:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T22:20:39+07:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-18T22:23:23+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"vong-xoay-yoga","movie_id":1,"created":true,"category_count":1,"asset_count":10,"duration_ms":647.63}
+[2026-03-18T22:23:24+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"the-gioi-hoan-my","movie_id":2,"created":true,"category_count":4,"asset_count":10,"duration_ms":952.83}
+[2026-03-18T22:23:25+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"rooster","movie_id":3,"created":true,"category_count":1,"asset_count":10,"duration_ms":850.88}
+[2026-03-18T22:23:25+07:00] INFO: OPhim image sync skipped after image request failure {"slug":"tinh-dau-kho-noi","error":"Failed to communicate with OPhim API."}
+[2026-03-18T22:23:25+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tinh-dau-kho-noi","movie_id":4,"created":true,"category_count":1,"asset_count":2,"duration_ms":840.69}
+[2026-03-18T22:23:27+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"su-thay-gap-su-lay","movie_id":5,"created":true,"category_count":1,"asset_count":6,"duration_ms":1586.02}
+[2026-03-18T22:23:28+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tojima-muon-tro-thanh-kamen-rider","movie_id":6,"created":true,"category_count":5,"asset_count":8,"duration_ms":642.05}
+[2026-03-18T22:23:28+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"nguyen-sinh-phan-3","movie_id":7,"created":true,"category_count":3,"asset_count":10,"duration_ms":814.8}
+[2026-03-18T22:23:29+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"tinh-yeu-bo-xit","movie_id":8,"created":true,"category_count":2,"asset_count":10,"duration_ms":667.29}
+[2026-03-18T22:23:30+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"fatestrange-fake","movie_id":9,"created":true,"category_count":5,"asset_count":5,"duration_ms":978.01}
+[2026-03-18T22:23:31+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"than-an-vuong-toa","movie_id":10,"created":true,"category_count":2,"asset_count":10,"duration_ms":876.33}
+[2026-03-18T22:23:32+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"ngay-hoc-cuoi-cung","movie_id":11,"created":true,"category_count":1,"asset_count":10,"duration_ms":1031.03}
+[2026-03-18T22:23:33+07:00] INFO: OPhim movie imported {"actor_id":1,"source_slug":"chuot-whizzy-tren-thien-duong","movie_id":12,"created":true,"category_count":2,"asset_count":10,"duration_ms":764.17}
+[2026-03-18T22:23:33+07:00] INFO: OPhim movie list imported {"actor_id":1,"list_slug":"phim-moi","page":10,"limit":12,"processed_count":12,"created_count":12,"updated_count":0,"skipped_count":0,"failed_count":0,"duration_ms":11141.08}
+[2026-03-18T22:25:17+07:00] INFO: Cinema created {"actor_id":1,"cinema_id":1,"status":"active","duration_ms":5.92}
+[2026-03-18T22:25:41+07:00] INFO: Room created {"actor_id":1,"room_id":1,"status":"active","duration_ms":2.48}
+[2026-03-18T22:26:00+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"96","duration_ms":12.98}
+[2026-03-18T22:26:07+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"96","duration_ms":8.82}
+[2026-03-18T22:26:22+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"96","duration_ms":13.02}
+[2026-03-18T22:26:32+07:00] INFO: Room seat layout replaced {"actor_id":1,"room_id":1,"total_seats":"108","duration_ms":15.51}
+[2026-03-18T22:27:10+07:00] INFO: Showtime created {"actor_id":1,"showtime_id":1,"status":"published","duration_ms":5.93}
+[2026-03-18T22:27:37+07:00] INFO: Ticket seats held {"showtime_id":1,"seat_ids":[290,291,292,302,303,304],"seat_count":6,"session_token":"65d8f05fa0df","user_id":null,"hold_expires_at":"2026-03-18 22:32:37","duration_ms":9.44}
+[2026-03-18T22:27:49+07:00] INFO: VNPay intent created {"order_id":1,"order_code":"TKT-5897A8E771","payment_id":"7","payment_status":"pending","duration_ms":21.16}
+[2026-03-18T22:29:27+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"TKT-5897A8E771","payment_status":"success","duration_ms":13.54}
+[2026-03-18T22:29:51+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"10","product_id":2,"quantity":1,"duration_ms":7}
+[2026-03-18T22:29:54+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"10","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T22:29:54+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"10","product_id":2,"quantity":1,"duration_ms":11}
+[2026-03-18T22:29:54+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"10","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T22:29:55+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"10","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T22:30:03+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"10","order_code":"SHP-CAA3533652","payment_method":"vnpay","duration_ms":13}
+[2026-03-18T22:30:27+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-CAA3533652","payment_status":"success","duration_ms":10.51}
+[2026-03-18T22:32:02+07:00] INFO: User registered {"user_id":5}
+[2026-03-18T22:32:08+07:00] INFO: Shop cart item added {"user_id":5,"session_token":"daddc439a7df","cart_id":"11","product_id":2,"quantity":1,"duration_ms":3}
+[2026-03-18T22:32:10+07:00] INFO: Shop cart item added {"user_id":5,"session_token":"daddc439a7df","cart_id":"11","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T22:32:11+07:00] INFO: Shop cart item added {"user_id":5,"session_token":"daddc439a7df","cart_id":"11","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T22:32:21+07:00] INFO: Shop checkout created {"user_id":5,"session_token":"daddc439a7df","cart_id":"11","order_code":"SHP-EE9183330A","payment_method":"vnpay","duration_ms":46}
+[2026-03-18T22:32:41+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-EE9183330A","payment_status":"success","duration_ms":14.24}
+[2026-03-18T22:38:27+07:00] INFO: Category created {"actor_id":1,"category_id":13}
+[2026-03-18T22:40:37+07:00] INFO: Movie created {"actor_id":1,"movie_id":13,"duration_ms":6.77}
+[2026-03-18T22:52:19+07:00] INFO: User logout {"user_id":"1"}
+[2026-03-18T22:52:28+07:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-18T22:58:04+07:00] INFO: User logout {"user_id":5}
+[2026-03-18T23:01:24+07:00] INFO: Product created {"actor_id":1,"product_id":3,"slug":"124124","sku":"124124","media_count":1,"duration_ms":39.52}
+[2026-03-18T23:01:31+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:01:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","product_id":3,"quantity":1,"duration_ms":7}
+[2026-03-18T23:01:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:01:37+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","product_id":3,"quantity":5,"duration_ms":11}
+[2026-03-18T23:01:51+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","product_id":3,"quantity":9,"duration_ms":7}
+[2026-03-18T23:01:51+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","product_id":3,"quantity":10,"duration_ms":3}
+[2026-03-18T23:02:03+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"12","order_code":"SHP-F97FE09F4F","payment_method":"vnpay","duration_ms":19}
+[2026-03-18T23:02:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":3}
+[2026-03-18T23:02:14+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":6}
+[2026-03-18T23:02:14+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:02:14+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:02:14+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:02:14+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:02:14+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:02:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:02:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":3}
+[2026-03-18T23:02:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:02:40+07:00] INFO: Admin shop order status updated {"actor_id":1,"order_id":9,"order_code":"SHP-F97FE09F4F","status":"cancelled","payment_status":"cancelled"}
+[2026-03-18T23:02:58+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"13","order_code":"SHP-74FF815F97","payment_method":"vnpay","duration_ms":15}
+[2026-03-18T23:03:07+07:00] INFO: Admin shop order status updated {"actor_id":1,"order_id":10,"order_code":"SHP-74FF815F97","status":"cancelled","payment_status":"cancelled"}
+[2026-03-18T23:03:11+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":3}
+[2026-03-18T23:03:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:03:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":3}
+[2026-03-18T23:03:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:03:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:03:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:03:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:03:13+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":6}
+[2026-03-18T23:03:13+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:03:13+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:03:45+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"14","order_code":"SHP-80B5C1CB05","payment_method":"cash","duration_ms":16}
+[2026-03-18T23:04:04+07:00] INFO: Admin shop order status updated {"actor_id":1,"order_id":11,"order_code":"SHP-80B5C1CB05","status":"confirmed","payment_status":"success"}
+[2026-03-18T23:05:38+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":6}
+[2026-03-18T23:05:38+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:05:38+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":3}
+[2026-03-18T23:05:38+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":7}
+[2026-03-18T23:05:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":6}
+[2026-03-18T23:05:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:05:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:05:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":3}
+[2026-03-18T23:05:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":5}
+[2026-03-18T23:05:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","product_id":3,"quantity":1,"duration_ms":4}
+[2026-03-18T23:05:48+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"15","order_code":"SHP-77F13987BA","payment_method":"cash","duration_ms":17}
+[2026-03-18T23:33:26+07:00] INFO: Product created {"actor_id":1,"product_id":4,"slug":"1231231","sku":"DEV","media_count":1,"duration_ms":12.58}
+[2026-03-18T23:33:39+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:33:41+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:41+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:41+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:33:42+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:42+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:42+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:33:42+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:42+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:42+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:43+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:44+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":6}
+[2026-03-18T23:33:44+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:44+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:33:50+07:00] INFO: Shop cart cleared {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","duration_ms":8}
+[2026-03-18T23:33:54+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:54+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:33:54+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:56+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:56+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:57+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:57+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:57+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:57+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:57+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:33:58+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:58+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:33:58+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:34:00+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":12,"duration_ms":4}
+[2026-03-18T23:34:00+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":11,"duration_ms":3}
+[2026-03-18T23:34:01+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","product_id":4,"quantity":10,"duration_ms":5}
+[2026-03-18T23:34:02+07:00] INFO: Shop checkout lifecycle maintenance completed {"expired_orders":1,"expired_payments":1,"restored_inventory_lines":1}
+[2026-03-18T23:34:07+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"16","order_code":"SHP-35232FEB4C","payment_method":"cash","duration_ms":15}
+[2026-03-18T23:34:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:34:19+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:34:20+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:34:20+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:34:20+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:34:20+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:34:20+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:34:20+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:34:21+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:34:21+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"17","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:34:54+07:00] INFO: Admin shop order status updated {"actor_id":1,"order_id":13,"order_code":"SHP-35232FEB4C","status":"confirmed","payment_status":"success"}
+[2026-03-18T23:35:20+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":10}
+[2026-03-18T23:35:23+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":7}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":4}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:35:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":3}
+[2026-03-18T23:35:25+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","product_id":4,"quantity":1,"duration_ms":5}
+[2026-03-18T23:35:36+07:00] INFO: Shop checkout created {"user_id":1,"session_token":"bd9f1922e05f","cart_id":"18","order_code":"SHP-7A9F4C89A1","payment_method":"cash","duration_ms":17}

@@ -61,6 +61,9 @@ $app->router->post('/api/shop/orders/session/{id}/cancel', [UserShopOrderControl
 $app->router->post('/api/shop/orders/lookup', [UserShopOrderController::class, 'lookupGuestOrder']);
 $app->router->post('/api/shop/orders/lookup/cancel', [UserShopOrderController::class, 'cancelGuestOrder']);
 
+
+// admin
+
 $app->router->post('/api/admin/auth/login', [AuthController::class, 'adminLogin']);
 $app->router->post('/api/admin/auth/logout', [AuthController::class, 'adminLogout'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/auth/profile', [AuthController::class, 'profile'], [AdminMiddleware::class]);
