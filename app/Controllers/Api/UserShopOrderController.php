@@ -71,9 +71,22 @@ class UserShopOrderController
 
     public function lookupGuestOrder(Request $request, Response $response)
     {
+        $userId = $this->actorId($request);
+        if ($userId <= 0) {
+            $token = $request->bearerToken();
+            if ($token) {
+                try {
+                    $payload = (new \App\Core\Auth())->verifyToken($token);
+                    $userId = (int) ($payload['user_id'] ?? 0);
+                } catch (\Exception $e) {
+                    // Ignore invalid token for guest lookup
+                }
+            }
+        }
+
         return $this->respond(
             $response,
-            $this->service->lookupGuestOrder($request->getBody())
+            $this->service->lookupGuestOrder($request->getBody(), $userId)
         );
     }
 

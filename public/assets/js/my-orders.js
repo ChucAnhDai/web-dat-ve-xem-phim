@@ -19,6 +19,7 @@
     pendingOpenOrderId: null,
     pendingLookupFocus: false,
     isLoading: false,
+    isLookingUp: false,
     isCancelling: false
   };
 
@@ -272,8 +273,11 @@
       return;
     }
 
+    const isLookupResult = parsePositiveInteger(state.lookupOrder?.id) === orderId && state.lookupOrder;
+    const setStatus = isLookupResult ? setLookupStatus : setAccessStatus;
+
     try {
-      if (parsePositiveInteger(state.lookupOrder?.id) === orderId && state.lookupOrder) {
+      if (isLookupResult) {
         state.modalOrder = state.lookupOrder;
         state.modalAccess = {
           source: 'lookup',
@@ -284,7 +288,7 @@
         return;
       }
 
-      setAccessStatus('Loading order detail...', false);
+      setStatus('Loading order detail...', false);
       const path = state.source === 'member'
         ? `/api/me/shop-orders/${orderId}`
         : `/api/shop/orders/session/${orderId}`;
@@ -301,20 +305,30 @@
         orderId: orderId
       };
       renderModal(order);
-      setAccessStatus('Order detail loaded.', false);
+      setStatus('Order detail loaded.', false);
     } catch (error) {
-      setAccessStatus(error.message || 'Failed to load order detail.', true);
+      setStatus(error.message || 'Failed to load order detail.', true);
       toast('!', 'Order detail', error.message || 'Unable to load order detail.');
     }
   }
 
   async function lookupGuestOrder() {
+    if (state.isLookingUp) {
+      return;
+    }
+
     const credentials = {
       order_code: String(dom.lookupCode?.value || '').trim(),
       contact_email: String(dom.lookupEmail?.value || '').trim(),
       contact_phone: String(dom.lookupPhone?.value || '').trim()
     };
 
+    if (!credentials.order_code) {
+      setLookupStatus('Please enter an order code.', true);
+      return;
+    }
+
+    state.isLookingUp = true;
     try {
       setLookupStatus('Looking up guest order...', false);
       const payload = await fetchJson('/api/shop/orders/lookup', {
@@ -342,7 +356,10 @@
       toast('+', 'Guest order found', `Order ${order.order_code || ''} is ready to review.`);
     } catch (error) {
       setLookupStatus(error.message || 'Guest lookup failed.', true);
-      toast('!', 'Guest lookup', error.message || 'Unable to find that guest order.');
+      // Removed redundant toast to match user's UI preference if they find it "absurd"
+      // But actually the red text in the panel is usually enough for local errors
+    } finally {
+      state.isLookingUp = false;
     }
   }
 
@@ -435,7 +452,8 @@
     }
 
     state.isCancelling = true;
-    const setStatus = state.modalAccess.source === 'lookup' ? setLookupStatus : setAccessStatus;
+    const isLookup = state.modalAccess.source === 'lookup';
+    const setStatus = isLookup ? setLookupStatus : setAccessStatus;
 
     try {
       setStatus(`Cancelling ${orderCode}...`, false);

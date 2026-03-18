@@ -272,7 +272,7 @@ class UserShopOrderService
         }
     }
 
-    public function lookupGuestOrder(array $payload): array
+    public function lookupGuestOrder(array $payload, int $userId = 0): array
     {
         $validation = $this->validator->validateLookupPayload($payload);
         if (!empty($validation['errors'])) {
@@ -284,9 +284,9 @@ class UserShopOrderService
         try {
             $this->lifecycle->runMaintenance();
             $header = $this->orders->findOrderHeaderByCode((string) $lookup['order_code']);
-            $lookupDisposition = $this->resolveLookupDisposition($header, $lookup);
+            $lookupDisposition = $this->resolveLookupDisposition($header, $lookup, $userId);
             if ($lookupDisposition !== 'guest_match') {
-                return $this->lookupAccessError($lookupDisposition, $header, $lookup, 'view');
+                return $this->lookupAccessError($lookupDisposition, $header, $lookup, 'view', $userId);
             }
 
             $detailRows = $this->details->listByOrderIds([(int) ($header['id'] ?? 0)]);
@@ -493,13 +493,18 @@ class UserShopOrderService
         return hash_equals($orderSessionToken, $sessionToken);
     }
 
-    private function resolveLookupDisposition(?array $header, array $lookup): string
+    private function resolveLookupDisposition(?array $header, array $lookup, int $userId = 0): string
     {
         if (!$this->lookupMatchesContact($header, $lookup)) {
             return 'no_match';
         }
 
-        if ((int) ($header['user_id'] ?? 0) > 0) {
+        $ownerId = (int) ($header['user_id'] ?? 0);
+        if ($ownerId > 0) {
+            if ($userId > 0 && $userId === $ownerId) {
+                return 'guest_match';
+            }
+
             return 'member_match';
         }
 
@@ -535,7 +540,7 @@ class UserShopOrderService
         return true;
     }
 
-    private function lookupAccessError(string $disposition, ?array $header, array $lookup, string $intent): array
+    private function lookupAccessError(string $disposition, ?array $header, array $lookup, string $intent, int $userId = 0): array
     {
         if ($disposition === 'member_match') {
             $matchedVia = [];
@@ -556,9 +561,9 @@ class UserShopOrderService
                 return $value !== null && $value !== '';
             }));
 
-            $message = $intent === 'manage'
-                ? 'This order is linked to a member account. Please sign in to manage it.'
-                : 'This order is linked to a member account. Please sign in to view it.';
+            $message = $userId > 0
+                ? 'Đơn này thuộc tài khoản thành viên khác'
+                : 'Đơn này thuộc tài khoản thành viên, vui lòng đăng nhập để xem';
 
             return $this->error(['lookup' => [$message]], 403);
         }
