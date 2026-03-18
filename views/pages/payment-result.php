@@ -9,15 +9,16 @@ $paymentResultTitle = 'Payment requires attention.';
 $paymentResultCopy = $paymentResultMessage;
 $paymentResultClass = 'detail-state-card';
 $paymentResultSubtitle = 'The result below reflects the latest VNPay callback processed by the payment service.';
-$paymentResultPrimaryHref = $publicBase . '/my-tickets';
+$paymentResultRouteBase = rtrim((string) ($appBase ?? ''), '/');
+$paymentResultPrimaryHref = $paymentResultRouteBase . '/my-tickets';
 $paymentResultPrimaryLabel = 'Open My Tickets';
-$paymentResultSecondaryHref = $publicBase . '/movies';
+$paymentResultSecondaryHref = $paymentResultRouteBase . '/movies';
 $paymentResultSecondaryLabel = 'Back to Movies';
 
 if ($paymentResultOrderType === 'shop') {
-    $paymentResultPrimaryHref = $publicBase . '/my-orders';
+    $paymentResultPrimaryHref = $paymentResultRouteBase . '/my-orders';
     $paymentResultPrimaryLabel = 'Open My Orders';
-    $paymentResultSecondaryHref = $publicBase . '/shop';
+    $paymentResultSecondaryHref = $paymentResultRouteBase . '/shop';
     $paymentResultSecondaryLabel = 'Back to Shop';
 }
 

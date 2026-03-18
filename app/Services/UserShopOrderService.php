@@ -284,8 +284,9 @@ class UserShopOrderService
         try {
             $this->lifecycle->runMaintenance();
             $header = $this->orders->findOrderHeaderByCode((string) $lookup['order_code']);
-            if (!$this->matchesLookupIdentity($header, $lookup)) {
-                return $this->error(['lookup' => ['No guest order matched the supplied order code and contact details.']], 404);
+            $lookupDisposition = $this->resolveLookupDisposition($header, $lookup);
+            if ($lookupDisposition !== 'guest_match') {
+                return $this->lookupAccessError($lookupDisposition, $header, $lookup, 'view');
             }
 
             $detailRows = $this->details->listByOrderIds([(int) ($header['id'] ?? 0)]);
@@ -316,8 +317,9 @@ class UserShopOrderService
         try {
             $this->lifecycle->runMaintenance();
             $header = $this->orders->findOrderHeaderByCode((string) $lookup['order_code']);
-            if (!$this->matchesLookupIdentity($header, $lookup)) {
-                return $this->error(['lookup' => ['No guest order matched the supplied order code and contact details.']], 404);
+            $lookupDisposition = $this->resolveLookupDisposition($header, $lookup);
+            if ($lookupDisposition !== 'guest_match') {
+                return $this->lookupAccessError($lookupDisposition, $header, $lookup, 'manage');
             }
 
             return $this->performCancellation($header, 'lookup', [
@@ -491,9 +493,22 @@ class UserShopOrderService
         return hash_equals($orderSessionToken, $sessionToken);
     }
 
-    private function matchesLookupIdentity(?array $header, array $lookup): bool
+    private function resolveLookupDisposition(?array $header, array $lookup): string
     {
-        if ($header === null || (int) ($header['user_id'] ?? 0) > 0) {
+        if (!$this->lookupMatchesContact($header, $lookup)) {
+            return 'no_match';
+        }
+
+        if ((int) ($header['user_id'] ?? 0) > 0) {
+            return 'member_match';
+        }
+
+        return 'guest_match';
+    }
+
+    private function lookupMatchesContact(?array $header, array $lookup): bool
+    {
+        if ($header === null) {
             return false;
         }
 
@@ -518,6 +533,37 @@ class UserShopOrderService
         }
 
         return true;
+    }
+
+    private function lookupAccessError(string $disposition, ?array $header, array $lookup, string $intent): array
+    {
+        if ($disposition === 'member_match') {
+            $matchedVia = [];
+            if (($lookup['contact_email'] ?? null) !== null) {
+                $matchedVia[] = 'email';
+            }
+            if (($lookup['contact_phone'] ?? null) !== null) {
+                $matchedVia[] = 'phone';
+            }
+
+            $this->logger->info('Guest lookup blocked because the order belongs to a member account', array_filter([
+                'intent' => $intent,
+                'order_id' => (int) ($header['id'] ?? 0) ?: null,
+                'order_code' => strtoupper(trim((string) ($lookup['order_code'] ?? ''))),
+                'member_user_id' => (int) ($header['user_id'] ?? 0) ?: null,
+                'matched_via' => $matchedVia !== [] ? implode(',', $matchedVia) : null,
+            ], static function ($value) {
+                return $value !== null && $value !== '';
+            }));
+
+            $message = $intent === 'manage'
+                ? 'This order is linked to a member account. Please sign in to manage it.'
+                : 'This order is linked to a member account. Please sign in to view it.';
+
+            return $this->error(['lookup' => [$message]], 403);
+        }
+
+        return $this->error(['lookup' => ['No guest order matched the supplied order code and contact details.']], 404);
     }
 
     private function shippingSummary(array $order): string

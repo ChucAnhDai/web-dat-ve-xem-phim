@@ -144,11 +144,14 @@ class UserRepository
     public function getRecentOrders(int $userId, int $limit = 10): array
     {
         $limit = max(1, min($limit, 20));
+        $ticketOrderCodeSql = $this->fallbackOrderCodeSql('o', 'T');
+        $shopOrderCodeSql = $this->fallbackOrderCodeSql('o', 'S');
         $sql = "
             SELECT *
             FROM (
                 SELECT
-                    COALESCE(NULLIF(o.order_code, ''), CONCAT('T-', o.id)) AS order_code,
+                    o.id AS order_id,
+                    {$ticketOrderCodeSql} AS order_code,
                     'ticket' AS order_type,
                     COALESCE(COUNT(td.id), 0) AS items_count,
                     o.order_date AS order_date,
@@ -162,7 +165,8 @@ class UserRepository
                 UNION ALL
 
                 SELECT
-                    COALESCE(NULLIF(o.order_code, ''), CONCAT('S-', o.id)) AS order_code,
+                    o.id AS order_id,
+                    {$shopOrderCodeSql} AS order_code,
                     'shop' AS order_type,
                     COALESCE(SUM(od.quantity), 0) AS items_count,
                     o.order_date AS order_date,
@@ -184,6 +188,30 @@ class UserRepository
         ]);
 
         return $stmt->fetchAll() ?: [];
+    }
+
+    private function fallbackOrderCodeSql(string $tableAlias, string $prefix): string
+    {
+        $safePrefix = strtoupper(preg_replace('/[^A-Z0-9_-]/i', '', $prefix) ?: 'O');
+        $column = sprintf('%s.order_code', $tableAlias);
+        $idColumn = sprintf('%s.id', $tableAlias);
+        $driver = strtolower((string) $this->db->getAttribute(PDO::ATTR_DRIVER_NAME));
+
+        if ($driver === 'sqlite') {
+            return sprintf(
+                "COALESCE(NULLIF(%s, ''), '%s-' || %s)",
+                $column,
+                $safePrefix,
+                $idColumn
+            );
+        }
+
+        return sprintf(
+            "COALESCE(NULLIF(%s, ''), CONCAT('%s-', %s))",
+            $column,
+            $safePrefix,
+            $idColumn
+        );
     }
 
     public function update(int $id, array $data): bool

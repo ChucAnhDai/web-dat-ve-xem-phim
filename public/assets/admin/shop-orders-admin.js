@@ -529,7 +529,7 @@
             ${items.map(item => `
               <div style="display:flex;gap:12px;align-items:flex-start;padding:12px;border:1px solid rgba(255,255,255,0.08);border-radius:12px;">
                 <div style="width:52px;height:52px;border-radius:10px;overflow:hidden;background:rgba(255,255,255,0.04);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  ${item.primary_image_url ? `<img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" style="width:100%;height:100%;object-fit:cover;">` : '<span class="td-muted">Item</span>'}
+                  ${item.primary_image_url ? `<img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" style="width:100%;height:100%;object-fit:cover;" onerror="this.remove()">` : '<span class="td-muted">Item</span>'}
                 </div>
                 <div style="flex:1;">
                   <div class="td-bold">${escapeHtml(item.product_name || 'Product')}</div>

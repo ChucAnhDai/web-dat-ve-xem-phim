@@ -15,7 +15,7 @@
 <div class="orders-access-grid">
   <div class="card orders-panel-card">
     <div class="summary-title" style="margin-bottom:8px;">Current Access</div>
-    <div class="catalog-request-status" id="myOrdersRequestStatus">Resolving order access...</div>
+    <div class="catalog-request-status" id="myOrdersAccessStatus">Resolving order access...</div>
     <div class="lookup-help" id="myOrdersAccessMeta" style="margin-top:10px;">Checking whether account orders or guest session orders should be loaded.</div>
     <div class="orders-summary-grid" style="margin-top:18px;">
       <div class="orders-summary-metric">
@@ -42,6 +42,7 @@
     <div class="lookup-help">
       Use the guest checkout order code with the same email or phone entered during checkout. If both fields are provided, both must match the stored order contact data.
     </div>
+    <div class="catalog-request-status" id="guestOrderLookupStatus" style="margin-top:12px;">Guest lookup is available for orders placed without signing in.</div>
     <form id="guestOrderLookupForm" class="lookup-form-grid" autocomplete="off">
       <div>
         <label for="guestOrderCode" class="td-muted">Order Code</label>

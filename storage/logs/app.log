@@ -583,3 +583,45 @@
 [2026-03-18T13:04:05+07:00] INFO: Authentication succeeded {"user_id":"3","context":"user"}
 [2026-03-18T13:04:23+07:00] INFO: Shop cart cleared {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","duration_ms":6}
 [2026-03-18T13:04:25+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":9}
+[2026-03-18T14:10:25+07:00] INFO: Shop cart item added {"user_id":3,"session_token":"daddc439a7df","cart_id":"5","product_id":2,"quantity":1,"duration_ms":8}
+[2026-03-18T14:47:09+07:00] INFO: User logout {"user_id":"3"}
+[2026-03-18T14:47:31+07:00] INFO: User registered {"user_id":4}
+[2026-03-18T14:47:40+07:00] INFO: Shop cart item added {"user_id":4,"session_token":"daddc439a7df","cart_id":"6","product_id":2,"quantity":1,"duration_ms":12}
+[2026-03-18T14:47:52+07:00] INFO: Shop checkout created {"user_id":4,"session_token":"daddc439a7df","cart_id":"6","order_code":"SHP-93A18C0BCC","payment_method":"vnpay","duration_ms":21}
+[2026-03-18T14:48:18+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-93A18C0BCC","payment_status":"success","duration_ms":15.9}
+[2026-03-18T14:51:47+07:00] INFO: Shop cart item added {"user_id":4,"session_token":"daddc439a7df","cart_id":"7","product_id":2,"quantity":1,"duration_ms":7}
+[2026-03-18T14:51:47+07:00] INFO: Shop cart item added {"user_id":4,"session_token":"daddc439a7df","cart_id":"7","product_id":2,"quantity":1,"duration_ms":3}
+[2026-03-18T14:51:58+07:00] INFO: Shop checkout created {"user_id":4,"session_token":"daddc439a7df","cart_id":"7","order_code":"SHP-57E92DC379","payment_method":"vnpay","duration_ms":16}
+[2026-03-18T14:52:38+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-57E92DC379","payment_status":"success","duration_ms":14.94}
+[2026-03-18T14:54:29+07:00] INFO: User logout {"user_id":4}
+[2026-03-18T14:54:56+07:00] INFO: Shop checkout created {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","order_code":"SHP-CEE7686209","payment_method":"vnpay","duration_ms":14}
+[2026-03-18T14:55:15+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-CEE7686209","payment_status":"success","duration_ms":15.53}
+[2026-03-18T15:08:41+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":4,"order_code":"SHP-CEE7686209","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:09:11+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":4,"order_code":"SHP-CEE7686209","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:09:14+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":4,"order_code":"SHP-CEE7686209","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:09:25+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"8","product_id":2,"quantity":1,"duration_ms":7}
+[2026-03-18T15:09:54+07:00] INFO: Shop checkout created {"user_id":1,"session_token":"daddc439a7df","cart_id":"8","order_code":"SHP-2B329E782E","payment_method":"vnpay","duration_ms":15}
+[2026-03-18T15:10:22+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-2B329E782E","payment_status":"success","duration_ms":2257.39}
+[2026-03-18T15:10:41+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":5,"order_code":"SHP-2B329E782E","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:10:42+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":5,"order_code":"SHP-2B329E782E","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:10:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":5,"order_code":"SHP-2B329E782E","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:10:54+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":5,"order_code":"SHP-2B329E782E","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:10:54+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":5,"order_code":"SHP-2B329E782E","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:10:54+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":5,"order_code":"SHP-2B329E782E","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:11:39+07:00] ERROR: Authentication failed {"identifier":"nguyendev123@gmail.com","context":"user"}
+[2026-03-18T15:11:40+07:00] ERROR: Authentication failed {"identifier":"nguyendev123@gmail.com","context":"user"}
+[2026-03-18T15:11:47+07:00] INFO: Authentication succeeded {"user_id":"4","context":"user"}
+[2026-03-18T15:12:14+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":3,"order_code":"SHP-57E92DC379","member_user_id":4,"matched_via":"email,phone"}
+[2026-03-18T15:17:23+07:00] INFO: User logout {"user_id":"4"}
+[2026-03-18T15:17:36+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"9","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T15:17:36+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"9","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T15:17:36+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"9","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T15:17:54+07:00] INFO: Shop checkout created {"user_id":1,"session_token":"daddc439a7df","cart_id":"9","order_code":"SHP-6917D79270","payment_method":"vnpay","duration_ms":18}
+[2026-03-18T15:18:17+07:00] INFO: VNPay callback processed {"source":"return","provider_order_ref":"SHP-6917D79270","payment_status":"success","duration_ms":11.8}
+[2026-03-18T15:18:45+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:18:46+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:18:46+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:18:46+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:18:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:18:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}
+[2026-03-18T15:18:47+07:00] INFO: Guest lookup blocked because the order belongs to a member account {"intent":"view","order_id":6,"order_code":"SHP-6917D79270","member_user_id":1,"matched_via":"email,phone"}

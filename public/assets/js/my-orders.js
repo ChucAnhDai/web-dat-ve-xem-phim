@@ -12,8 +12,12 @@
     orders: [],
     summary: null,
     currentFilter: 'all',
+    lookupOrder: null,
+    lookupCredentials: null,
     modalOrder: null,
     modalAccess: null,
+    pendingOpenOrderId: null,
+    pendingLookupFocus: false,
     isLoading: false,
     isCancelling: false
   };
@@ -27,8 +31,9 @@
     }
 
     dom.subtitle = document.getElementById('myOrdersSubtitle');
-    dom.requestStatus = document.getElementById('myOrdersRequestStatus');
+    dom.accessStatus = document.getElementById('myOrdersAccessStatus');
     dom.accessMeta = document.getElementById('myOrdersAccessMeta');
+    dom.lookupStatus = document.getElementById('guestOrderLookupStatus');
     dom.totalStat = document.getElementById('myOrdersTotalStat');
     dom.pendingStat = document.getElementById('myOrdersPendingStat');
     dom.activeStat = document.getElementById('myOrdersActiveStat');
@@ -42,10 +47,18 @@
     dom.modalContent = document.getElementById('shopOrderModalContent');
     dom.modalClose = document.getElementById('shopOrderModalClose');
 
+    initializeQueryActions();
     bindFilters();
     bindLookupForm();
     bindModal();
+    maybeFocusLookupForm();
     void loadPrimaryOrders();
+  }
+
+  function initializeQueryActions() {
+    const params = new URLSearchParams(window.location.search || '');
+    state.pendingLookupFocus = params.get('lookup') === '1';
+    state.pendingOpenOrderId = parsePositiveInteger(params.get('open'));
   }
 
   function bindFilters() {
@@ -69,7 +82,7 @@
       if (dom.lookupCode) dom.lookupCode.value = '';
       if (dom.lookupEmail) dom.lookupEmail.value = '';
       if (dom.lookupPhone) dom.lookupPhone.value = '';
-      setRequestStatus('Guest lookup form was cleared.', false);
+      setLookupStatus('Guest lookup form was cleared.', false);
     });
   }
 
@@ -84,7 +97,7 @@
 
   async function loadPrimaryOrders() {
     state.isLoading = true;
-    setRequestStatus('Loading your orders...', false);
+    setAccessStatus('Loading your orders...', false);
     renderLoadingState();
 
     try {
@@ -114,7 +127,7 @@
       updateSubtitle();
       updateAccessMeta();
       renderEmptyState('Order history unavailable.', error.message || 'Unable to load order history right now.');
-      setRequestStatus(error.message || 'Order request failed.', true);
+      setAccessStatus(error.message || 'Order request failed.', true);
     } finally {
       state.isLoading = false;
     }
@@ -131,12 +144,14 @@
     renderOrders();
 
     if (state.source === 'member') {
-      setRequestStatus('Signed-in account orders loaded.', false);
+      setAccessStatus('Signed-in account orders loaded.', false);
     } else if (payload.session_attached) {
-      setRequestStatus('Guest orders for this browser session loaded.', false);
+      setAccessStatus('Guest orders for this browser session loaded.', false);
     } else {
-      setRequestStatus('No account session detected. Use guest lookup if needed.', false);
+      setAccessStatus('No account session detected. Use guest lookup if needed.', false);
     }
+
+    void maybeAutoOpenRequestedOrder();
   }
 
   function updateSummary(summary) {
@@ -206,10 +221,11 @@
   }
 
   function renderOrders() {
+    const availableOrders = visibleOrders();
     const matcher = FILTERS[state.currentFilter] || FILTERS.all;
-    const filtered = state.orders.filter(matcher);
+    const filtered = availableOrders.filter(matcher);
 
-    if (!state.orders.length) {
+    if (!availableOrders.length) {
       if (state.source === 'member') {
         renderEmptyState('No account orders found.', 'Place a shop order while signed in and it will appear here.');
       } else if (state.source === 'session') {
@@ -257,7 +273,18 @@
     }
 
     try {
-      setRequestStatus('Loading order detail...', false);
+      if (parsePositiveInteger(state.lookupOrder?.id) === orderId && state.lookupOrder) {
+        state.modalOrder = state.lookupOrder;
+        state.modalAccess = {
+          source: 'lookup',
+          credentials: state.lookupCredentials || {}
+        };
+        renderModal(state.lookupOrder);
+        setLookupStatus('Guest order detail loaded.', false);
+        return;
+      }
+
+      setAccessStatus('Loading order detail...', false);
       const path = state.source === 'member'
         ? `/api/me/shop-orders/${orderId}`
         : `/api/shop/orders/session/${orderId}`;
@@ -274,9 +301,9 @@
         orderId: orderId
       };
       renderModal(order);
-      setRequestStatus('Order detail loaded.', false);
+      setAccessStatus('Order detail loaded.', false);
     } catch (error) {
-      setRequestStatus(error.message || 'Failed to load order detail.', true);
+      setAccessStatus(error.message || 'Failed to load order detail.', true);
       toast('!', 'Order detail', error.message || 'Unable to load order detail.');
     }
   }
@@ -289,7 +316,7 @@
     };
 
     try {
-      setRequestStatus('Looking up guest order...', false);
+      setLookupStatus('Looking up guest order...', false);
       const payload = await fetchJson('/api/shop/orders/lookup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -306,11 +333,15 @@
         source: 'lookup',
         credentials: credentials
       };
+      state.lookupOrder = order;
+      state.lookupCredentials = credentials;
+      activateFilter('all');
+      renderOrders();
       renderModal(order);
-      setRequestStatus(`Guest order ${order.order_code || ''} loaded.`, false);
+      setLookupStatus(`Guest order ${order.order_code || ''} loaded.`, false);
       toast('+', 'Guest order found', `Order ${order.order_code || ''} is ready to review.`);
     } catch (error) {
-      setRequestStatus(error.message || 'Guest lookup failed.', true);
+      setLookupStatus(error.message || 'Guest lookup failed.', true);
       toast('!', 'Guest lookup', error.message || 'Unable to find that guest order.');
     }
   }
@@ -365,7 +396,7 @@
           <div class="order-detail-items">
             ${items.length ? items.map(item => `
               <div class="order-detail-line">
-                <div class="order-detail-media">${item.primary_image_url ? `<img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" loading="lazy">` : ''}</div>
+                <div class="order-detail-media">${item.primary_image_url ? `<img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" loading="lazy" onerror="this.remove()">` : ''}</div>
                 <div>
                   <div style="font-weight:700;">${escapeHtml(item.product_name || 'Product')}</div>
                   <div class="lookup-help">${escapeHtml(item.product_sku || 'No SKU')} • Qty ${Number(item.quantity || 0)}</div>
@@ -404,9 +435,10 @@
     }
 
     state.isCancelling = true;
+    const setStatus = state.modalAccess.source === 'lookup' ? setLookupStatus : setAccessStatus;
 
     try {
-      setRequestStatus(`Cancelling ${orderCode}...`, false);
+      setStatus(`Cancelling ${orderCode}...`, false);
       let payload;
 
       if (state.modalAccess.source === 'member') {
@@ -435,13 +467,16 @@
         throw new Error('Cancellation completed but the updated order payload is missing.');
       }
 
+      if (state.modalAccess.source === 'lookup') {
+        state.lookupOrder = order;
+      }
       state.modalOrder = order;
       renderModal(order);
-      setRequestStatus(`Order ${order.order_code || ''} was cancelled successfully.`, false);
+      setStatus(`Order ${order.order_code || ''} was cancelled successfully.`, false);
       toast('+', 'Order cancelled', `Order ${order.order_code || ''} was cancelled successfully.`);
       await loadPrimaryOrders();
     } catch (error) {
-      setRequestStatus(error.message || 'Failed to cancel the order.', true);
+      setStatus(error.message || 'Failed to cancel the order.', true);
       toast('!', 'Cancel order', error.message || 'Unable to cancel this order.');
     } finally {
       state.isCancelling = false;
@@ -452,6 +487,99 @@
     state.modalOrder = null;
     state.modalAccess = null;
     dom.modal?.classList.remove('open');
+  }
+
+  function activateFilter(filterName) {
+    state.currentFilter = filterName;
+    document.querySelectorAll('#myOrdersFilters [data-filter]').forEach(item => {
+      item.classList.toggle('active', (item.dataset.filter || 'all') === filterName);
+    });
+  }
+
+  function visibleOrders() {
+    const merged = [];
+    const seen = new Set();
+
+    [state.lookupOrder, ...state.orders].forEach((order, index) => {
+      if (!order || typeof order !== 'object') {
+        return;
+      }
+
+      const key = orderIdentity(order, index);
+      if (seen.has(key)) {
+        return;
+      }
+
+      seen.add(key);
+      merged.push(order);
+    });
+
+    return merged;
+  }
+
+  function orderIdentity(order, fallbackIndex) {
+    const id = parsePositiveInteger(order?.id);
+    if (id !== null) {
+      return `id:${id}`;
+    }
+
+    const orderCode = String(order?.order_code || '').trim().toUpperCase();
+    if (orderCode !== '') {
+      return `code:${orderCode}`;
+    }
+
+    return `fallback:${fallbackIndex}`;
+  }
+
+  function maybeFocusLookupForm() {
+    if (!state.pendingLookupFocus || !dom.lookupCode) {
+      return;
+    }
+
+    state.pendingLookupFocus = false;
+    replaceQueryParam('lookup', null);
+
+    window.requestAnimationFrame(() => {
+      dom.lookupForm?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      try {
+        dom.lookupCode.focus({ preventScroll: true });
+      } catch (error) {
+        dom.lookupCode.focus();
+      }
+    });
+  }
+
+  async function maybeAutoOpenRequestedOrder() {
+    const requestedOrderId = state.pendingOpenOrderId;
+    if (requestedOrderId === null) {
+      return;
+    }
+
+    state.pendingOpenOrderId = null;
+    replaceQueryParam('open', null);
+    await openOrderDetail(requestedOrderId);
+  }
+
+  function replaceQueryParam(name, value) {
+    if (!window.history?.replaceState) {
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    if (value === null || value === undefined || value === '') {
+      url.searchParams.delete(name);
+    } else {
+      url.searchParams.set(name, String(value));
+    }
+
+    window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  function parsePositiveInteger(value) {
+    const parsed = Number(value);
+
+    return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
   }
 
   async function fetchJson(path, options = {}) {
@@ -497,7 +625,7 @@
       return '<div class="order-item-thumb"></div>';
     }
 
-    return `<div class="order-item-thumb"><img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" loading="lazy"></div>`;
+    return `<div class="order-item-thumb"><img src="${escapeHtmlAttr(item.primary_image_url)}" alt="${escapeHtmlAttr(item.primary_image_alt || item.product_name || 'Product')}" loading="lazy" onerror="this.remove()"></div>`;
   }
 
   function kv(label, value) {
@@ -551,13 +679,21 @@
     }).format(parsed);
   }
 
-  function setRequestStatus(message, isError) {
-    if (!dom.requestStatus) {
+  function setAccessStatus(message, isError) {
+    setPanelStatus(dom.accessStatus, message, isError);
+  }
+
+  function setLookupStatus(message, isError) {
+    setPanelStatus(dom.lookupStatus, message, isError);
+  }
+
+  function setPanelStatus(element, message, isError) {
+    if (!element) {
       return;
     }
 
-    dom.requestStatus.textContent = message;
-    dom.requestStatus.style.color = isError ? '#fca5a5' : '';
+    element.textContent = message;
+    element.style.color = isError ? '#fca5a5' : '';
   }
 
   function toast(icon, title, message) {

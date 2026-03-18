@@ -19,7 +19,8 @@ const routeMap = {
   'seat-selection': '/showtimes',
   checkout: '/checkout',
   'my-tickets': '/my-tickets',
-  'my-orders': '/my-orders'
+  'my-orders': '/my-orders',
+  'guest-order-lookup': '/my-orders?lookup=1'
 };
 
 const movies = [
@@ -249,6 +250,27 @@ function profileStatusClass(status) {
   if (value === 'shipping') return 'info';
   if (value === 'cancelled') return 'danger';
   return 'pending';
+}
+
+function profileOrderHref(order) {
+  const orderType = String(order?.order_type || '').trim().toLowerCase();
+  const orderId = Number(order?.order_id || 0);
+
+  if (orderType === 'shop' && Number.isInteger(orderId) && orderId > 0) {
+    return appUrl(`/my-orders?open=${encodeURIComponent(String(orderId))}`);
+  }
+
+  if (orderType === 'ticket') {
+    return appUrl('/my-tickets');
+  }
+
+  return '';
+}
+
+function profileOrderActionLabel(order) {
+  return String(order?.order_type || '').trim().toLowerCase() === 'ticket'
+    ? 'Open Tickets'
+    : 'View';
 }
 
 function renderProfileDetails(profile) {
@@ -858,6 +880,24 @@ function renderProfileOrders(containerId, ordersData = currentProfile?.orders ||
       </div>
     `;
   }).join('');
+
+  container.querySelectorAll('button.btn.btn-secondary.btn-sm').forEach((button, index) => {
+    const order = profileOrders[index] || null;
+    const actionHref = profileOrderHref(order);
+
+    button.removeAttribute('onclick');
+    if (!actionHref) {
+      button.textContent = 'Unavailable';
+      button.disabled = true;
+      return;
+    }
+
+    button.textContent = profileOrderActionLabel(order);
+    button.addEventListener('click', event => {
+      event.preventDefault();
+      window.location.href = actionHref;
+    });
+  });
 }
 
 function switchTab(el, section) {

@@ -185,6 +185,7 @@ class AuthControllerTest extends TestCase
 
         $this->assertSame(401, $response->statusCode);
         $this->assertSame(['errors' => ['token' => ['Invalid token.']]], $response->payload);
+        $this->assertArrayHasKey('cinemax_token', $response->clearedCookies);
     }
 
     public function testLogoutReturnsSuccess(): void
@@ -199,6 +200,7 @@ class AuthControllerTest extends TestCase
 
         $this->assertSame(200, $response->statusCode);
         $this->assertSame(['message' => 'Logout successful'], $response->payload);
+        $this->assertArrayHasKey('cinemax_token', $response->clearedCookies);
     }
 
     public function testAdminLogoutReturnsSuccess(): void

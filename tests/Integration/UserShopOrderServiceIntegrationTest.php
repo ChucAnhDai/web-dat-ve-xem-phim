@@ -114,6 +114,61 @@ class UserShopOrderServiceIntegrationTest extends TestCase
         $this->assertSame('guest@example.com', $result['data']['order']['contact_email']);
     }
 
+    public function testLookupGuestOrderReturnsHelpfulErrorWhenMatchingOrderBelongsToMember(): void
+    {
+        $this->seedOrder([
+            'id' => 6,
+            'order_code' => 'SHP-MEMBER-LOCKED',
+            'user_id' => 7,
+            'session_token' => null,
+            'status' => 'confirmed',
+            'payment_method' => 'cash',
+            'payment_status' => 'success',
+            'quantity' => 1,
+            'stock_after_reserve' => 9,
+        ]);
+
+        $result = $this->makeService()->lookupGuestOrder([
+            'order_code' => 'SHP-MEMBER-LOCKED',
+            'contact_email' => 'guest@example.com',
+            'contact_phone' => '0901234567',
+        ]);
+
+        $this->assertSame(403, $result['status']);
+        $this->assertSame(
+            'This order is linked to a member account. Please sign in to view it.',
+            $result['errors']['lookup'][0] ?? null
+        );
+    }
+
+    public function testCancelGuestOrderReturnsHelpfulErrorWhenMatchingOrderBelongsToMember(): void
+    {
+        $this->seedOrder([
+            'id' => 7,
+            'order_code' => 'SHP-MEMBER-CANCEL',
+            'user_id' => 7,
+            'session_token' => null,
+            'status' => 'pending',
+            'payment_method' => 'cash',
+            'payment_status' => 'pending',
+            'quantity' => 1,
+            'stock_after_reserve' => 9,
+        ]);
+
+        $result = $this->makeService()->cancelGuestOrder([
+            'order_code' => 'SHP-MEMBER-CANCEL',
+            'contact_email' => 'guest@example.com',
+            'contact_phone' => '0901234567',
+        ]);
+
+        $this->assertSame(403, $result['status']);
+        $this->assertSame(
+            'This order is linked to a member account. Please sign in to manage it.',
+            $result['errors']['lookup'][0] ?? null
+        );
+        $this->assertSame('pending', $this->db->query("SELECT status FROM shop_orders WHERE id = 7")->fetchColumn());
+    }
+
     public function testCancelGuestOrderByLookupCancelsOrderAndRestoresInventory(): void
     {
         $token = str_repeat('c', 64);

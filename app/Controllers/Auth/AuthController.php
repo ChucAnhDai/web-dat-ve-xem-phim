@@ -66,6 +66,11 @@ class AuthController
     {
         $token = $request->bearerToken();
         $result = $this->service->logout($token ?? '');
+
+        $response->clearCookie('cinemax_token', [
+            'path' => $request->appBasePath() !== '' ? $request->appBasePath() : '/',
+        ]);
+
         if (isset($result['errors'])) {
             return $response->json(['errors' => $result['errors']], 401);
         }

@@ -1,4 +1,3 @@
-<!-- ═══════════ SIDEBAR ═══════════ -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <aside class="sidebar" id="sidebar">
   <div class="nav-item <?php echo ($activePage ?? '') === 'home' ? 'active' : ''; ?>" onclick="navigateTo('home')">
@@ -8,7 +7,7 @@
     <span class="nav-icon">🎬</span> Movies
   </div>
   <div class="nav-item <?php echo ($activePage ?? '') === 'showtimes' ? 'active' : ''; ?>" onclick="navigateTo('showtimes-home')">
-    <span class="nav-icon">🕐</span> Showtimes
+    <span class="nav-icon">🕒</span> Showtimes
   </div>
   <div class="nav-item <?php echo ($activePage ?? '') === 'shop' ? 'active' : ''; ?>" onclick="navigateTo('shop')">
     <span class="nav-icon">🛍️</span> Shop
@@ -26,6 +25,9 @@
       </div>
       <div class="nav-item" onclick="navigateTo('auth');switchAuthTab('register')">
         <span class="nav-icon">🧾</span> Đăng ký
+      </div>
+      <div class="nav-item <?php echo ($activePage ?? '') === 'my-orders' ? 'active' : ''; ?>" onclick="navigateTo('guest-order-lookup')">
+        <span class="nav-icon">🔎</span> Tra cứu đơn hàng
       </div>
     </div>
     <div id="sidebarUserActions" style="display:none">

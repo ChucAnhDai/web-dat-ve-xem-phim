@@ -175,11 +175,9 @@ class Request
             return trim(substr($header, 7));
         }
 
-        foreach (['cinemax_admin_token', 'cinemax_token'] as $cookieName) {
-            $cookieValue = $this->cookie($cookieName);
-            if (is_string($cookieValue) && trim($cookieValue) !== '') {
-                return trim($cookieValue);
-            }
+        $adminCookieValue = $this->cookie('cinemax_admin_token');
+        if (is_string($adminCookieValue) && trim($adminCookieValue) !== '') {
+            return trim($adminCookieValue);
         }
 
         return null;

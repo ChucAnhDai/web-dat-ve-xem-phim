@@ -68,7 +68,7 @@ const _statusLabels = {
   sold_out: 'Sold Out',
 };
 
-const ADMIN_AUTH_STORAGE_KEY = 'cinemax_token';
+const ADMIN_AUTH_STORAGE_KEY = 'cinemax_admin_token';
 
 class AdminApiError extends Error {
   constructor(message, status = 500, errors = {}, payload = null) {
