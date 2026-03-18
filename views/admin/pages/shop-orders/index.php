@@ -4,15 +4,15 @@ $sectionMeta = [
     'shop-orders' => [
         'breadcrumb' => 'Shop Orders',
         'title' => 'Shop Orders',
-        'subtitle' => 'Product purchase management',
-        'button' => 'Export CSV',
+        'subtitle' => 'Live shop orders synced from checkout, payments, and fulfillment state',
+        'button' => 'Refresh Orders',
         'buttonClass' => 'btn btn-ghost',
     ],
     'order-details' => [
         'breadcrumb' => 'Order Details',
         'title' => 'Order Details',
-        'subtitle' => 'Inspect line items, fulfillment, and shipping notes',
-        'button' => 'Open Detail',
+        'subtitle' => 'Live order lines and fulfillment queue synced from order_details',
+        'button' => 'Refresh Details',
         'buttonClass' => 'btn btn-primary',
     ],
 ];

@@ -23,6 +23,32 @@ class UserRepository
         return $user ?: null;
     }
 
+    public function findByLoginIdentifier(string $identifier): ?array
+    {
+        $normalizedIdentifier = trim($identifier);
+        if ($normalizedIdentifier === '') {
+            return null;
+        }
+
+        $normalizedEmail = strtolower($normalizedIdentifier);
+        $normalizedPhone = preg_replace('/[^0-9+]/', '', $normalizedIdentifier) ?: '';
+
+        $stmt = $this->db->prepare(
+            'SELECT *
+             FROM users
+             WHERE LOWER(email) = LOWER(:email)
+                OR phone = :phone
+             LIMIT 1'
+        );
+        $stmt->execute([
+            'email' => $normalizedEmail,
+            'phone' => $normalizedPhone,
+        ]);
+        $user = $stmt->fetch();
+
+        return $user ?: null;
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM users WHERE id = :id LIMIT 1');

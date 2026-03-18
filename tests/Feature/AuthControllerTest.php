@@ -10,6 +10,14 @@ use PHPUnit\Framework\TestCase;
 
 class AuthControllerTest extends TestCase
 {
+    private int $initialOutputBufferLevel = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->initialOutputBufferLevel = ob_get_level();
+    }
+
     protected function tearDown(): void
     {
         $_GET = [];
@@ -63,13 +71,27 @@ class AuthControllerTest extends TestCase
         $this->assertSame(['errors' => ['credentials' => ['Invalid credentials.']]], $response->payload);
     }
 
+    public function testLoginReturnsValidationErrorsForIdentifier(): void
+    {
+        $service = new FakeAuthService(['errors' => ['identifier' => ['Field is required.']]]);
+        $controller = new TestableAuthController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_POST = ['password' => 'secret'];
+
+        $response = $controller->login(new Request(), new CapturingResponse());
+
+        $this->assertSame(422, $response->statusCode);
+        $this->assertSame(['errors' => ['identifier' => ['Field is required.']]], $response->payload);
+    }
+
     public function testLoginReturnsTokenOnSuccess(): void
     {
         $service = new FakeAuthService(['data' => ['token' => 'token']]);
         $controller = new TestableAuthController($service);
 
         $_SERVER['REQUEST_METHOD'] = 'POST';
-        $_POST = ['email' => 'test@example.com', 'password' => 'correct'];
+        $_POST = ['identifier' => '0900000001', 'password' => 'correct'];
 
         $response = $controller->login(new Request(), new CapturingResponse());
 
@@ -197,7 +219,7 @@ class AuthControllerTest extends TestCase
 
     private function clearOutputBuffer(): void
     {
-        while (ob_get_level() > 0) {
+        while (ob_get_level() > $this->initialOutputBufferLevel) {
             ob_end_clean();
         }
     }
@@ -212,27 +234,44 @@ class TestableAuthController extends AuthController
 
     public function register(Request $request, Response $response)
     {
-        return parent::register($request, $response);
+        parent::register($request, $response);
+
+        return $response;
     }
 
     public function login(Request $request, Response $response)
     {
-        return parent::login($request, $response);
+        parent::login($request, $response);
+
+        return $response;
     }
 
     public function adminLogin(Request $request, Response $response)
     {
-        return parent::adminLogin($request, $response);
+        parent::adminLogin($request, $response);
+
+        return $response;
     }
 
     public function profile(Request $request, Response $response)
     {
-        return parent::profile($request, $response);
+        parent::profile($request, $response);
+
+        return $response;
+    }
+
+    public function logout(Request $request, Response $response)
+    {
+        parent::logout($request, $response);
+
+        return $response;
     }
 
     public function adminLogout(Request $request, Response $response)
     {
-        return parent::adminLogout($request, $response);
+        parent::adminLogout($request, $response);
+
+        return $response;
     }
 }
 

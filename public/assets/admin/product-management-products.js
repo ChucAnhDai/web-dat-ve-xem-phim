@@ -1925,5 +1925,14 @@
     return null;
   }
 
+  function isValidHttpUrl(value) {
+    try {
+      const url = new URL(String(value || '').trim());
+      return ['http:', 'https:'].includes(url.protocol);
+    } catch (error) {
+      return false;
+    }
+  }
+
   document.addEventListener('DOMContentLoaded', initProductManagementProducts);
 })();

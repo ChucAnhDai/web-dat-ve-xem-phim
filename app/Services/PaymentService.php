@@ -6,6 +6,7 @@ use App\Core\Database;
 use App\Core\Logger;
 use App\Repositories\PaymentMethodRepository;
 use App\Repositories\PaymentRepository;
+use App\Repositories\ShopOrderRepository;
 use App\Repositories\TicketOrderRepository;
 use App\Repositories\TicketSeatHoldRepository;
 use App\Services\Concerns\FormatsTicketData;
@@ -24,10 +25,12 @@ class PaymentService
     private TicketCheckoutContextService $context;
     private TicketSeatHoldRepository $holds;
     private TicketOrderRepository $orders;
+    private ShopOrderRepository $shopOrders;
     private PaymentRepository $payments;
     private PaymentMethodRepository $methods;
     private PaymentValidator $validator;
     private TicketLifecycleService $lifecycle;
+    private ShopOrderLifecycleService $shopLifecycle;
     private VnpayGateway $gateway;
     private array $config;
     private array $ticketConfig;
@@ -45,15 +48,19 @@ class PaymentService
         ?VnpayGateway $gateway = null,
         ?array $config = null,
         ?Logger $logger = null,
-        ?array $ticketConfig = null
+        ?array $ticketConfig = null,
+        ?ShopOrderRepository $shopOrders = null,
+        ?ShopOrderLifecycleService $shopLifecycle = null
     ) {
         $this->db = $db ?? Database::getInstance();
         $this->holds = $holds ?? new TicketSeatHoldRepository($this->db);
         $this->orders = $orders ?? new TicketOrderRepository($this->db);
+        $this->shopOrders = $shopOrders ?? new ShopOrderRepository($this->db);
         $this->payments = $payments ?? new PaymentRepository($this->db);
         $this->methods = $methods ?? new PaymentMethodRepository($this->db);
         $this->validator = $validator ?? new PaymentValidator();
         $this->lifecycle = $lifecycle ?? new TicketLifecycleService($this->db, $this->holds, $this->orders, $this->payments, $logger);
+        $this->shopLifecycle = $shopLifecycle ?? new ShopOrderLifecycleService($this->db, $this->shopOrders, null, null, $this->payments, $logger);
         $this->context = $context ?? new TicketCheckoutContextService($this->db, null, null, $this->holds);
         $this->config = $config ?? require dirname(__DIR__, 2) . '/config/payments.php';
         $this->ticketConfig = $ticketConfig ?? require dirname(__DIR__, 2) . '/config/tickets.php';
@@ -248,7 +255,13 @@ class PaymentService
             }
 
             $this->lifecycle->runMaintenance();
+            $this->shopLifecycle->runMaintenance();
             $payment = $this->payments->findTicketPaymentByProviderOrderRef((string) $data['provider_order_ref'], 'vnpay');
+            $paymentTarget = 'ticket';
+            if ($payment === null) {
+                $payment = $this->payments->findShopPaymentByProviderOrderRef((string) $data['provider_order_ref'], 'vnpay');
+                $paymentTarget = 'shop';
+            }
             if ($payment === null) {
                 throw new PaymentDomainException(
                     ['payment' => ['Payment reference was not found.']],
@@ -276,12 +289,41 @@ class PaymentService
                 return $this->paymentSuccessResponse($payment, $source, '02', 'Order already confirmed');
             }
 
-            $resolved = $this->transactional(function () use ($payment, $data): array {
+            $resolved = $this->transactional(function () use ($payment, $data, $paymentTarget): array {
                 $paymentId = (int) ($payment['id'] ?? 0);
-                $orderId = (int) ($payment['ticket_order_id'] ?? 0);
                 $now = date('Y-m-d H:i:s');
                 $callbackPayload = json_encode($data['raw_payload'] ?? [], JSON_UNESCAPED_UNICODE);
 
+                if ($paymentTarget === 'shop') {
+                    $orderId = (int) ($payment['shop_order_id'] ?? 0);
+                    if ($this->validator->isSuccessfulVnpayResponse($data)) {
+                        $this->payments->markPaymentSuccess($paymentId, [
+                            'payment_status' => 'success',
+                            'provider_transaction_code' => $data['provider_transaction_code'] ?? null,
+                            'provider_response_code' => $data['response_code'] ?? null,
+                            'provider_message' => 'VNPay payment confirmed.',
+                            'callback_payload' => $callbackPayload,
+                            'completed_at' => $now,
+                            'payment_date' => $now,
+                        ]);
+                        $this->shopOrders->markOrdersConfirmed([$orderId], $now);
+                    } else {
+                        $issue = $this->mapFailureState((string) ($data['response_code'] ?? ''));
+                        $this->payments->markPaymentIssue($paymentId, [
+                            'payment_status' => $issue['payment_status'],
+                            'provider_transaction_code' => $data['provider_transaction_code'] ?? null,
+                            'provider_response_code' => $data['response_code'] ?? null,
+                            'provider_message' => $issue['message'],
+                            'callback_payload' => $callbackPayload,
+                            'failed_at' => $now,
+                        ]);
+                        $this->shopLifecycle->releaseInventoryAndMarkIssue($orderId, $issue['order_status'], $now);
+                    }
+
+                    return $this->payments->findShopPaymentByProviderOrderRef((string) ($payment['provider_order_ref'] ?? ''), 'vnpay') ?: $payment;
+                }
+
+                $orderId = (int) ($payment['ticket_order_id'] ?? 0);
                 if ($this->validator->isSuccessfulVnpayResponse($data)) {
                     $this->payments->markPaymentSuccess($paymentId, [
                         'payment_status' => 'success',
@@ -510,8 +552,10 @@ class PaymentService
 
     private function paymentSuccessResponse(array $payment, string $source, string $ipnCode, string $ipnMessage): array
     {
+        $orderType = isset($payment['shop_order_id']) && (int) $payment['shop_order_id'] > 0 ? 'shop' : 'ticket';
         $data = [
             'status' => strtolower((string) ($payment['payment_status'] ?? 'pending')) === 'success' ? 'success' : 'issue',
+            'order_type' => $orderType,
             'order_code' => $payment['order_code'] ?? $payment['provider_order_ref'] ?? null,
             'payment_status' => $payment['payment_status'] ?? null,
             'transaction_code' => $payment['transaction_code'] ?? null,

@@ -79,7 +79,12 @@ class AuthService
 
     public function login(array $data): array
     {
-        return $this->authenticate($data, 'email', null, 'Invalid credentials.');
+        return $this->authenticate(
+            $this->normalizeLoginPayload($data),
+            'identifier',
+            null,
+            'Invalid credentials.'
+        );
     }
 
     public function loginAdmin(array $data): array
@@ -167,7 +172,7 @@ class AuthService
             return ['errors' => $errors];
         }
 
-        $user = $this->users->findByEmail($identifier);
+        $user = $this->users->findByLoginIdentifier($identifier);
         if (!$user || !password_verify($password, $user['password'])) {
             $this->logger->error('Authentication failed', [
                 'identifier' => $identifier,
@@ -203,5 +208,14 @@ class AuthService
                 ],
             ],
         ];
+    }
+
+    private function normalizeLoginPayload(array $data): array
+    {
+        if (!array_key_exists('identifier', $data) && array_key_exists('email', $data)) {
+            $data['identifier'] = $data['email'];
+        }
+
+        return $data;
     }
 }

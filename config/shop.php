@@ -34,8 +34,12 @@ return [
     ],
     'orders' => [
         'fulfillment_methods' => ['pickup', 'delivery'],
+        'supported_payment_methods' => ['cash', 'vnpay'],
+        'pickup_payment_methods' => ['cash', 'vnpay'],
+        'delivery_payment_methods' => ['vnpay'],
         'statuses' => ['pending', 'confirmed', 'preparing', 'ready', 'shipping', 'completed', 'cancelled', 'expired', 'refunded'],
-        'pending_payment_ttl_minutes' => 15,
+        'pending_payment_ttl_minutes' => 5,
+        'default_shipping_amount' => 0.0,
     ],
     'promotions' => [
         'discount_types' => ['percent', 'fixed'],

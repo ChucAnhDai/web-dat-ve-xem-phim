@@ -521,3 +521,65 @@
 [2026-03-17T15:37:51+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":5,"duration_ms":10}
 [2026-03-17T15:37:52+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":6,"duration_ms":12}
 [2026-03-17T15:37:52+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":7,"duration_ms":11}
+[2026-03-17T22:45:32+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":19}
+[2026-03-17T22:45:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":9}
+[2026-03-17T22:45:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-17T22:45:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-17T22:45:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-17T22:45:33+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-17T22:45:34+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":7}
+[2026-03-17T22:45:34+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-17T23:10:13+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":9,"duration_ms":10}
+[2026-03-17T23:10:14+07:00] INFO: Shop cart item updated {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","product_id":2,"quantity":10,"duration_ms":9}
+[2026-03-17T23:30:10+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"daddc439a7df","cart_id":"2","order_code":"SHP-C2D8B370AA","payment_method":"vnpay","duration_ms":24}
+[2026-03-17T23:33:11+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"3","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-17T23:33:12+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"3","product_id":2,"quantity":1,"duration_ms":8}
+[2026-03-17T23:33:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"3","product_id":2,"quantity":1,"duration_ms":10}
+[2026-03-17T23:33:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"3","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-17T23:33:15+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"daddc439a7df","cart_id":"3","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-17T23:36:02+07:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-18T00:23:24+07:00] INFO: Shop checkout lifecycle maintenance completed {"expired_orders":1,"expired_payments":1,"restored_inventory_lines":1}
+[2026-03-18T12:03:24+07:00] INFO: Authentication succeeded {"user_id":"1","context":"admin"}
+[2026-03-18T12:04:00+07:00] INFO: User registered {"user_id":2}
+[2026-03-18T12:04:13+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":9,"duration_ms":6}
+[2026-03-18T12:04:13+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":8,"duration_ms":5}
+[2026-03-18T12:04:14+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":7,"duration_ms":4}
+[2026-03-18T12:04:14+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":6,"duration_ms":5}
+[2026-03-18T12:04:14+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":5,"duration_ms":7}
+[2026-03-18T12:04:14+07:00] INFO: Shop cart cleared {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","duration_ms":7}
+[2026-03-18T12:06:59+07:00] INFO: Product updated {"actor_id":1,"product_id":2,"status":"active","visibility":"standard","media_count":5,"duration_ms":5.53}
+[2026-03-18T12:07:03+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T12:07:04+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T12:17:04+07:00] INFO: Shop cart item updated {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T12:34:21+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":7}
+[2026-03-18T12:34:22+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T12:34:22+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":3}
+[2026-03-18T12:34:22+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T12:34:24+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T12:34:26+07:00] INFO: Shop cart cleared {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","duration_ms":7}
+[2026-03-18T12:34:29+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T12:34:29+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T12:34:30+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T12:34:30+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T12:34:30+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":4}
+[2026-03-18T12:34:30+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":5}
+[2026-03-18T12:34:30+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":6}
+[2026-03-18T12:34:37+07:00] INFO: User logout {"user_id":2}
+[2026-03-18T12:46:23+07:00] INFO: Default member account updated {"user_id":2,"email":"nguyendev123@gmail.com"}
+[2026-03-18T12:46:31+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T12:46:31+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T12:46:48+07:00] INFO: Shop cart item added {"user_id":2,"session_token":"49f8bbef5b68","cart_id":"4","product_id":2,"quantity":1,"duration_ms":12}
+[2026-03-18T12:51:06+07:00] INFO: Default member account updated {"user_id":2,"email":"nguyendev123@gmail.com"}
+[2026-03-18T12:51:06+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T12:51:40+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T12:58:55+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T12:59:44+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T12:59:52+07:00] INFO: Authentication succeeded {"user_id":"2","context":"user"}
+[2026-03-18T13:03:36+07:00] ERROR: Authentication failed {"identifier":"nguyendev123@gmail.com","context":"user"}
+[2026-03-18T13:03:40+07:00] ERROR: Authentication failed {"identifier":"nguyen123@gmail.com","context":"user"}
+[2026-03-18T13:03:43+07:00] ERROR: Authentication failed {"identifier":"nguyen123@gmail.com","context":"user"}
+[2026-03-18T13:03:56+07:00] INFO: User registered {"user_id":3}
+[2026-03-18T13:03:57+07:00] INFO: User logout {"user_id":3}
+[2026-03-18T13:04:05+07:00] INFO: Authentication succeeded {"user_id":"3","context":"user"}
+[2026-03-18T13:04:23+07:00] INFO: Shop cart cleared {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","duration_ms":6}
+[2026-03-18T13:04:25+07:00] INFO: Shop cart item added {"user_id":1,"session_token":"daddc439a7df","cart_id":"1","product_id":2,"quantity":1,"duration_ms":9}

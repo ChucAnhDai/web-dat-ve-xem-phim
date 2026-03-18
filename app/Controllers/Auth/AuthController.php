@@ -29,7 +29,8 @@ class AuthController
     {
         $result = $this->service->login($request->getBody());
         if (isset($result['errors'])) {
-            return $response->json(['errors' => $result['errors']], 401);
+            $status = isset($result['errors']['identifier']) || isset($result['errors']['password']) ? 422 : 401;
+            return $response->json(['errors' => $result['errors']], $status);
         }
 
         return $response->json(['message' => 'Login successful', 'data' => $result['data']]);

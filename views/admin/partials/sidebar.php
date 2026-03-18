@@ -106,7 +106,7 @@ $navHref = static function (string $path, ?string $section = null) use ($appBase
       <a class="nav-item<?php echo $navClass('shop-orders'); ?>" data-page="shop-orders" href="<?php echo $navHref('/admin/shop-orders', 'shop-orders'); ?>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
         <span>Shop Orders</span>
-        <div class="nav-badge">7</div>
+        <div class="nav-badge" id="shopOrdersNavBadge">0</div>
       </a>
       <a class="nav-item<?php echo $navClass('order-details'); ?>" data-page="order-details" href="<?php echo $navHref('/admin/shop-orders', 'order-details'); ?>">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>

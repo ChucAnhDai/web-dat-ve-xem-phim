@@ -115,7 +115,7 @@ class AuthServiceTest extends TestCase
         $result = $service->login([]);
 
         $this->assertArrayHasKey('errors', $result);
-        $this->assertArrayHasKey('email', $result['errors']);
+        $this->assertArrayHasKey('identifier', $result['errors']);
         $this->assertArrayHasKey('password', $result['errors']);
     }
 
@@ -161,6 +161,30 @@ class AuthServiceTest extends TestCase
         $this->assertArrayHasKey('data', $result);
         $this->assertSame('fake-token', $result['data']['token']);
         $this->assertSame(['user_id' => 1, 'role' => 'admin'], $auth->payload);
+    }
+
+    public function testLoginAcceptsPhoneIdentifier(): void
+    {
+        $repo = new FakeUserRepository();
+        $repo->user = [
+            'id' => 8,
+            'email' => 'member@example.com',
+            'phone' => '0900000001',
+            'password' => password_hash('member123', PASSWORD_BCRYPT),
+            'role' => 'user',
+        ];
+        $auth = new FakeAuth();
+
+        $service = new AuthService($repo, $auth, new FakeLogger());
+
+        $result = $service->login([
+            'identifier' => '0900000001',
+            'password' => 'member123',
+        ]);
+
+        $this->assertArrayHasKey('data', $result);
+        $this->assertSame('0900000001', $repo->lastLoginIdentifier);
+        $this->assertSame(['user_id' => 8, 'role' => 'user'], $auth->payload);
     }
 
     public function testAdminLoginRejectsNonAdminUser(): void
@@ -299,6 +323,7 @@ class FakeUserRepository extends UserRepository
     public ?string $existingEmail = null;
     public ?array $user = null;
     public ?array $userById = null;
+    public ?string $lastLoginIdentifier = null;
     public array $createdData = [];
     public array $profileStats = ['tickets' => 0, 'orders' => 0, 'spent' => 0.0];
     public array $recentOrders = [];
@@ -316,12 +341,26 @@ class FakeUserRepository extends UserRepository
         return $this->user;
     }
 
+    public function findByLoginIdentifier(string $identifier): ?array
+    {
+        $this->lastLoginIdentifier = $identifier;
+
+        return $this->user;
+    }
+
     public function findById(int $id): ?array
     {
         return $this->userById;
     }
 
     public function create(array $data): int
+    {
+        $this->createdData = $data;
+
+        return 123;
+    }
+
+    public function createWithTransaction(array $data): int
     {
         $this->createdData = $data;
 
@@ -372,6 +411,10 @@ class FakeLogger extends Logger
     }
 
     public function info(string $message, array $context = []): void
+    {
+    }
+
+    public function error(string $message, array $context = []): void
     {
     }
 }

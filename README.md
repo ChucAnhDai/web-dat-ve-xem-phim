@@ -2,6 +2,10 @@
 
 ## Ghi chú những gì đã làm
 
+### Local Accounts
+- Admin local account can be refreshed with `C:\xampp\php\php.exe scripts\ensure_default_admin.php`.
+- Member local account can be created or updated with `C:\xampp\php\php.exe scripts\ensure_default_member.php [email] [password] [name] [phone]`.
+
 ### Frontend
 - Tách `header`, `sidebar`, `footer` ra các file riêng: `header.html`, `sidebar.html`, `footer.html`.
 - Thay thế các vùng trong `index.html` bằng các mount: `#headerMount`, `#sidebarMount`, `#footerMount`.

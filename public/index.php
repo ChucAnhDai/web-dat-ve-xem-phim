@@ -12,6 +12,7 @@ use App\Core\Application;
 use App\Controllers\WebController;
 use App\Controllers\Admin\AdminController;
 use App\Controllers\Admin\AdminAuthController;
+use App\Controllers\Auth\CustomerAuthPageController;
 use App\Middlewares\AdminPageMiddleware;
 
 $app = new Application();
@@ -27,11 +28,13 @@ $app->router->get('/movie-detail', [WebController::class, 'showMovieDetailPage']
 $app->router->get('/showtimes', [WebController::class, 'showShowtimesPage']);
 $app->router->get('/shop', [WebController::class, 'showShopPage']);
 $app->router->get('/shop/product-detail', [WebController::class, 'showProductDetailPage']);
+$app->router->get('/shop/checkout', [WebController::class, 'showShopCheckoutPage']);
 $app->router->get('/cart', [WebController::class, 'showCartPage']);
 $app->router->get('/profile', [WebController::class, 'showProfilePage']);
 $app->router->get('/my-orders', [WebController::class, 'showMyOrdersPage']);
 $app->router->get('/my-tickets', [WebController::class, 'showMyTicketsPage']);
-$app->router->get('/login', [WebController::class, 'showLoginForm']);
+$app->router->get('/login', [CustomerAuthPageController::class, 'showLogin']);
+$app->router->post('/login', [CustomerAuthPageController::class, 'login']);
 $app->router->get('/register', [WebController::class, 'showRegisterForm']);
 $app->router->get('/seat-selection', [WebController::class, 'showSeatSelectionPage']);
 $app->router->get('/checkout', [WebController::class, 'showCheckoutPage']);

@@ -55,6 +55,14 @@ class WebController
         ]);
     }
 
+    public function showShopCheckoutPage(Request $request, Response $response)
+    {
+        return $response->view('pages/shop-checkout', [
+            'title' => 'Thanh toan don hang - CinemaX',
+            'activePage' => 'cart',
+        ]);
+    }
+
     public function showProfilePage(Request $request, Response $response)
     {
         return $response->view('pages/profile', [

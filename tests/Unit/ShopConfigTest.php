@@ -17,6 +17,9 @@ class ShopConfigTest extends TestCase
         $this->assertSame(['thumbnail', 'gallery', 'banner', 'lifestyle'], $config['products']['image_asset_types']);
         $this->assertSame(10, $config['products']['low_stock_threshold']);
         $this->assertSame(['pickup', 'delivery'], $config['orders']['fulfillment_methods']);
+        $this->assertSame(['cash', 'vnpay'], $config['orders']['supported_payment_methods']);
+        $this->assertSame(['cash', 'vnpay'], $config['orders']['pickup_payment_methods']);
+        $this->assertSame(['vnpay'], $config['orders']['delivery_payment_methods']);
         $this->assertContains('pending', $config['orders']['statuses']);
         $this->assertContains('completed', $config['orders']['statuses']);
         $this->assertContains('refunded', $config['orders']['statuses']);
@@ -34,5 +37,7 @@ class ShopConfigTest extends TestCase
         $this->assertSame('cinemax_cart', $config['cart']['cookie_name']);
         $this->assertGreaterThanOrEqual(16, $config['cart']['session_token_bytes']);
         $this->assertGreaterThanOrEqual($config['cart']['max_items'] / 10, $config['cart']['max_quantity_per_item']);
+        $this->assertGreaterThanOrEqual(0, $config['orders']['default_shipping_amount']);
+        $this->assertSame(5, $config['orders']['pending_payment_ttl_minutes']);
     }
 }

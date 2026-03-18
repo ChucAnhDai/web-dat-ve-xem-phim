@@ -9,6 +9,7 @@ const routeMap = {
   'showtimes-home': '/showtimes',
   shop: '/shop',
   'product-detail': '/shop/product-detail',
+  'shop-checkout': '/shop/checkout',
   cart: '/cart',
   profile: '/profile',
   auth: '/login',
@@ -362,8 +363,16 @@ function togglePassword(el) {
 }
 
 function setAuthErrors(prefix, errors) {
-  ['name', 'phone', 'email', 'password'].forEach(field => {
-    const el = document.getElementById(`${prefix}${field.charAt(0).toUpperCase()}${field.slice(1)}Error`);
+  const fieldMap = {
+    name: 'Name',
+    phone: 'Phone',
+    email: 'Email',
+    identifier: 'Identifier',
+    password: 'Password'
+  };
+
+  Object.entries(fieldMap).forEach(([field, suffix]) => {
+    const el = document.getElementById(`${prefix}${suffix}Error`);
     if (el) el.textContent = errors?.[field]?.[0] || '';
   });
 }
@@ -396,6 +405,12 @@ function clearAuthToken() {
     detail: { isLoggedIn: false }
   }));
 }
+
+Object.assign(window, {
+  saveAuthToken,
+  getAuthToken,
+  clearAuthToken
+});
 
 function updateAuthUI(isLoggedIn) {
   const guestActions = document.getElementById('authGuestActions');
@@ -521,8 +536,42 @@ async function handleLogin(event) {
   clearAuthErrors('login');
 
   const form = event.target;
-  const email = form.email.value.trim();
+  const identifier = String(form.identifier?.value || form.email?.value || '').trim();
   const password = form.password.value;
+
+  if (!identifier) {
+    setAuthErrors('login', { identifier: ['Vui l貌ng nh岷璸 email ho岷 s峄?膽i峄噉 tho岷.'] });
+    return;
+  }
+  if (!password) {
+    setAuthErrors('login', { password: ['Vui l貌ng nh岷璸 m岷璽 kh岷﹗.'] });
+    return;
+  }
+
+  try {
+    const res = await fetch(appUrl('/api/auth/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setAuthErrors('login', data.errors || {});
+      showToast('鈿狅笍', '膼膬ng nh岷璸 th岷 b岷', 'Vui l貌ng ki峄僲 tra th么ng tin.');
+      return;
+    }
+
+    saveAuthToken(data.data?.token);
+    await hydrateProfile();
+    showToast('✅', 'Đăng nhập thành công', 'Chào mừng bạn trở lại!');
+    navigateTo('home');
+  } catch (error) {
+    showToast('鈿狅笍', 'L峄梚 k岷縯 n峄慽', 'Kh么ng th峄?膽膬ng nh岷璸.');
+  }
+
+  return;
+  /*
 
   if (!email) {
     setAuthErrors('login', { email: ['Vui lòng nhập email.'] });
@@ -541,7 +590,7 @@ async function handleLogin(event) {
     const res = await fetch(appUrl('/api/auth/login'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ identifier, password })
     });
     const data = await res.json();
 
@@ -558,6 +607,7 @@ async function handleLogin(event) {
   } catch (error) {
     showToast('⚠️', 'Lỗi kết nối', 'Không thể đăng nhập.');
   }
+  */
 }
 
 async function handleRegister(event) {
@@ -825,6 +875,11 @@ function switchTab(el, section) {
 }
 
 function updateCartBadges() {
+  if (typeof window.updateCartBadges === 'function' && window.updateCartBadges !== updateCartBadges) {
+    window.updateCartBadges();
+    return;
+  }
+
   const cartBadge = document.getElementById('cartBadge');
   const cartNavBadge = document.getElementById('cartNavBadge');
   if (cartBadge) cartBadge.textContent = String(cartCount);
@@ -832,6 +887,11 @@ function updateCartBadges() {
 }
 
 function renderCartItems() {
+  if (typeof window.renderCartItems === 'function' && window.renderCartItems !== renderCartItems) {
+    window.renderCartItems();
+    return;
+  }
+
   const cartItemsList = document.getElementById('cartItemsList');
   const cartContent = document.getElementById('cartContent');
   const cartEmptyState = document.getElementById('cartEmptyState');
@@ -895,6 +955,11 @@ function renderCartItems() {
 
 
 function changeCartQty(id, delta) {
+  if (typeof window.changeCartQty === 'function' && window.changeCartQty !== changeCartQty) {
+    window.changeCartQty(id, delta);
+    return;
+  }
+
   const item = cartItems.find(cartItem => cartItem.id === id);
   if (!item) return;
 
@@ -903,6 +968,11 @@ function changeCartQty(id, delta) {
 }
 
 function removeCartItem(id) {
+  if (typeof window.removeCartItem === 'function' && window.removeCartItem !== removeCartItem) {
+    window.removeCartItem(id);
+    return;
+  }
+
   const target = cartItems.find(cartItem => cartItem.id === id);
   cartItems = cartItems.filter(cartItem => cartItem.id !== id);
   cartCount = cartItems.length;
@@ -914,6 +984,11 @@ function removeCartItem(id) {
 }
 
 function clearCart() {
+  if (typeof window.clearCart === 'function' && window.clearCart !== clearCart) {
+    window.clearCart();
+    return;
+  }
+
   if (cartItems.length === 0) {
     showToast('ℹ️', 'Empty Cart', 'Your cart is already empty.');
     return;
@@ -1467,6 +1542,10 @@ function normalizeAddToCartPayload(input, quantity = 1) {
 }
 
 function addToCart(input = null) {
+  if (typeof window.addToCart === 'function' && window.addToCart !== addToCart) {
+    return window.addToCart(input);
+  }
+
   const payload = input || {
     productId: Number(shopCatalogState.currentProduct?.id || 0),
     name: shopCatalogState.currentProduct?.name || 'Product',
@@ -1477,11 +1556,19 @@ function addToCart(input = null) {
 }
 
 function buyNow(input = null) {
+  if (typeof window.buyNow === 'function' && window.buyNow !== buyNow) {
+    return window.buyNow(input);
+  }
+
   addToCart(input);
   navigateTo('cart');
 }
 
 function addToCartProduct(input, quantity = 1) {
+  if (typeof window.addToCartProduct === 'function' && window.addToCartProduct !== addToCartProduct) {
+    return window.addToCartProduct(input, quantity);
+  }
+
   const payload = normalizeAddToCartPayload(input, quantity);
   cartCount += payload.quantity;
   updateCartBadges();
@@ -1589,6 +1676,237 @@ document.addEventListener('click', event => {
     }
   }
 });
+
+function setAuthErrors(prefix, errors) {
+  const fieldMap = {
+    name: 'Name',
+    phone: 'Phone',
+    email: 'Email',
+    identifier: 'Identifier',
+    password: 'Password'
+  };
+
+  Object.entries(fieldMap).forEach(([field, suffix]) => {
+    const el = document.getElementById(`${prefix}${suffix}Error`);
+    if (el) el.textContent = errors?.[field]?.[0] || '';
+  });
+
+  const generalError = document.getElementById(`${prefix}GeneralError`);
+  if (generalError) {
+    const message = errors?.credentials?.[0] || errors?.server?.[0] || '';
+    generalError.textContent = message;
+    generalError.style.display = message ? '' : 'none';
+  }
+}
+
+function clearAuthErrors(prefix) {
+  setAuthErrors(prefix, {});
+  ['ConfirmPassword', 'Terms'].forEach(field => {
+    const el = document.getElementById(`${prefix}${field}Error`);
+    if (el) el.textContent = '';
+  });
+}
+
+function currentAppRelativeUrl() {
+  const pathname = String(window.location.pathname || '/');
+  const search = String(window.location.search || '');
+
+  if (APP_BASE_PATH && pathname.startsWith(APP_BASE_PATH)) {
+    const relativePath = pathname.slice(APP_BASE_PATH.length) || '/';
+    return `${relativePath.startsWith('/') ? relativePath : `/${relativePath}`}${search}`;
+  }
+
+  return `${pathname.startsWith('/') ? pathname : `/${pathname}`}${search}`;
+}
+
+function sanitizeAuthRedirectPath(value) {
+  const candidate = String(value || '').trim();
+  if (!candidate || !candidate.startsWith('/') || candidate.startsWith('//') || candidate.includes('\\')) {
+    return '/';
+  }
+
+  try {
+    const url = new URL(candidate, window.location.origin);
+    if (/(^|\/)\.\.?(\/|$)/.test(url.pathname)) {
+      return '/';
+    }
+
+    let normalizedPath = url.pathname;
+    if (APP_BASE_PATH && (normalizedPath === APP_BASE_PATH || normalizedPath.startsWith(`${APP_BASE_PATH}/`))) {
+      normalizedPath = `/${normalizedPath.slice(APP_BASE_PATH.length).replace(/^\/+/, '')}`;
+    }
+
+    const normalized = `${normalizedPath}${url.search}${url.hash}`;
+    if (normalized === '/login' || normalized.startsWith('/login?') || normalized === '/register' || normalized.startsWith('/register?')) {
+      return '/';
+    }
+
+    return normalized;
+  } catch (error) {
+    return '/';
+  }
+}
+
+function buildLoginUrl(redirectPath = currentAppRelativeUrl()) {
+  const target = sanitizeAuthRedirectPath(redirectPath);
+  return target === '/'
+    ? appUrl('/login')
+    : appUrl(`/login?redirect=${encodeURIComponent(target)}`);
+}
+
+function redirectToLogin(redirectPath = currentAppRelativeUrl()) {
+  window.location.href = buildLoginUrl(redirectPath);
+}
+
+function resolvePostLoginRedirect(form) {
+  const formRedirect = form?.querySelector('input[name="redirect"]')?.value || '';
+  const queryRedirect = new URLSearchParams(window.location.search).get('redirect') || '';
+
+  return sanitizeAuthRedirectPath(formRedirect || queryRedirect || '/');
+}
+
+function redirectProfileToLogin() {
+  if (isProfilePage()) {
+    redirectToLogin();
+  }
+}
+
+function saveAuthToken(token, options = {}) {
+  const persistent = options.persistent !== false;
+
+  if (token) {
+    if (persistent) {
+      localStorage.setItem('cinemax_token', token);
+      sessionStorage.removeItem('cinemax_token');
+    } else {
+      sessionStorage.setItem('cinemax_token', token);
+      localStorage.removeItem('cinemax_token');
+    }
+  } else {
+    localStorage.removeItem('cinemax_token');
+    sessionStorage.removeItem('cinemax_token');
+  }
+
+  document.dispatchEvent(new CustomEvent('cinemax:auth-changed', {
+    detail: { isLoggedIn: Boolean(token) }
+  }));
+}
+
+function getAuthToken() {
+  return localStorage.getItem('cinemax_token') || sessionStorage.getItem('cinemax_token');
+}
+
+function clearAuthToken() {
+  localStorage.removeItem('cinemax_token');
+  sessionStorage.removeItem('cinemax_token');
+  document.dispatchEvent(new CustomEvent('cinemax:auth-changed', {
+    detail: { isLoggedIn: false }
+  }));
+}
+
+function ensureAuthForPage() {
+  const authOnlyPages = new Set(['profile', 'my-tickets']);
+  const activePage = document.body?.dataset?.activePage || '';
+  if (!authOnlyPages.has(activePage)) return;
+
+  if (!getAuthToken()) {
+    updateAuthUI(false);
+    redirectToLogin();
+  }
+}
+
+async function updatePassword() {
+  const currentPassword = document.getElementById('currentPassword')?.value;
+  const newPassword = document.getElementById('newPassword')?.value;
+  const confirmPassword = document.getElementById('confirmPassword')?.value;
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showToast('!', 'Missing details', 'Please fill in all password fields.');
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    showToast('!', 'Password mismatch', 'The new passwords do not match.');
+    return;
+  }
+
+  const token = getAuthToken();
+  if (!token) {
+    redirectToLogin();
+    return;
+  }
+
+  try {
+    const res = await fetch(appUrl('/api/auth/update-password'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      const firstError = data.errors ? Object.values(data.errors)[0][0] : 'Password update failed.';
+      showToast('!', 'Error', firstError);
+      return;
+    }
+
+    showToast('+', 'Password updated', 'Your password has been updated.');
+    document.getElementById('currentPassword').value = '';
+    document.getElementById('newPassword').value = '';
+    document.getElementById('confirmPassword').value = '';
+  } catch (error) {
+    showToast('!', 'Connection error', 'Unable to update your password right now.');
+  }
+}
+
+async function handleLogin(event) {
+  event.preventDefault();
+  clearAuthErrors('login');
+
+  const form = event.target;
+  const identifier = String(form.identifier?.value || form.email?.value || '').trim();
+  const password = String(form.password?.value || '');
+  const remember = Boolean(form.remember?.checked);
+
+  if (!identifier) {
+    setAuthErrors('login', { identifier: ['Please enter your email or phone number.'] });
+    return;
+  }
+
+  if (!password) {
+    setAuthErrors('login', { password: ['Please enter your password.'] });
+    return;
+  }
+
+  try {
+    const res = await fetch(appUrl('/api/auth/login'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setAuthErrors('login', data.errors || {});
+      showToast('!', 'Login failed', 'Please check your credentials and try again.');
+      return;
+    }
+
+    saveAuthToken(data.data?.token, { persistent: remember });
+    await hydrateProfile();
+    showToast('+', 'Login successful', 'Welcome back.');
+    window.location.href = appUrl(resolvePostLoginRedirect(form));
+  } catch (error) {
+    showToast('!', 'Connection error', 'Unable to sign in right now.');
+  }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();

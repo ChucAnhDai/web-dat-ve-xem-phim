@@ -563,9 +563,7 @@
           return;
         }
 
-        if (typeof showToast === 'function') {
-          showToast('i', 'Checkout next', 'Shop checkout will be connected in the next phase after cart is finalized.');
-        }
+        navigateTo('shop-checkout');
       }
     });
 

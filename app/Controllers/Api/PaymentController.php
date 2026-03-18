@@ -58,12 +58,14 @@ class PaymentController
 
         $payload = $result['data'] ?? [];
         $status = (string) ($payload['status'] ?? 'issue');
+        $orderType = (string) ($payload['order_type'] ?? 'ticket');
         $orderCode = (string) ($payload['order_code'] ?? '');
         $paymentStatus = (string) ($payload['payment_status'] ?? '');
         $message = (string) ($payload['message'] ?? 'Payment result was returned from VNPay.');
 
         $query = http_build_query([
             'status' => $status,
+            'order_type' => $orderType,
             'order_code' => $orderCode,
             'payment_status' => $paymentStatus,
             'message' => $message,

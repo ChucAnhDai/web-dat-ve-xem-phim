@@ -436,6 +436,49 @@ class ProductRepository
         ]);
     }
 
+    public function decrementTrackedInventory(int $productId, int $quantity): bool
+    {
+        if ($quantity <= 0) {
+            return true;
+        }
+
+        $stmt = $this->db->prepare('
+            UPDATE products
+            SET stock = stock - :quantity,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id
+              AND track_inventory = 1
+              AND stock >= :quantity
+        ');
+        $stmt->execute([
+            'id' => $productId,
+            'quantity' => $quantity,
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    public function restoreTrackedInventory(int $productId, int $quantity): bool
+    {
+        if ($quantity <= 0) {
+            return true;
+        }
+
+        $stmt = $this->db->prepare('
+            UPDATE products
+            SET stock = stock + :quantity,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id
+              AND track_inventory = 1
+        ');
+        $stmt->execute([
+            'id' => $productId,
+            'quantity' => $quantity,
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
     private function buildFilterParts(array $filters, int $lowStockThreshold): array
     {
         $conditions = [];

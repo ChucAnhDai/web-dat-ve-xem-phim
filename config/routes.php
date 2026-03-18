@@ -4,15 +4,18 @@ use App\Controllers\Auth\AuthController;
 use App\Controllers\Admin\CinemaManagementController;
 use App\Controllers\Admin\MovieManagementController;
 use App\Controllers\Admin\ProductManagementController;
+use App\Controllers\Admin\ShopOrderManagementController;
 use App\Controllers\Admin\ShowtimeManagementController;
 use App\Controllers\Admin\TicketManagementController;
 use App\Controllers\Api\MovieCatalogController;
 use App\Controllers\Api\PaymentController;
 use App\Controllers\Api\ShopCatalogController;
 use App\Controllers\Api\ShopCartController;
+use App\Controllers\Api\ShopCheckoutController;
 use App\Controllers\Api\ShowtimeCatalogController;
 use App\Controllers\Api\TicketHoldController;
 use App\Controllers\Api\TicketOrderController;
+use App\Controllers\Api\UserShopOrderController;
 use App\Controllers\Api\UserTicketController;
 use App\Middlewares\AdminMiddleware;
 use App\Middlewares\AuthMiddleware;
@@ -33,6 +36,8 @@ $app->router->post('/api/shop/cart/items', [ShopCartController::class, 'addItem'
 $app->router->put('/api/shop/cart/items/{productId}', [ShopCartController::class, 'updateItem']);
 $app->router->delete('/api/shop/cart/items/{productId}', [ShopCartController::class, 'removeItem']);
 $app->router->delete('/api/shop/cart', [ShopCartController::class, 'clearCart']);
+$app->router->get('/api/shop/checkout', [ShopCheckoutController::class, 'getCheckout']);
+$app->router->post('/api/shop/checkout', [ShopCheckoutController::class, 'createCheckout']);
 $app->router->get('/api/shop/products', [ShopCatalogController::class, 'listProducts']);
 $app->router->get('/api/shop/products/{slug}', [ShopCatalogController::class, 'getProductDetail']);
 $app->router->get('/api/showtimes', [ShowtimeCatalogController::class, 'listShowtimes']);
@@ -47,6 +52,14 @@ $app->router->get('/api/payments/vnpay/return', [PaymentController::class, 'hand
 $app->router->get('/api/payments/vnpay/ipn', [PaymentController::class, 'handleVnpayIpn']);
 $app->router->get('/api/me/tickets', [UserTicketController::class, 'listMyTickets'], [AuthMiddleware::class]);
 $app->router->get('/api/me/ticket-orders', [UserTicketController::class, 'listMyOrders'], [AuthMiddleware::class]);
+$app->router->get('/api/me/shop-orders', [UserShopOrderController::class, 'listMyOrders'], [AuthMiddleware::class]);
+$app->router->get('/api/me/shop-orders/{id}', [UserShopOrderController::class, 'getMyOrder'], [AuthMiddleware::class]);
+$app->router->post('/api/me/shop-orders/{id}/cancel', [UserShopOrderController::class, 'cancelMyOrder'], [AuthMiddleware::class]);
+$app->router->get('/api/shop/orders/session', [UserShopOrderController::class, 'listSessionOrders']);
+$app->router->get('/api/shop/orders/session/{id}', [UserShopOrderController::class, 'getSessionOrder']);
+$app->router->post('/api/shop/orders/session/{id}/cancel', [UserShopOrderController::class, 'cancelSessionOrder']);
+$app->router->post('/api/shop/orders/lookup', [UserShopOrderController::class, 'lookupGuestOrder']);
+$app->router->post('/api/shop/orders/lookup/cancel', [UserShopOrderController::class, 'cancelGuestOrder']);
 
 $app->router->post('/api/admin/auth/login', [AuthController::class, 'adminLogin']);
 $app->router->post('/api/admin/auth/logout', [AuthController::class, 'adminLogout'], [AdminMiddleware::class]);
@@ -92,6 +105,11 @@ $app->router->get('/api/admin/product-images/{id}', [ProductManagementController
 $app->router->post('/api/admin/product-images', [ProductManagementController::class, 'createImage'], [AdminMiddleware::class]);
 $app->router->put('/api/admin/product-images/{id}', [ProductManagementController::class, 'updateImage'], [AdminMiddleware::class]);
 $app->router->delete('/api/admin/product-images/{id}', [ProductManagementController::class, 'archiveImage'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/shop-orders', [ShopOrderManagementController::class, 'listShopOrders'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/shop-orders/{id}', [ShopOrderManagementController::class, 'getShopOrder'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/shop-orders/{id}/status', [ShopOrderManagementController::class, 'updateShopOrderStatus'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/order-details', [ShopOrderManagementController::class, 'listOrderDetails'], [AdminMiddleware::class]);
 
 $app->router->get('/api/admin/cinemas', [CinemaManagementController::class, 'listCinemas'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/cinemas/{id}', [CinemaManagementController::class, 'getCinema'], [AdminMiddleware::class]);

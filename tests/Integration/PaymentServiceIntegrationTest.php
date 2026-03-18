@@ -156,6 +156,52 @@ class PaymentServiceIntegrationTest extends TestCase
         $this->assertSame(['You already have a checkout waiting for payment in this session.'], $result['errors']['checkout']);
     }
 
+    public function testHandleVnpayIpnMarksPendingShopOrderAsConfirmed(): void
+    {
+        $this->db->exec("
+            INSERT INTO shop_orders (
+                id, order_code, user_id, session_token, contact_name, contact_email, contact_phone,
+                fulfillment_method, item_count, subtotal_price, discount_amount, fee_amount, shipping_amount,
+                total_price, currency, status, payment_due_at, order_date, updated_at
+            ) VALUES (
+                21, 'SHP-001', 9, 'shop-session', 'Shop User', 'shop@example.com', '0901234567',
+                'pickup', 1, 85000, 0, 0, 0, 85000, 'VND', 'pending',
+                '2099-01-01 00:00:00', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+        ");
+        $this->db->exec("
+            INSERT INTO order_details (
+                order_id, product_id, product_name_snapshot, product_sku_snapshot, quantity, price, discount_amount, line_total
+            ) VALUES (
+                21, 101, 'Large Popcorn Combo', 'SKU-POP-001', 1, 85000, 0, 85000
+            )
+        ");
+        $this->db->exec("
+            INSERT INTO payments (
+                shop_order_id, payment_method, payment_status, amount, currency, transaction_code, provider_order_ref, idempotency_key
+            ) VALUES (
+                21, 'vnpay', 'pending', 85000, 'VND', 'PAY-SHP-001', 'SHP-001', 'shop-vnpay-001'
+            )
+        ");
+
+        $callback = [
+            'vnp_TxnRef' => 'SHP-001',
+            'vnp_Amount' => '8500000',
+            'vnp_ResponseCode' => '00',
+            'vnp_TransactionStatus' => '00',
+            'vnp_TransactionNo' => '246810',
+            'vnp_OrderInfo' => 'Thanh toan don hang shop SHP-001',
+        ];
+        $callback['vnp_SecureHash'] = $this->signPayload($callback);
+
+        $result = $this->makeService()->handleVnpayIpn($callback);
+
+        $this->assertSame(200, $result['status']);
+        $this->assertSame('00', $result['data']['RspCode']);
+        $this->assertSame('confirmed', $this->db->query("SELECT status FROM shop_orders WHERE id = 21")->fetchColumn());
+        $this->assertSame('success', $this->db->query("SELECT payment_status FROM payments WHERE shop_order_id = 21")->fetchColumn());
+    }
+
     private function makeService(): PaymentService
     {
         $holds = new TicketSeatHoldRepository($this->db);
@@ -355,6 +401,104 @@ class PaymentServiceIntegrationTest extends TestCase
                 updated_at TEXT DEFAULT CURRENT_TIMESTAMP
             )
         ');
+
+        $this->db->exec('
+            CREATE TABLE product_categories (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                description TEXT,
+                display_order INTEGER DEFAULT 0,
+                visibility TEXT NOT NULL,
+                status TEXT NOT NULL,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE products (
+                id INTEGER PRIMARY KEY,
+                category_id INTEGER,
+                slug TEXT NOT NULL UNIQUE,
+                sku TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
+                short_description TEXT,
+                description TEXT,
+                price REAL NOT NULL DEFAULT 0,
+                compare_at_price REAL NULL,
+                stock INTEGER NOT NULL DEFAULT 0,
+                currency TEXT NOT NULL DEFAULT "VND",
+                track_inventory INTEGER NOT NULL DEFAULT 1,
+                status TEXT NOT NULL DEFAULT "draft",
+                visibility TEXT NOT NULL DEFAULT "standard",
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE product_images (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                asset_type TEXT NOT NULL DEFAULT "gallery",
+                image_url TEXT NOT NULL,
+                alt_text TEXT,
+                sort_order INTEGER NOT NULL DEFAULT 0,
+                is_primary INTEGER NOT NULL DEFAULT 0,
+                status TEXT NOT NULL DEFAULT "draft",
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE shop_orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_code TEXT NOT NULL UNIQUE,
+                user_id INTEGER NULL,
+                session_token TEXT NULL,
+                address_id INTEGER NULL,
+                contact_name TEXT,
+                contact_email TEXT,
+                contact_phone TEXT,
+                fulfillment_method TEXT,
+                shipping_address_text TEXT NULL,
+                shipping_city TEXT NULL,
+                shipping_district TEXT NULL,
+                item_count INTEGER DEFAULT 0,
+                subtotal_price REAL DEFAULT 0,
+                discount_amount REAL DEFAULT 0,
+                fee_amount REAL DEFAULT 0,
+                shipping_amount REAL DEFAULT 0,
+                total_price REAL DEFAULT 0,
+                currency TEXT DEFAULT "VND",
+                status TEXT NOT NULL,
+                order_date TEXT DEFAULT CURRENT_TIMESTAMP,
+                payment_due_at TEXT NULL,
+                confirmed_at TEXT NULL,
+                fulfilled_at TEXT NULL,
+                cancelled_at TEXT NULL,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        $this->db->exec('
+            CREATE TABLE order_details (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_id INTEGER NOT NULL,
+                product_id INTEGER NULL,
+                product_name_snapshot TEXT,
+                product_sku_snapshot TEXT,
+                quantity INTEGER DEFAULT 0,
+                price REAL DEFAULT 0,
+                discount_amount REAL DEFAULT 0,
+                line_total REAL DEFAULT 0,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
     }
 
     private function seedBaseData(): void
@@ -379,6 +523,22 @@ class PaymentServiceIntegrationTest extends TestCase
         $this->db->exec("
             INSERT INTO payment_methods (code, name, provider, channel_type, status, fee_rate_percent, fixed_fee_amount, settlement_cycle, supports_refund, supports_webhook, supports_redirect, display_order)
             VALUES ('vnpay', 'VNPay', 'vnpay', 'gateway', 'active', 2.1, 0, 'T+1', 1, 1, 1, 1)
+        ");
+        $this->db->exec("
+            INSERT INTO product_categories (id, name, slug, description, display_order, visibility, status)
+            VALUES (1, 'Snacks', 'snacks', 'Fresh cinema snacks', 1, 'featured', 'active')
+        ");
+        $this->db->exec("
+            INSERT INTO products (
+                id, category_id, slug, sku, name, short_description, description, price, compare_at_price, stock, currency,
+                track_inventory, status, visibility, sort_order, created_at, updated_at
+            ) VALUES (
+                101, 1, 'large-popcorn-combo', 'SKU-POP-001', 'Large Popcorn Combo', 'Best-selling combo', 'Served hot and fresh', 85000, 99000, 24, 'VND', 1, 'active', 'featured', 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+        ");
+        $this->db->exec("
+            INSERT INTO product_images (product_id, asset_type, image_url, alt_text, sort_order, is_primary, status, created_at, updated_at)
+            VALUES (101, 'thumbnail', 'https://example.com/popcorn-thumb.jpg', 'Popcorn combo thumbnail', 1, 1, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
         ");
     }
 
