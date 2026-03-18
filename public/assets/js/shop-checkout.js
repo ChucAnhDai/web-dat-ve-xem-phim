@@ -127,14 +127,23 @@
     }
 
     try {
-      return window.localStorage?.getItem('cinemax_token') || '';
+      const token = window.localStorage?.getItem('cinemax_token') || '';
+      if (!token) {
+        console.warn('[shop-checkout] No auth token found in localStorage.');
+      }
+      return token;
     } catch (error) {
+      console.error('[shop-checkout] Failed to resolve auth token', error);
       return '';
     }
   }
 
   async function fetchCheckout(url, options = {}) {
-    const headers = Object.assign({ Accept: 'application/json' }, options.headers || {});
+    const headers = Object.assign(
+      { Accept: 'application/json' },
+      options.body ? { 'Content-Type': 'application/json' } : {},
+      options.headers || {}
+    );
     const token = resolveAuthToken();
     if (token && !headers.Authorization) {
       headers.Authorization = `Bearer ${token}`;

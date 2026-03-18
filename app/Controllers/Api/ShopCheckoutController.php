@@ -59,16 +59,21 @@ class ShopCheckoutController
     {
         $token = $request->bearerToken();
         if (!is_string($token) || trim($token) === '') {
+            error_log('[ShopCheckout] bearerToken() returned empty — no Authorization header or auth cookie found');
             return null;
         }
 
         try {
             $payload = $this->auth->verifyToken($token);
         } catch (Exception $exception) {
+            error_log('[ShopCheckout] verifyToken failed: ' . $exception->getMessage());
             return null;
         }
 
         $userId = $payload['user_id'] ?? null;
+        if ($userId === null) {
+            error_log('[ShopCheckout] verifyToken OK but user_id is null in payload');
+        }
 
         return is_numeric($userId) ? (int) $userId : null;
     }
