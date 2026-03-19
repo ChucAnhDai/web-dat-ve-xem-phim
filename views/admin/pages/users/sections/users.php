@@ -1,8 +1,8 @@
 <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px;">
-  <div class="stat-card blue" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">14,872</div><div class="stat-label">Total Users</div></div>
-  <div class="stat-card green" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">14,210</div><div class="stat-label">Active</div></div>
-  <div class="stat-card red" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">340</div><div class="stat-label">Suspended</div></div>
-  <div class="stat-card gold" style="padding:16px;"><div style="font-size:28px;font-family:'Bebas Neue',sans-serif;">+340</div><div class="stat-label">New This Week</div></div>
+  <div class="stat-card blue" style="padding:16px;"><div id="statTotalUsers" style="font-size:28px;font-family:'Bebas Neue',sans-serif;">...</div><div class="stat-label">Total Users</div></div>
+  <div class="stat-card green" style="padding:16px;"><div id="statActiveUsers" style="font-size:28px;font-family:'Bebas Neue',sans-serif;">...</div><div class="stat-label">Active</div></div>
+  <div class="stat-card red" style="padding:16px;"><div id="statSuspendedUsers" style="font-size:28px;font-family:'Bebas Neue',sans-serif;">...</div><div class="stat-label">Suspended</div></div>
+  <div class="stat-card gold" style="padding:16px;"><div id="statNewUsers" style="font-size:28px;font-family:'Bebas Neue',sans-serif;">...</div><div class="stat-label">New This Week</div></div>
 </div>
 
 <div class="card">
@@ -28,80 +28,135 @@
 </div>
 
 <script>
-const usersData = [
-  {name:'Nguyen Van A',email:'nguyenvana@gmail.com',phone:'0901234567',role:'Customer',orders:14,reviews:8,status:'Active',joined:'2024-03-12',color:'#3B82F6'},
-  {name:'Tran Thi B',email:'tranthib@email.com',phone:'0912345678',role:'Customer',orders:8,reviews:3,status:'Active',joined:'2024-06-01',color:'#A855F7'},
-  {name:'Le Admin',email:'admin@cineshop.com',phone:'0923456789',role:'Admin',orders:0,reviews:0,status:'Active',joined:'2023-01-01',color:'#E50914'},
-  {name:'Pham Staff',email:'staff@cineshop.com',phone:'0934567890',role:'Staff',orders:2,reviews:1,status:'Active',joined:'2024-01-15',color:'#C9A84C'},
-  {name:'Hoang Minh C',email:'hminhc@yahoo.com',phone:'0945678901',role:'Customer',orders:31,reviews:14,status:'Active',joined:'2023-08-20',color:'#22C55E'},
-  {name:'Do Thi D',email:'dothid@proton.me',phone:'0956789012',role:'Customer',orders:5,reviews:2,status:'Suspended',joined:'2024-11-05',color:'#F59E0B'},
-  {name:'Vu Quoc E',email:'vuquoce@gmail.com',phone:'0967890123',role:'Customer',orders:22,reviews:9,status:'Active',joined:'2024-02-28',color:'#06B6D4'},
-  {name:'Ly Van F',email:'lyvanf@email.vn',phone:'0978901234',role:'Customer',orders:1,reviews:0,status:'Pending',joined:'2026-03-10',color:'#8B5CF6'},
-  {name:'Bui Thi G',email:'buithig@gmail.com',phone:'0989012345',role:'Customer',orders:18,reviews:7,status:'Active',joined:'2024-05-15',color:'#EC4899'},
-  {name:'Dang Van H',email:'dangvanh@hotmail.com',phone:'0990123456',role:'Staff',orders:0,reviews:0,status:'Active',joined:'2023-09-01',color:'#14B8A6'},
-];
+let usersData = [];
+let currentPage = 1;
+const itemsPerPage = 10;
+
+async function fetchUserStats() {
+  try {
+    const response = await fetch(`${window.APP_BASE_PATH || ''}/api/admin/users/stats`, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const result = await response.json();
+    if (result.data) {
+      document.getElementById('statTotalUsers').textContent = result.data.total.toLocaleString();
+      document.getElementById('statActiveUsers').textContent = result.data.active.toLocaleString();
+      document.getElementById('statSuspendedUsers').textContent = result.data.suspended.toLocaleString();
+      document.getElementById('statNewUsers').textContent = `+${result.data.new_this_week.toLocaleString()}`;
+    }
+  } catch (error) {
+    console.error('Fetch stats error:', error);
+  }
+}
+
+async function fetchUsers(page = 1) {
+  currentPage = page;
+  const search = document.getElementById('userSearch')?.value || '';
+  const role = document.getElementById('userRoleFilter')?.value || 'All Roles';
+  const status = document.getElementById('userStatusFilter')?.value || 'All Status';
+  
+  const query = new URLSearchParams({
+    page: page,
+    limit: itemsPerPage,
+    search: search,
+    role: role,
+    status: status
+  });
+
+  try {
+    const response = await fetch(`${window.APP_BASE_PATH || ''}/api/admin/users?${query.toString()}`, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+    
+    const result = await response.json();
+    if (result.data) {
+      usersData = result.data.users;
+      renderUsers(usersData, result.data.pagination);
+      document.getElementById('userCount').textContent = `${result.data.pagination.total_items} users`;
+    } else if (result.errors) {
+      showToast(Object.values(result.errors)[0][0], 'error');
+    }
+  } catch (error) {
+    console.error('Fetch error:', error);
+    showToast('Failed to load users', 'error');
+  }
+}
 
 function userFormBody(user = {}) {
-  const role = user.role || 'Customer';
+  const role = user.role || 'user';
   const status = user.status || 'Active';
-  const preferences = user.preferences || ['Email alerts', 'Order updates'];
-
-  return `<div style="display:flex;flex-direction:column;gap:18px;">
+  
+  return `<form id="userForm" style="display:flex;flex-direction:column;gap:18px;">
+    <input type="hidden" name="id" value="${user.id || ''}">
     <div class="surface-card">
       <div class="surface-card-title">Account Setup</div>
-      <div class="surface-card-copy">Stage account access, communication preferences, and loyalty context so staff can preview a full customer or admin profile without backend save yet.</div>
+      <div class="surface-card-copy">Configure account access, role, and current status for the user.</div>
     </div>
 
     <div class="form-grid">
-      <div class="field"><label>Full Name</label><input class="input" placeholder="Full name" value="${user.name || ''}"></div>
-      <div class="field"><label>Email</label><input class="input" type="email" placeholder="email@example.com" value="${user.email || ''}"></div>
-      <div class="field"><label>Phone</label><input class="input" placeholder="+84 ..." value="${user.phone || ''}"></div>
-      <div class="field"><label>Role</label><select class="select">${buildOptions(['Customer', 'Staff', 'Admin'], role)}</select></div>
-      <div class="field"><label>Status</label><select class="select">${buildOptions(['Active', 'Suspended', 'Pending'], status)}</select></div>
-      <div class="field"><label>Password</label><input class="input" type="password" placeholder="Set new password"></div>
-      <div class="field"><label>Loyalty Tier</label><select class="select">${buildOptions(['Standard', 'Silver', 'Gold', 'VIP'], user.tier || 'Standard')}</select></div>
-      <div class="field"><label>Joined Date</label><input class="input" type="date" value="${user.joined || ''}"></div>
-      <div class="field"><label>Preferred City</label><select class="select">${buildOptions(['Ho Chi Minh', 'Hanoi', 'Da Nang', 'Can Tho', 'Hai Phong'], user.city || 'Ho Chi Minh')}</select></div>
-      <div class="field"><label>Notes</label><input class="input" placeholder="Member note or staff context" value="${user.note || ''}"></div>
-      <div class="field form-full"><label>Communication Preferences</label>
-        <div class="check-grid">
-          ${['Email alerts', 'SMS alerts', 'Order updates', 'Marketing news', 'Review reminders', 'Admin announcements'].map(item => `
-            <label class="check-option">
-              <input type="checkbox"${preferences.includes(item) ? ' checked' : ''}>
-              <span>${item}</span>
-            </label>`).join('')}
-        </div>
-      </div>
-      <div class="field form-full"><label>Preview</label>
-        <div class="preview-banner">
-          <div class="preview-banner-title">${user.name || 'New user profile'}</div>
-          <div class="preview-banner-copy">${user.email || 'Add the primary email and profile context so support teams can quickly understand this account.'}</div>
-          <div class="meta-pills">
-            <span class="badge ${role === 'Admin' ? 'red' : role === 'Staff' ? 'gold' : 'gray'}">${role}</span>
-            <span class="badge ${status === 'Suspended' ? 'red' : status === 'Pending' ? 'orange' : 'green'}">${status}</span>
-            <span class="badge blue">${user.tier || 'Standard'} tier</span>
-          </div>
-        </div>
-      </div>
+      <div class="field"><label>Full Name</label><input name="name" class="input" placeholder="Full name" value="${user.name || ''}" required></div>
+      <div class="field"><label>Email</label><input name="email" class="input" type="email" placeholder="email@example.com" value="${user.email || ''}" required></div>
+      <div class="field"><label>Phone</label><input name="phone" class="input" placeholder="+84 ..." value="${user.phone || ''}"></div>
+      <div class="field"><label>Role</label><select name="role" class="select">${buildOptions(['user', 'admin'], role)}</select></div>
+      <div class="field"><label>Status</label><select name="status" class="select">${buildOptions(['Active', 'Suspended', 'Pending'], status)}</select></div>
+      <div class="field"><label>Password</label><input name="password" class="input" type="password" placeholder="${user.id ? 'Leave blank to keep current' : 'Set password'}" ${user.id ? '' : 'required'}></div>
     </div>
-  </div>`;
+  </form>`;
 }
 
-function viewUser(name) {
-  const user = usersData.find(item => item.name === name);
+async function saveUser() {
+  const form = document.getElementById('userForm');
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+  const id = data.id;
+  delete data.id;
+
+  const url = id ? `${window.APP_BASE_PATH || ''}/api/admin/users/${id}` : `${window.APP_BASE_PATH || ''}/api/admin/users`;
+  const method = id ? 'PUT' : 'POST';
+
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    if (result.data) {
+      showToast(result.data.message || 'Success', 'success');
+      closeModal();
+      fetchUsers(currentPage);
+      fetchUserStats();
+    } else if (result.errors) {
+      const firstError = Object.values(result.errors)[0][0];
+      showToast(firstError, 'error');
+    }
+  } catch (error) {
+    showToast('Operation failed', 'error');
+  }
+}
+
+function viewUser(id) {
+  const user = usersData.find(item => item.id == id);
   if (!user) return;
-  openModal('User Profile', `<div style="display:flex;gap:16px;align-items:center;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);"><div style="width:60px;height:60px;border-radius:12px;background:${user.color}22;color:${user.color};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">${user.name.charAt(0)}</div><div><div style="font-size:18px;font-weight:700;">${user.name}</div><div style="font-size:13px;color:var(--text-muted);">Joined ${user.joined}</div><div style="margin-top:6px;">${statusBadge(user.role)} ${statusBadge(user.status)}</div></div></div><div class="form-grid"><div class="field"><label>Email</label><input class="input" value="${user.email}" readonly></div><div class="field"><label>Phone</label><input class="input" value="${user.phone}" readonly></div><div class="field"><label>Total Orders</label><input class="input" value="${user.orders} orders" readonly></div><div class="field"><label>Reviews</label><input class="input" value="${user.reviews}" readonly></div></div>`);
+  
+  const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+  openModal('User Profile', `<div style="display:flex;gap:16px;align-items:center;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border);"><div style="width:60px;height:60px;border-radius:12px;background:${color}22;color:${color};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;">${user.name.charAt(0)}</div><div><div style="font-size:18px;font-weight:700;">${user.name}</div><div style="font-size:13px;color:var(--text-muted);">Joined ${user.created_at}</div><div style="margin-top:6px;">${statusBadge(user.role)} ${statusBadge(user.status)}</div></div></div><div class="form-grid"><div class="field"><label>Email</label><input class="input" value="${user.email}" readonly></div><div class="field"><label>Phone</label><input class="input" value="${user.phone || ''}" readonly></div></div>`);
 }
 
 function openUserModal(title, user = {}) {
-  const isEdit = /^Edit/i.test(title);
+  const isEdit = !!user.id;
   openModal(title, userFormBody(user), {
-    description: isEdit
-      ? 'Update profile access, notification preferences, and account status for this user.'
-      : 'Create a new user profile with access level, contact details, and communication settings.',
-    note: 'UI preview only. User records are not persisted yet.',
+    description: isEdit 
+      ? 'Update profile access and account status for this user.'
+      : 'Create a new user profile with access level and contact details.',
     submitLabel: isEdit ? 'Update User' : 'Create User',
-    successMessage: isEdit ? 'User preview updated!' : 'User preview staged!',
+    onSubmit: saveUser
   });
 }
 
@@ -109,44 +164,66 @@ function handleUserSectionAction() {
   openUserModal('Add New User');
 }
 
-function renderUsers(data) {
-  const startItem = data.length === 0 ? 0 : 1;
-  document.getElementById('usersBody').innerHTML = data.map(user => `
+function renderUsers(data, pagination) {
+  const startItem = data.length === 0 ? 0 : (pagination.current_page - 1) * pagination.limit + 1;
+  const endItem = startItem + data.length - 1;
+  
+  document.getElementById('usersBody').innerHTML = data.map(user => {
+    const color = '#' + Math.floor(Math.random()*16777215).toString(16);
+    return `
     <tr>
-      <td><div class="user-cell"><div class="user-avatar" style="background:${user.color}22;color:${user.color};">${user.name.charAt(0)}</div><span class="td-bold">${user.name}</span></div></td>
+      <td><div class="user-cell"><div class="user-avatar" style="background:${color}22;color:${color};">${user.name.charAt(0)}</div><span class="td-bold">${user.name}</span></div></td>
       <td class="td-muted">${user.email}</td>
-      <td class="td-muted">${user.phone}</td>
+      <td class="td-muted">${user.phone || ''}</td>
       <td>${statusBadge(user.role)}</td>
-      <td style="font-weight:600;">${user.orders}</td>
-      <td class="td-muted">${user.reviews}</td>
+      <td style="font-weight:600;">-</td>
+      <td class="td-muted">-</td>
       <td>${statusBadge(user.status)}</td>
-      <td class="td-muted">${user.joined}</td>
+      <td class="td-muted">${user.created_at}</td>
       <td><div class="actions-row">
-        <button class="action-btn view" title="View" onclick="viewUser('${user.name}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-        <button class="action-btn edit" title="Edit" onclick="openUserModal('Edit User', {name:'${user.name}',email:'${user.email}',phone:'${user.phone}',role:'${user.role}',status:'${user.status}',joined:'${user.joined}'})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-        <button class="action-btn del" title="Suspend" onclick="showToast('User suspended','warning')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
+        <button class="action-btn view" title="View" onclick="viewUser(${user.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button class="action-btn edit" title="Edit" onclick="openUserModal('Edit User', ${JSON.stringify(user).replace(/"/g, '&quot;')})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+        <button class="action-btn del" title="Delete" onclick="confirmDeleteUser(${user.id})"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></button>
       </div></td>
-    </tr>`).join('');
-  document.getElementById('usersPagination').innerHTML = buildPagination(`Showing ${startItem}-${data.length} of ${data.length} users`, Math.max(1, Math.ceil(data.length / 10)));
+    </tr>`}).join('');
+    
+  document.getElementById('usersPagination').innerHTML = buildPagination(
+    `Showing ${startItem}-${endItem} of ${pagination.total_items} users`, 
+    pagination.total_pages,
+    pagination.current_page,
+    'fetchUsers'
+  );
 }
 
-function filterUsers(q) {
-  const searchInput = document.getElementById('userSearch');
-  const searchTerm = typeof q === 'string' ? q.trim().toLowerCase() : (searchInput?.value || '').trim().toLowerCase();
-  const selectedRole = document.getElementById('userRoleFilter')?.value || 'All Roles';
-  const selectedStatus = document.getElementById('userStatusFilter')?.value || 'All Status';
-  const filtered = usersData.filter(user => {
-    const matchesQuery = searchTerm === '' || user.name.toLowerCase().includes(searchTerm) || user.email.toLowerCase().includes(searchTerm) || user.phone.toLowerCase().includes(searchTerm);
-    const matchesRole = selectedRole === 'All Roles' || user.role === selectedRole;
-    const matchesStatus = selectedStatus === 'All Status' || user.status === selectedStatus;
-    return matchesQuery && matchesRole && matchesStatus;
-  });
+async function confirmDeleteUser(id) {
+  if (confirm('Are you sure you want to delete this user?')) {
+    try {
+      const response = await fetch(`${window.APP_BASE_PATH || ''}/api/admin/users/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      const result = await response.json();
+      if (result.data) {
+        showToast('User deleted', 'success');
+        fetchUsers(currentPage);
+        fetchUserStats();
+      } else {
+        showToast('Failed to delete user', 'error');
+      }
+    } catch (error) {
+      showToast('Error deleting user', 'error');
+    }
+  }
+}
 
-  renderUsers(filtered);
-  document.getElementById('userCount').textContent = `${filtered.length} users`;
+function filterUsers() {
+  fetchUsers(1);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  filterUsers();
+  fetchUsers();
+  fetchUserStats();
 });
 </script>

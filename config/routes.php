@@ -18,6 +18,9 @@ use App\Controllers\Api\TicketHoldController;
 use App\Controllers\Api\TicketOrderController;
 use App\Controllers\Api\UserShopOrderController;
 use App\Controllers\Api\UserTicketController;
+use App\Controllers\Api\Admin\AdminUserController;
+use App\Controllers\Api\Admin\AdminAddressController;
+use App\Controllers\Api\Admin\AdminRoleController;
 use App\Middlewares\AdminMiddleware;
 use App\Middlewares\AuthMiddleware;
 
@@ -147,3 +150,21 @@ $app->router->get('/api/admin/ticket-orders/{id}', [TicketManagementController::
 $app->router->get('/api/admin/ticket-details', [TicketManagementController::class, 'listTicketDetails'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/ticket-details/{id}', [TicketManagementController::class, 'getTicketDetail'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/ticket-holds', [TicketManagementController::class, 'listActiveHolds'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/users', [AdminUserController::class, 'listUsers'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/users/stats', [AdminUserController::class, 'getStats'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/users/{id}', [AdminUserController::class, 'getUser'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/users', [AdminUserController::class, 'createUser'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/users/{id}', [AdminUserController::class, 'updateUser'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/users/{id}', [AdminUserController::class, 'deleteUser'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/addresses', [AdminAddressController::class, 'listAddresses'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/addresses/stats', [AdminAddressController::class, 'getStats'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/addresses', [AdminAddressController::class, 'createAddress'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/addresses/{id}', [AdminAddressController::class, 'updateAddress'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/addresses/{id}', [AdminAddressController::class, 'deleteAddress'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/roles', [AdminRoleController::class, 'listRoles'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/roles', [AdminRoleController::class, 'createRole'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/roles/{id}', [AdminRoleController::class, 'updateRole'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/roles/{id}', [AdminRoleController::class, 'deleteRole'], [AdminMiddleware::class]);

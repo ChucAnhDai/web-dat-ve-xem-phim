@@ -799,3 +799,18 @@
 [2026-03-19T00:33:29+07:00] INFO: Shop cart item added {"user_id":null,"session_token":"5337d925fcea","cart_id":"22","product_id":3,"quantity":1,"duration_ms":7}
 [2026-03-19T00:33:35+07:00] INFO: Shop checkout created {"user_id":null,"session_token":"5337d925fcea","cart_id":"22","order_code":"SHP-2281A723E6","payment_method":"cash","duration_ms":21}
 [2026-03-19T00:33:48+07:00] INFO: Admin shop order status updated {"actor_id":1,"order_id":18,"order_code":"SHP-2281A723E6","status":"confirmed","payment_status":"success"}
+[2026-03-19T13:13:04+07:00] INFO: Authentication succeeded {"user_id":1,"context":"admin"}
+[2026-03-19T13:16:56+07:00] INFO: Authentication succeeded {"user_id":1,"context":"user"}
+[2026-03-19T13:17:02+07:00] INFO: User logout {"user_id":1}
+[2026-03-19T13:17:08+07:00] INFO: Authentication succeeded {"user_id":5,"context":"user"}
+[2026-03-19T13:17:16+07:00] INFO: User logout {"user_id":5}
+[2026-03-19T13:17:20+07:00] ERROR: Authentication failed {"identifier":"admin","context":"user"}
+[2026-03-19T13:17:23+07:00] ERROR: Authentication failed {"identifier":"admin","context":"user"}
+[2026-03-19T13:17:26+07:00] INFO: Authentication succeeded {"user_id":1,"context":"user"}
+[2026-03-19T13:17:54+07:00] INFO: User logout {"user_id":1}
+[2026-03-19T13:55:35+07:00] ERROR: JWT verification failed {"error":"Invalid token."}
+[2026-03-19T13:55:38+07:00] ERROR: JWT verification failed {"error":"Invalid token."}
+[2026-03-19T13:55:38+07:00] ERROR: JWT verification failed {"error":"Invalid token."}
+[2026-03-19T13:55:38+07:00] ERROR: JWT verification failed {"error":"Invalid token."}
+[2026-03-19T13:55:39+07:00] ERROR: JWT verification failed {"error":"Invalid token."}
+[2026-03-19T13:55:39+07:00] ERROR: JWT verification failed {"error":"Invalid token."}

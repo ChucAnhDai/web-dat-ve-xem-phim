@@ -228,6 +228,83 @@ class UserRepository
         return $stmt->execute($params);
     }
 
+    public function findAllPaginated(int $page = 1, int $limit = 10, string $search = '', string $role = '', string $status = ''): array
+    {
+        $offset = ($page - 1) * $limit;
+        $params = [];
+        $where = [];
+
+        if ($search !== '') {
+            $where[] = "(name LIKE :search OR email LIKE :search OR phone LIKE :search)";
+            $params['search'] = "%$search%";
+        }
+
+        if ($role !== '' && $role !== 'All Roles') {
+            $where[] = "role = :role";
+            $params['role'] = strtolower($role);
+        }
+
+        if ($status !== '' && $status !== 'All Status') {
+            $where[] = "status = :status";
+            $params['status'] = $status;
+        }
+
+        $whereSql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT id, name, email, phone, role, status, created_at FROM users {$whereSql} ORDER BY created_at DESC LIMIT :limit OFFSET :offset";
+        
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue($key, $val);
+        }
+        $stmt->bindValue('limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue('offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    public function countAll(string $search = '', string $role = '', string $status = ''): int
+    {
+        $params = [];
+        $where = [];
+
+        if ($search !== '') {
+            $where[] = "(name LIKE :search OR email LIKE :search OR phone LIKE :search)";
+            $params['search'] = "%$search%";
+        }
+
+        if ($role !== '' && $role !== 'All Roles') {
+            $where[] = "role = :role";
+            $params['role'] = strtolower($role);
+        }
+
+        if ($status !== '' && $status !== 'All Status') {
+            $where[] = "status = :status";
+            $params['status'] = $status;
+        }
+
+        $whereSql = !empty($where) ? 'WHERE ' . implode(' AND ', $where) : '';
+        $sql = "SELECT COUNT(*) FROM users {$whereSql}";
+        
+        return (int) $this->scalar($sql, $params);
+    }
+
+    public function delete(int $id): bool
+    {
+        $stmt = $this->db->prepare('DELETE FROM users WHERE id = :id');
+        return $stmt->execute(['id' => $id]);
+    }
+
+    public function getStats(): array
+    {
+        return [
+            'total' => (int) $this->scalar('SELECT COUNT(*) FROM users'),
+            'active' => (int) $this->scalar("SELECT COUNT(*) FROM users WHERE status = 'Active'"),
+            'suspended' => (int) $this->scalar("SELECT COUNT(*) FROM users WHERE status = 'Suspended'"),
+            'new_this_week' => (int) $this->scalar("SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")
+        ];
+    }
+
     private function scalar(string $sql, array $params = [])
     {
         $stmt = $this->db->prepare($sql);
