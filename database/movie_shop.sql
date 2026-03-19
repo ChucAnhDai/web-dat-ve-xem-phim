@@ -431,7 +431,7 @@ CREATE TABLE payments (
     id INT AUTO_INCREMENT PRIMARY KEY,
     ticket_order_id INT NULL,
     shop_order_id INT NULL,
-    payment_method ENUM('momo','vnpay','paypal','cash') NOT NULL,
+    payment_method VARCHAR(30) NOT NULL,
     payment_status ENUM('pending','processing','success','failed','cancelled','expired','refunded') NOT NULL DEFAULT 'pending',
     amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     currency CHAR(3) NOT NULL DEFAULT 'VND',
@@ -457,6 +457,8 @@ CREATE TABLE payments (
     INDEX idx_payments_shop_order (shop_order_id),
     INDEX idx_payments_method_status_date (payment_method, payment_status, payment_date),
     INDEX idx_payments_status_initiated (payment_status, initiated_at),
+    INDEX idx_payments_provider_order_ref (provider_order_ref),
+    INDEX idx_payments_provider_transaction_code (provider_transaction_code),
     FOREIGN KEY (ticket_order_id) REFERENCES ticket_orders(id),
     FOREIGN KEY (shop_order_id) REFERENCES shop_orders(id)
 );

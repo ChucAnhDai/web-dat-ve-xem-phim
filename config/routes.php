@@ -3,6 +3,7 @@
 use App\Controllers\Auth\AuthController;
 use App\Controllers\Admin\CinemaManagementController;
 use App\Controllers\Admin\MovieManagementController;
+use App\Controllers\Admin\PaymentManagementController;
 use App\Controllers\Admin\ProductManagementController;
 use App\Controllers\Admin\ShopOrderManagementController;
 use App\Controllers\Admin\ShowtimeManagementController;
@@ -67,6 +68,14 @@ $app->router->post('/api/shop/orders/lookup/cancel', [UserShopOrderController::c
 $app->router->post('/api/admin/auth/login', [AuthController::class, 'adminLogin']);
 $app->router->post('/api/admin/auth/logout', [AuthController::class, 'adminLogout'], [AdminMiddleware::class]);
 $app->router->get('/api/admin/auth/profile', [AuthController::class, 'profile'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/payments', [PaymentManagementController::class, 'listPayments'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/payments/{id}', [PaymentManagementController::class, 'getPayment'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/payment-methods', [PaymentManagementController::class, 'listPaymentMethods'], [AdminMiddleware::class]);
+$app->router->get('/api/admin/payment-methods/{id}', [PaymentManagementController::class, 'getPaymentMethod'], [AdminMiddleware::class]);
+$app->router->post('/api/admin/payment-methods', [PaymentManagementController::class, 'createPaymentMethod'], [AdminMiddleware::class]);
+$app->router->put('/api/admin/payment-methods/{id}', [PaymentManagementController::class, 'updatePaymentMethod'], [AdminMiddleware::class]);
+$app->router->delete('/api/admin/payment-methods/{id}', [PaymentManagementController::class, 'archivePaymentMethod'], [AdminMiddleware::class]);
 
 $app->router->get('/api/admin/movies', [MovieManagementController::class, 'listMovies'], [AdminMiddleware::class]);
 $app->router->post('/api/admin/movies/import-ophim', [MovieManagementController::class, 'importMovieFromOphim'], [AdminMiddleware::class]);

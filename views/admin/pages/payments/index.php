@@ -38,3 +38,6 @@ $sectionView = $sectionViews[$paymentSection] ?? $sectionViews['payments'];
 
   <?php include $sectionView; ?>
 </div>
+
+<?php $paymentsAdminScriptVersion = @filemtime(__DIR__ . '/../../../../public/assets/admin/payments-admin.js') ?: time(); ?>
+<script src="<?php echo htmlspecialchars($publicBase, ENT_QUOTES, 'UTF-8'); ?>/assets/admin/payments-admin.js?v=<?php echo urlencode((string) $paymentsAdminScriptVersion); ?>"></script>
