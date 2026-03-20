@@ -1,22 +1,22 @@
 <div class="page active" id="page-home">
   <div class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-poster">
-      <img src="https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="Dune: Part Two" onerror="this.style.background='#1a1a2e'">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-poster" id="heroPoster">
+      <img src="" alt="" onerror="this.style.background='#1a1a2e'">
     </div>
     <div class="hero-content">
-      <div class="hero-badge">🔥 Featured Movie</div>
-      <h1 class="hero-title">Dune:<br>Part Two</h1>
+      <div class="hero-badge" id="heroBadge">🔥 Featured Movie</div>
+      <h1 class="hero-title" id="heroTitle">Loading...</h1>
       <div class="hero-meta">
-        <span class="rating-stars">★★★★★</span>
-        <span>4.8/5</span>
+        <span class="rating-stars" id="heroStars"></span>
+        <span id="heroRating"></span>
         <span class="dot"></span>
-        <span>2h 46m</span>
+        <span id="heroDuration"></span>
         <span class="dot"></span>
-        <span>Sci-Fi</span>
+        <span id="heroGenre"></span>
       </div>
-      <p class="hero-desc">Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.</p>
-      <div class="hero-actions">
+      <p class="hero-desc" id="heroDesc"></p>
+      <div class="hero-actions" id="heroActions">
         <button class="btn btn-primary btn-lg" onclick="navigateTo('movies')">🎬 Book Ticket</button>
         <button class="btn btn-secondary btn-lg">▶ Watch Trailer</button>
       </div>
@@ -32,27 +32,27 @@
   <div class="stats-row">
     <div class="stat-card">
       <div class="stat-card-icon">🎬</div>
-      <div class="stat-card-val">48</div>
+      <div class="stat-card-val" id="statMovies">--</div>
       <div class="stat-card-label">Movies Showing</div>
-      <div class="stat-card-change change-up">▲ 12 new this week</div>
+      <div class="stat-card-change change-up" id="statMoviesLabel">▲ Updating...</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-icon">🎭</div>
-      <div class="stat-card-val">8</div>
+      <div class="stat-card-val" id="statRooms">--</div>
       <div class="stat-card-label">Cinema Halls</div>
-      <div class="stat-card-change change-up">▲ 2 reopened</div>
+      <div class="stat-card-change change-up" id="statRoomsLabel">▲ Updating...</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-icon">🍿</div>
-      <div class="stat-card-val">120+</div>
+      <div class="stat-card-val" id="statProducts">--</div>
       <div class="stat-card-label">Shop Products</div>
-      <div class="stat-card-change change-up">▲ New combos added</div>
+      <div class="stat-card-change change-up" id="statProductsLabel">▲ Updating...</div>
     </div>
     <div class="stat-card">
       <div class="stat-card-icon">⭐</div>
-      <div class="stat-card-val">4.8</div>
+      <div class="stat-card-val" id="statRating">--</div>
       <div class="stat-card-label">Avg Rating</div>
-      <div class="stat-card-change change-up">▲ Customer score</div>
+      <div class="stat-card-change change-up" id="statRatingLabel">▲ Updating...</div>
     </div>
   </div>
 
@@ -73,6 +73,25 @@
     </div>
     <div class="movies-grid" id="comingSoonGrid"></div>
   </section>
+
+  <!-- Mid-Hero Banner (New) -->
+  <div class="mid-hero section-mb" id="midHero">
+    <div class="mid-hero-bg" id="midHeroBg"></div>
+    <div class="mid-hero-content">
+      <div class="mid-hero-badges" id="midHeroBadges"></div>
+      <h2 class="mid-hero-title" id="midHeroTitle"></h2>
+      <p class="mid-hero-subtitle" id="midHeroSubtitle"></p>
+      <div class="mid-hero-genres" id="midHeroGenres"></div>
+      <div class="mid-hero-actions">
+        <button class="btn-play" id="midHeroPlay" title="Play Trailer"><i class="fas fa-play"></i></button>
+        <button class="btn-circle" id="midHeroInfo" title="View Detail"><i class="fas fa-exclamation"></i></button>
+        <button class="btn-circle"></button>
+      </div>
+    </div>
+    <div class="mid-hero-thumbs-container">
+      <div class="mid-hero-thumbs" id="midHeroThumbs"></div>
+    </div>
+  </div>
 
   <!-- Popular Products -->
   <section class="section-mb">

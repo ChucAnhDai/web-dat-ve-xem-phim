@@ -21,6 +21,8 @@ use App\Controllers\Api\UserTicketController;
 use App\Controllers\Api\Admin\AdminUserController;
 use App\Controllers\Api\Admin\AdminAddressController;
 use App\Controllers\Api\Admin\AdminRoleController;
+use App\Controllers\Api\Admin\DashboardApiController;
+use App\Controllers\Api\HomeApiController;
 use App\Middlewares\AdminMiddleware;
 use App\Middlewares\AuthMiddleware;
 
@@ -31,6 +33,8 @@ $app->router->post('/api/auth/login', [AuthController::class, 'login']);
 $app->router->get('/api/auth/profile', [AuthController::class, 'profile'], [AuthMiddleware::class]);
 $app->router->post('/api/auth/logout', [AuthController::class, 'logout'], [AuthMiddleware::class]);
 $app->router->post('/api/auth/update-password', [AuthController::class, 'updatePassword'], [AuthMiddleware::class]);
+
+$app->router->get('/api/public/home-data', [HomeApiController::class, 'getHomeData']);
 
 $app->router->get('/api/movies', [MovieCatalogController::class, 'listMovies']);
 $app->router->get('/api/movies/{slug}', [MovieCatalogController::class, 'getMovieDetail']);
@@ -168,3 +172,5 @@ $app->router->get('/api/admin/roles', [AdminRoleController::class, 'listRoles'],
 $app->router->post('/api/admin/roles', [AdminRoleController::class, 'createRole'], [AdminMiddleware::class]);
 $app->router->put('/api/admin/roles/{id}', [AdminRoleController::class, 'updateRole'], [AdminMiddleware::class]);
 $app->router->delete('/api/admin/roles/{id}', [AdminRoleController::class, 'deleteRole'], [AdminMiddleware::class]);
+
+$app->router->get('/api/admin/dashboard/stats', [DashboardApiController::class, 'getStats'], [AdminMiddleware::class]);

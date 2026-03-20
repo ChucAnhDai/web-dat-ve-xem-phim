@@ -24,6 +24,7 @@ $shopCartJsVersion = @filemtime(__DIR__ . '/../../public/assets/js/shop-cart.js'
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?php echo htmlspecialchars($title ?? 'CinemaX - Premium Cinema Experience'); ?></title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="<?php echo htmlspecialchars($publicBase); ?>/assets/css/app.css?v=<?php echo urlencode((string) $appCssVersion); ?>">
 </head>
 <body data-active-page="<?php echo $activePage ?? ''; ?>">

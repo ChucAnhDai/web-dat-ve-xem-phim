@@ -550,11 +550,11 @@ class ProductRepository
         if (!empty($filters['featured_only'])) {
             $conditions[] = "p.visibility = 'featured'";
         }
-        if ($filters['min_price'] !== null) {
+        if (($filters['min_price'] ?? null) !== null) {
             $conditions[] = 'p.price >= :min_price';
             $params['min_price'] = (float) $filters['min_price'];
         }
-        if ($filters['max_price'] !== null) {
+        if (($filters['max_price'] ?? null) !== null) {
             $conditions[] = 'p.price <= :max_price';
             $params['max_price'] = (float) $filters['max_price'];
         }

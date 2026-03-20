@@ -254,16 +254,24 @@
     const detailsUrl = movieDetailUrl(movie.slug);
     const bookDisabled = movie.status !== 'now_showing';
 
+    const backdropUrl = movie.backdrop_url || movie.poster_url;
+    const categoriesText = movie.primary_category_name || movie.primary_category || 'N/A';
+
     return `
-      <div class="card movie-card" data-slug="${escapeHtmlAttr(movie.slug || '')}">
+      <div class="card movie-card" 
+           data-movie-id="${movie.id}"
+           data-backdrop="${backdropUrl}"
+           data-title="${escapeHtml(movie.title)}"
+           data-rating="${movie.average_rating || 0}"
+           data-year="${releaseYear}"
+           data-duration="${movie.duration_minutes || 0}"
+           data-genres="${escapeHtml(categoriesText)}"
+           data-slug="${escapeHtmlAttr(movie.slug || '')}"
+           onclick="window.location.href='${detailsUrl}'">
         <div class="movie-poster">
           ${poster}
           <div class="genre-badge">${escapeHtml(category)}</div>
           <div class="rating-badge">${escapeHtml(rating)}</div>
-          <div class="movie-poster-overlay">
-            <button class="btn btn-primary btn-sm" type="button" data-action="details" data-url="${escapeHtmlAttr(detailsUrl)}">Details</button>
-            <button class="btn btn-secondary btn-sm" type="button" data-action="showtimes" data-url="${escapeHtmlAttr(detailsUrl)}" ${bookDisabled ? 'disabled' : ''}>${bookDisabled ? 'Coming Soon' : 'Watch'}</button>
-          </div>
         </div>
         <div class="movie-info">
           <div class="movie-title">${escapeHtml(movie.title || 'Untitled Movie')}</div>
@@ -279,10 +287,6 @@
             <span class="dot"></span>
             <span>${escapeHtml(`${Number(movie.review_count || 0)} votes`)}</span>
           </div>
-        </div>
-        <div class="movie-actions">
-          <button class="btn btn-primary btn-sm" style="flex:1" type="button" data-action="details" data-url="${escapeHtmlAttr(detailsUrl)}">Details</button>
-          <button class="btn btn-secondary btn-sm" style="flex:1" type="button" data-action="showtimes" data-url="${escapeHtmlAttr(detailsUrl)}" ${bookDisabled ? 'disabled' : ''}>${bookDisabled ? 'Preview' : 'Open'}</button>
         </div>
       </div>
     `;

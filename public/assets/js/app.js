@@ -23,36 +23,12 @@ const routeMap = {
   'guest-order-lookup': '/my-orders?lookup=1'
 };
 
-const movies = [
-  { id: 1, slug: 'dune-part-two', title: 'Dune: Part Two', primary_category: 'Sci-Fi', average_rating: 4.8, duration_minutes: 166, poster_url: 'https://image.tmdb.org/t/p/w300/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg', release_date: '2024-03-01', status: 'now_showing' },
-  { id: 2, slug: 'inside-out-2', title: 'Inside Out 2', primary_category: 'Animation', average_rating: 4.3, duration_minutes: 100, poster_url: 'https://image.tmdb.org/t/p/w300/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg', release_date: '2024-06-14', status: 'now_showing' },
-  { id: 3, slug: 'oppenheimer', title: 'Oppenheimer', primary_category: 'Drama', average_rating: 4.6, duration_minutes: 180, poster_url: 'https://image.tmdb.org/t/p/w300/8Gxv8gSFCU0XGDykEGv7zR1n2ua.jpg', release_date: '2023-07-21', status: 'now_showing' },
-  { id: 4, slug: 'deadpool-wolverine', title: 'Deadpool & Wolverine', primary_category: 'Action', average_rating: 4.4, duration_minutes: 127, poster_url: 'https://image.tmdb.org/t/p/w300/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg', release_date: '2024-07-26', status: 'now_showing' },
-  { id: 5, slug: 'kingdom-of-the-planet-of-the-apes', title: 'Kingdom of the Planet of the Apes', primary_category: 'Sci-Fi', average_rating: 4.1, duration_minutes: 145, poster_url: 'https://image.tmdb.org/t/p/w300/gKkl37BQuKTanygYQG1pyYgLVgf.jpg', release_date: '2024-05-10', status: 'now_showing' },
-  { id: 6, slug: 'the-substance', title: 'The Substance', primary_category: 'Horror', average_rating: 4.2, duration_minutes: 141, poster_url: 'https://image.tmdb.org/t/p/w300/lqoMzCcZYEFK729d6qzt349fB4o.jpg', release_date: '2024-09-20', status: 'now_showing' },
-  { id: 7, slug: 'a-quiet-place-day-one', title: 'A Quiet Place: Day One', primary_category: 'Horror', average_rating: 4.0, duration_minutes: 99, poster_url: 'https://image.tmdb.org/t/p/w300/hukkWxOuHIhNBCaYxhpqxDwbULC.jpg', release_date: '2024-06-28', status: 'coming_soon' },
-  { id: 8, slug: 'alien-romulus', title: 'Alien: Romulus', primary_category: 'Horror', average_rating: 4.0, duration_minutes: 119, poster_url: 'https://image.tmdb.org/t/p/w300/b33nnKl1GSFbao4l3fZDDqsMx0F.jpg', release_date: '2024-08-16', status: 'coming_soon' },
-  { id: 9, slug: 'gladiator-ii', title: 'Gladiator II', primary_category: 'Action', average_rating: 4.1, duration_minutes: 148, poster_url: 'https://image.tmdb.org/t/p/w300/2cxhvwyE0RtuekvA5STUA9sMvPv.jpg', release_date: '2024-11-22', status: 'coming_soon' },
-  { id: 10, slug: 'furiosa', title: 'Furiosa', primary_category: 'Action', average_rating: 4.4, duration_minutes: 148, poster_url: 'https://image.tmdb.org/t/p/w300/iADOJ8Zymht2JPMoy3R7xceZprc.jpg', release_date: '2024-05-24', status: 'coming_soon' }
-];
+let movies = [];
+let products = [];
 
-movies.forEach(movie => {
-  movie.genre = movie.primary_category;
-  movie.rating = movie.average_rating;
-  movie.duration = formatMovieDuration(movie.duration_minutes);
-  movie.poster = movie.poster_url;
-});
+// movies and products will be fetched from API
 
-const products = [
-  { id: 1, name: 'Classic Popcorn Combo', cat: 'combo', price: 12.99, oldPrice: 16.99, img: 'https://images.unsplash.com/photo-1578849278619-e73505e9610f?auto=format&fit=crop&w=900&q=80', emoji: '🍿' },
-  { id: 2, name: 'Large Cola', cat: 'drinks', price: 4.99, oldPrice: null, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=900&q=80', emoji: '🥤' },
-  { id: 3, name: 'Nachos & Salsa', cat: 'snacks', price: 7.99, oldPrice: 9.99, img: 'https://images.unsplash.com/photo-1513456852971-30c0b8199d4d?auto=format&fit=crop&w=900&q=80', emoji: '🧀' },
-  { id: 4, name: 'CinemaX T-Shirt', cat: 'merch', price: 24.99, oldPrice: 29.99, img: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=900&q=80', emoji: '👕' },
-  { id: 5, name: 'VIP Combo Deluxe', cat: 'combo', price: 22.99, oldPrice: 28.99, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=900&q=80', emoji: '🎉' },
-  { id: 6, name: 'Caramel Popcorn', cat: 'popcorn', price: 6.99, oldPrice: null, img: 'https://images.unsplash.com/photo-1585647347384-2593bc35786b?auto=format&fit=crop&w=900&q=80', emoji: '🍿' },
-  { id: 7, name: 'Milkshake Combo', cat: 'drinks', price: 8.99, oldPrice: 10.99, img: 'https://images.unsplash.com/photo-1579954115545-a95591f28bfc?auto=format&fit=crop&w=900&q=80', emoji: '🥛' },
-  { id: 8, name: 'CinemaX Mug', cat: 'merch', price: 14.99, oldPrice: null, img: 'https://images.unsplash.com/photo-1514228742587-6b1558fcf93a?auto=format&fit=crop&w=900&q=80', emoji: '☕' }
-];
+// Fallback products will be fetched from API
 
 const shopCatalogState = {
   categories: [],
@@ -83,6 +59,12 @@ let hamburgerBtn;
 let sidebar;
 let sidebarOverlay;
 let currentProfile = null;
+
+// Hero Carousel State
+let heroMovies = [];
+let midHeroMovies = [];
+let currentHeroIndex = 0;
+let heroCarouselTimer = null;
 
 function appUrl(path) {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
@@ -739,47 +721,157 @@ function renderMovieCard(movie) {
     ? detailUrl
     : appUrl('/movies');
 
+  const backdropUrl = movie.backdrop_url || movie.poster_url;
+  const categories = movie.primary_category_name || movie.primary_category || 'N/A';
+
   return `
-    <div class="card movie-card" onclick="window.location.href='${detailUrl}'">
+    <div class="card movie-card" 
+         data-movie-id="${movie.id}"
+         data-backdrop="${backdropUrl}"
+         data-title="${escapeHtml(movie.title)}"
+         data-rating="${movie.average_rating || 0}"
+         data-year="${movie.release_date ? new Date(movie.release_date).getFullYear() : '2024'}"
+         data-duration="${movie.duration_minutes || 0}"
+         data-genres="${escapeHtml(categories)}"
+         data-slug="${movie.slug}"
+         onclick="window.location.href='${detailUrl}'">
       <div class="movie-poster">
         <img src="${movie.poster_url}" alt="${movie.title}" loading="lazy" onerror="this.parentNode.style.background='var(--bg4)'">
-        <div class="genre-badge">${movie.primary_category}</div>
-        <div class="rating-badge">⭐ ${movie.rating}</div>
-        <div class="movie-poster-overlay">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();window.location.href='${bookUrl}'">🎫 Book</button>
-          <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation()">+ Watchlist</button>
-        </div>
+        <div class="genre-badge">${categories}</div>
+        <div class="rating-badge">⭐ ${movie.average_rating || movie.rating || 'N/A'}</div>
       </div>
       <div class="movie-info">
         <div class="movie-title">${movie.title}</div>
         <div class="movie-meta">
-          <span>⭐ ${movie.rating}</span>
+          <span>⭐ ${movie.average_rating || movie.rating || '0.0'}</span>
           <span class="dot"></span>
-          <span>${movie.duration}</span>
+          <span>${formatMovieDuration(movie.duration_minutes) || movie.duration || '--'}</span>
         </div>
-      </div>
-      <div class="movie-actions">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="event.stopPropagation();window.location.href='${detailUrl}'">Details</button>
-        <button class="btn btn-secondary btn-sm" style="flex:1" onclick="event.stopPropagation();window.location.href='${bookUrl}'">Book</button>
       </div>
     </div>
   `;
 }
 
+let movieHoverTimeout = null;
+let activeExpandedCard = null;
+
+function initMovieHoverEffects() {
+  document.addEventListener('mouseover', (e) => {
+    const card = e.target.closest('.movie-card');
+    if (!card || card === activeExpandedCard?.sourceCard) return;
+
+    if (card.dataset.hoverWaiting === 'true') return;
+
+    clearTimeout(movieHoverTimeout);
+    card.dataset.hoverWaiting = 'true';
+    movieHoverTimeout = setTimeout(() => {
+      card.dataset.hoverWaiting = 'false';
+      showExpandedMovieCard(card);
+    }, 500); // User requested ~1s
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    const card = e.target.closest('.movie-card');
+    if (!card) return;
+
+    const related = e.relatedTarget;
+    if (related && card.contains(related)) return;
+
+    clearTimeout(movieHoverTimeout);
+    card.dataset.hoverWaiting = 'false';
+  });
+}
+
+function showExpandedMovieCard(card) {
+  if (activeExpandedCard) {
+    removeExpandedCard();
+  }
+
+  const rect = card.getBoundingClientRect();
+  const movieData = card.dataset;
+  
+  const expanded = document.createElement('div');
+  expanded.className = 'movie-card-expanded';
+  
+  // Positoning logic
+  let left = rect.left + rect.width / 2 - 170; // 340/2
+  let top = rect.top + rect.height / 2 - 150;
+  
+  // Boundary checks
+  if (left < 20) left = 20;
+  if (left + 340 > window.innerWidth - 20) left = window.innerWidth - 360;
+  if (top < 80) top = rect.top - 20; // If too high, show above source card
+  
+  expanded.style.left = `${left}px`;
+  expanded.style.top = `${top}px`;
+  
+  const detailUrl = appUrl(`/movie-detail?slug=${encodeURIComponent(movieData.slug)}`);
+  
+  expanded.innerHTML = `
+    <div class="expanded-media">
+      <img src="${movieData.backdrop}" alt="${movieData.title}">
+    </div>
+    <div class="expanded-info">
+      <div class="expanded-title">${movieData.title}</div>
+      <div class="expanded-meta">
+        <span class="meta-match">${Math.round(movieData.rating * 20)}% Match</span>
+        <span class="meta-year">${movieData.year}</span>
+        <span class="meta-age">T16</span>
+        <span>${formatMovieDuration(movieData.duration)}</span>
+      </div>
+      <div class="expanded-actions">
+        <div class="action-circle action-play" onclick="window.location.href='${detailUrl}'">▶</div>
+        <div class="action-circle">👍</div>
+        <div class="action-circle">➕</div>
+        <div class="action-circle" onclick="window.location.href='${detailUrl}'">ⓘ</div>
+      </div>
+      <div class="expanded-genres">
+        ${movieData.genres.split(',').map(g => `<span>${g.trim()}</span>`).join('')}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(expanded);
+  
+  // Trigger animation
+  setTimeout(() => expanded.classList.add('active'), 10);
+  
+  activeExpandedCard = {
+    element: expanded,
+    sourceCard: card
+  };
+  
+  expanded.addEventListener('mouseleave', () => {
+    removeExpandedCard();
+  });
+}
+
+function removeExpandedCard() {
+  if (!activeExpandedCard) return;
+  
+  const el = activeExpandedCard.element;
+  el.classList.remove('active');
+  setTimeout(() => {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }, 400);
+  
+  activeExpandedCard = null;
+}
+
 function renderProductCard(product) {
   return `
-    <div class="card product-card" onclick="navigateTo('product-detail')">
+    <div class="card product-card" onclick="window.location.href='${productDetailUrl(product.slug)}'">
       <div class="product-img">
-        <img src="${product.img}" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'product-img-fallback',textContent:'${product.emoji}'}))">
+        <img src="${product.primary_image_url || product.img}" alt="${product.name}" loading="lazy" onerror="this.onerror=null;this.replaceWith(Object.assign(document.createElement('div'),{className:'product-img-fallback',textContent:'🍿'}))">
       </div>
       <div class="product-info">
-        <div class="product-cat">${product.cat}</div>
+        <div class="product-cat">${product.category_name || product.cat || 'General'}</div>
         <div class="product-name">${product.name}</div>
         <div class="product-price">
-          $${product.price.toFixed(2)}
-          ${product.oldPrice ? `<span class="price-old">$${product.oldPrice.toFixed(2)}</span>` : ''}
+          ${formatShopCurrency(product.price, product.currency)}
+          ${product.compare_at_price > product.price ? `<span class="price-old">${formatShopCurrency(product.compare_at_price, product.currency)}</span>` : ''}
         </div>
-        <button class="btn btn-primary btn-sm btn-full" onclick="event.stopPropagation();addToCartProduct('${product.name.replace(/'/g, "\\'")}')">🛒 Add to Cart</button>
+        <button class="btn btn-primary btn-sm btn-full" onclick="event.stopPropagation();addToCartProduct('${product.id}', 1)">🛒 Add to Cart</button>
       </div>
     </div>
   `;
@@ -1402,22 +1494,127 @@ function renderShopCatalog() {
   pagination.hidden = shopCatalogState.totalPages <= 1;
 }
 
-async function loadHomePopularProducts() {
-  const grid = document.getElementById('popularProductsGrid');
-  if (!grid) return;
+async function fetchHomeData() {
+  const isHome = document.getElementById('page-home')?.classList.contains('active');
+  if (!isHome) return;
 
   try {
-    const data = await fetchJson(shopApiUrl('/api/shop/products', {
-      per_page: 4,
-      featured_only: 1,
-      sort: 'featured'
-    }));
+    const response = await fetch(appUrl('/api/public/home-data'));
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message);
 
-    const items = Array.isArray(data.items) ? data.items : [];
-    grid.innerHTML = items.map(renderProductCard).join('');
+    const { hero_movies, stats, now_showing, coming_soon, popular_products } = result.data;
+
+    // 1. Hero Carousel
+    if (Array.isArray(hero_movies) && hero_movies.length > 0) {
+      heroMovies = hero_movies;
+      currentHeroIndex = 0;
+      renderHeroSlide(0);
+      initHeroDots();
+      startHeroCarousel();
+    }
+
+    // 2. Stats
+    if (stats) {
+      document.getElementById('statMovies').textContent = stats.movies_count;
+      document.getElementById('statRooms').textContent = stats.rooms_count;
+      document.getElementById('statProducts').textContent = stats.products_count + '+';
+      document.getElementById('statRating').textContent = stats.avg_rating;
+      
+      document.getElementById('statMoviesLabel').textContent = '▲ ' + (stats.movies_count > 0 ? 'Live database' : 'Syncing...');
+      document.getElementById('statRoomsLabel').textContent = '▲ ' + (stats.rooms_count > 0 ? 'Across cinemas' : 'Pending...');
+      document.getElementById('statProductsLabel').textContent = '▲ New items';
+      document.getElementById('statRatingLabel').textContent = '▲ User score';
+    }
+
+    // 3. Grids
+    const nowShowingGrid = document.getElementById('nowShowingGrid');
+    const comingSoonGrid = document.getElementById('comingSoonGrid');
+    const popularProductsGrid = document.getElementById('popularProductsGrid');
+
+    if (nowShowingGrid) nowShowingGrid.innerHTML = now_showing.map(renderMovieCard).join('');
+    if (comingSoonGrid) comingSoonGrid.innerHTML = coming_soon.map(renderMovieCard).join('');
+    if (popularProductsGrid) popularProductsGrid.innerHTML = popular_products.map(renderProductCard).join('');
+
+    // 4. Mid Hero (New)
+    if (Array.isArray(coming_soon) && coming_soon.length > 0) {
+      midHeroMovies = coming_soon;
+      renderMidHero(midHeroMovies[0]);
+      renderMidHeroThumbs(midHeroMovies);
+    }
+
   } catch (error) {
-    grid.innerHTML = '<div class="catalog-empty-state"><div><strong>Shop unavailable right now.</strong>Please try again in a moment.</div></div>';
+    console.error('Home data fetch error:', error);
+    showToast('!', 'Lỗi kết nối', 'Không thể tải dữ liệu trang chủ thực tế.');
   }
+}
+
+function renderHeroSlide(index) {
+  const movie = heroMovies[index];
+  if (!movie) return;
+
+  const bgEl = document.getElementById('heroBg');
+  const posterImg = document.getElementById('heroPoster')?.querySelector('img');
+  const titleEl = document.getElementById('heroTitle');
+  const ratingEl = document.getElementById('heroRating');
+  const starsEl = document.getElementById('heroStars');
+  const durationEl = document.getElementById('heroDuration');
+  const genreEl = document.getElementById('heroGenre');
+  const descEl = document.getElementById('heroDesc');
+
+  if (bgEl) bgEl.style.backgroundImage = `linear-gradient(to right, rgba(10, 10, 18, 0.9) 20%, transparent 80%), url(${movie.backdrop_url || movie.poster_url})`;
+  if (posterImg) posterImg.src = movie.poster_url;
+  if (titleEl) titleEl.innerHTML = movie.title.replace(': ', ':<br>');
+  if (ratingEl) ratingEl.textContent = `${movie.average_rating}/5`;
+  if (starsEl) starsEl.textContent = '★'.repeat(Math.round(movie.average_rating)) + '☆'.repeat(5 - Math.round(movie.average_rating));
+  if (durationEl) durationEl.textContent = formatMovieDuration(movie.duration_minutes);
+  if (genreEl) genreEl.textContent = movie.primary_category_name;
+  if (descEl) descEl.textContent = (movie.summary || '').substring(0, 160) + '...';
+
+  // Update dots
+  document.querySelectorAll('.hero-dot').forEach((dot, idx) => {
+    dot.classList.toggle('active', idx === index);
+  });
+}
+
+function initHeroDots() {
+  const dotsContainer = document.querySelector('.hero-dots');
+  if (!dotsContainer) return;
+
+  dotsContainer.innerHTML = heroMovies.map((_, idx) => `
+    <div class="hero-dot ${idx === 0 ? 'active' : ''}" data-index="${idx}"></div>
+  `).join('');
+
+  dotsContainer.querySelectorAll('.hero-dot').forEach(dot => {
+    dot.addEventListener('click', () => {
+      const index = parseInt(dot.dataset.index);
+      currentHeroIndex = index;
+      renderHeroSlide(index);
+      startHeroCarousel(); // Reset timer
+    });
+  });
+}
+
+function startHeroCarousel() {
+  stopHeroCarousel();
+  if (heroMovies.length <= 1) return;
+
+  heroCarouselTimer = setInterval(() => {
+    currentHeroIndex = (currentHeroIndex + 1) % heroMovies.length;
+    renderHeroSlide(currentHeroIndex);
+  }, 5000);
+}
+
+function stopHeroCarousel() {
+  if (heroCarouselTimer) {
+    clearInterval(heroCarouselTimer);
+    heroCarouselTimer = null;
+  }
+}
+
+async function loadHomePopularProducts() {
+  // Deprecated in favor of fetchHomeData but kept for backward compatibility if needed
+  await fetchHomeData();
 }
 
 async function loadShopCategories() {
@@ -2096,9 +2293,67 @@ async function handleLogin(event) {
   }
 }
 
+function renderMidHero(movie) {
+  const bgEl = document.getElementById('midHeroBg');
+  const titleEl = document.getElementById('midHeroTitle');
+  const subtitleEl = document.getElementById('midHeroSubtitle');
+  const badgesEl = document.getElementById('midHeroBadges');
+  const genresEl = document.getElementById('midHeroGenres');
+  const playBtn = document.getElementById('midHeroPlay');
+  const infoBtn = document.getElementById('midHeroInfo');
+
+  if (bgEl) bgEl.style.backgroundImage = `url(${movie.backdrop_url || movie.poster_url})`;
+  if (titleEl) titleEl.textContent = movie.title;
+  if (subtitleEl) subtitleEl.textContent = movie.summary ? movie.summary.substring(0, 120) + '...' : 'Coming soon to our cinemas.';
+  
+  if (badgesEl) {
+    badgesEl.innerHTML = `
+      <div class="mid-badge gold">imdb ${movie.average_rating || '?'}/5</div>
+      <div class="mid-badge">${movie.age_rating || 'All'}</div>
+      <div class="mid-badge">${new Date(movie.release_date).getFullYear()}</div>
+      <div class="mid-badge">FHD</div>
+      <div class="mid-badge">New Arrival</div>
+    `;
+  }
+
+  if (genresEl) {
+    genresEl.innerHTML = (movie.primary_category_name || 'Action')
+      .split(',')
+      .map(g => `<div class="mid-genre">${g.trim()}</div>`)
+      .join('');
+  }
+
+  // Add click actions
+  const detailUrl = appUrl(`/movie-detail?slug=${encodeURIComponent(movie.slug)}`);
+  if (playBtn) playBtn.onclick = () => window.location.href = detailUrl;
+  if (infoBtn) infoBtn.onclick = () => window.location.href = detailUrl;
+}
+
+function renderMidHeroThumbs(movies) {
+  const container = document.getElementById('midHeroThumbs');
+  if (!container) return;
+
+  container.innerHTML = movies.slice(0, 8).map((movie, idx) => `
+    <div class="mid-thumb ${idx === 0 ? 'active' : ''}" onclick="renderMidHeroByIndex(${idx})">
+      <img src="${movie.poster_url}" alt="${movie.title}">
+    </div>
+  `).join('');
+}
+
+window.renderMidHeroByIndex = function(index) {
+  if (!midHeroMovies || !midHeroMovies[index]) return;
+  renderMidHero(midHeroMovies[index]);
+  
+  // Update active thumb
+  document.querySelectorAll('.mid-thumb').forEach((thumb, idx) => {
+    thumb.classList.toggle('active', idx === index);
+  });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
   initSidebar();
   initAuthUI();
+  initMovieHoverEffects();
   ensureAuthForPage();
 
   const loginForm = document.getElementById('loginForm');
@@ -2106,11 +2361,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (loginForm) loginForm.addEventListener('submit', handleLogin);
   if (registerForm) registerForm.addEventListener('submit', handleRegister);
 
+  fetchHomeData();
   populateGrids();
   renderShowtimes();
   renderCartItems();
   updateCartBadges();
-  loadHomePopularProducts();
   initializeShopCatalogPage();
   initializeProductDetailPage();
 });

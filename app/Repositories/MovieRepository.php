@@ -106,6 +106,7 @@ class MovieRepository
                 m.duration_minutes,
                 m.release_date,
                 COALESCE(m.poster_url, poster.image_url) AS poster_url,
+                COALESCE(banner.image_url, poster.image_url) AS backdrop_url,
                 m.age_rating,
                 m.language,
                 ROUND(m.average_rating, 2) AS average_rating,
@@ -122,6 +123,14 @@ class MovieRepository
                 GROUP BY movie_id
             ) primary_posters ON primary_posters.movie_id = m.id
             LEFT JOIN movie_images poster ON poster.id = primary_posters.asset_id
+            LEFT JOIN (
+                SELECT movie_id, MAX(id) AS asset_id
+                FROM movie_images
+                WHERE asset_type = 'banner'
+                  AND status = 'active'
+                GROUP BY movie_id
+            ) primary_banners ON primary_banners.movie_id = m.id
+            LEFT JOIN movie_images banner ON banner.id = primary_banners.asset_id
             {$where}
             ORDER BY {$orderBy}
         ";
@@ -510,7 +519,7 @@ class MovieRepository
             ";
             $params['category_slug'] = $filters['category_id'];
         }
-        if ($filters['min_rating'] !== null) {
+        if (($filters['min_rating'] ?? null) !== null) {
             $conditions[] = 'm.average_rating >= :min_rating';
             $params['min_rating'] = (float) $filters['min_rating'];
         }
