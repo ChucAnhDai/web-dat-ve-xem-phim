@@ -5,10 +5,13 @@ namespace App\Core;
 class Logger
 {
     private string $logFile;
+    private string $fallbackLogFile;
 
     public function __construct(?string $logFile = null)
     {
-        $this->logFile = $logFile ?? __DIR__ . '/../../storage/logs/app.log';
+        $root = dirname(__DIR__, 2);
+        $this->logFile = $logFile ?? $root . '/storage/logs/app.log';
+        $this->fallbackLogFile = $root . '/tmp/logs/app.log';
     }
 
     public function info(string $message, array $context = []): void
@@ -25,6 +28,23 @@ class Logger
     {
         $payload = $context ? ' ' . json_encode($context, JSON_UNESCAPED_UNICODE) : '';
         $line = sprintf("[%s] %s: %s%s\n", date('c'), $level, $message, $payload);
-        error_log($line, 3, $this->logFile);
+        $target = $this->resolveWritableLogFile($this->logFile)
+            ?? $this->resolveWritableLogFile($this->fallbackLogFile);
+
+        if ($target === null) {
+            return;
+        }
+
+        @error_log($line, 3, $target);
+    }
+
+    private function resolveWritableLogFile(string $path): ?string
+    {
+        $directory = dirname($path);
+        if (!is_dir($directory) && !@mkdir($directory, 0777, true) && !is_dir($directory)) {
+            return null;
+        }
+
+        return $path;
     }
 }

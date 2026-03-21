@@ -107,6 +107,7 @@ class ShopCheckoutService
 
             $payload = [
                 'cart' => $context['cart_payload'],
+                'sync' => $context['sync'],
                 'checkout_ready' => !($context['cart_payload']['is_empty'] ?? true),
                 'defaults' => [
                     'fulfillment_method' => $this->validator->fulfillmentMethods()[0] ?? 'pickup',
@@ -153,6 +154,7 @@ class ShopCheckoutService
         try {
             $this->lifecycle->runMaintenance();
             $context = $this->loadCheckoutContext($userId, $sessionToken);
+            $this->assertCartStableForCheckout($context['sync']);
             $snapshot = $this->commitCheckout($context, $data, $requestContext, $userId, $startedAt);
         } catch (ShopCheckoutDomainException $exception) {
             $this->logger->info('Shop checkout blocked by business rule', [
@@ -352,6 +354,11 @@ class ShopCheckoutService
 
         return [
             'cart_payload' => $cartPayload,
+            'sync' => $cartResult['data']['sync'] ?? [
+                'merged_guest_cart' => 0,
+                'adjusted_items' => 0,
+                'removed_items' => 0,
+            ],
             'cart' => $this->resolveActiveCartRecord($cartPayload),
             'active_order' => $this->buildActiveOrderPayload($userId, $resolvedSessionToken),
             'session_token' => $resolvedSessionToken,
@@ -400,6 +407,20 @@ class ShopCheckoutService
             'order' => $snapshot['order'],
             'payment' => $snapshot['payment'],
         ];
+    }
+
+    private function assertCartStableForCheckout(array $sync): void
+    {
+        $adjustedItems = max(0, (int) ($sync['adjusted_items'] ?? 0));
+        $removedItems = max(0, (int) ($sync['removed_items'] ?? 0));
+
+        if ($adjustedItems === 0 && $removedItems === 0) {
+            return;
+        }
+
+        throw new ShopCheckoutDomainException([
+            'cart_sync' => ['Your cart was updated to match current stock or pricing. Please review it and submit again.'],
+        ], 409);
     }
 
     private function hydrateCheckoutResult(int $orderId): array

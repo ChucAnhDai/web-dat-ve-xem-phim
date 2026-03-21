@@ -157,6 +157,49 @@ class ShopCheckoutServiceIntegrationTest extends TestCase
         $this->assertSame('SHP-RESUME', $result['data']['active_order']['order']['order_code']);
     }
 
+    public function testSecondCheckoutFailsWhenFirstConsumesRemainingTrackedStock(): void
+    {
+        $this->db->exec('UPDATE products SET stock = 10, track_inventory = 1 WHERE id = 1');
+
+        $firstToken = str_repeat('d', 64);
+        $secondToken = str_repeat('e', 64);
+        $this->seedCart(3, $firstToken, [[1, 6, 85000]]);
+        $this->seedCart(4, $secondToken, [[1, 5, 85000]]);
+
+        $service = $this->makeService();
+
+        $first = $service->createCheckout([
+            'contact_name' => 'Buyer One',
+            'contact_email' => 'buyer1@example.com',
+            'contact_phone' => '0901234567',
+            'fulfillment_method' => 'pickup',
+            'payment_method' => 'cash',
+        ], 'shop-stock-race-001', null, $firstToken, [
+            'base_url' => 'http://localhost/web-dat-ve-xem-phim',
+            'client_ip' => '127.0.0.1',
+        ]);
+
+        $second = $service->createCheckout([
+            'contact_name' => 'Buyer Two',
+            'contact_email' => 'buyer2@example.com',
+            'contact_phone' => '0901234568',
+            'fulfillment_method' => 'pickup',
+            'payment_method' => 'cash',
+        ], 'shop-stock-race-002', null, $secondToken, [
+            'base_url' => 'http://localhost/web-dat-ve-xem-phim',
+            'client_ip' => '127.0.0.1',
+        ]);
+
+        $this->assertSame(201, $first['status']);
+        $this->assertSame(409, $second['status']);
+        $this->assertSame(
+            'Your cart was updated to match current stock or pricing. Please review it and submit again.',
+            $second['errors']['cart_sync'][0] ?? null
+        );
+        $this->assertSame(4, (int) $this->db->query('SELECT stock FROM products WHERE id = 1')->fetchColumn());
+        $this->assertSame(1, (int) $this->db->query('SELECT COUNT(*) FROM shop_orders')->fetchColumn());
+    }
+
     private function makeService(): ShopCheckoutService
     {
         $logger = new ShopCheckoutTestLogger();

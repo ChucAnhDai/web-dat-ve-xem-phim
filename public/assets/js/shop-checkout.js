@@ -68,6 +68,13 @@
       applyDefaults();
       renderCheckout();
       await hydrateProfileDefaults();
+      const syncNotice = checkoutSyncMessage(state.payload?.sync);
+      if (syncNotice) {
+        setStatus(syncNotice, false);
+        if (typeof showToast === 'function') {
+          showToast('i', 'Checkout synced', syncNotice);
+        }
+      }
     } catch (error) {
       renderStateCard('Checkout unavailable.', error.message || 'Unable to load shop checkout right now.');
       setStatus(error.message || 'Checkout request failed', true);
@@ -156,9 +163,21 @@
       cache: 'no-store',
       body: options.body ? JSON.stringify(options.body) : undefined
     });
-    const payload = await response.json().catch(() => ({}));
+    const raw = await response.text();
+    let payload = {};
+
+    if (raw.trim() !== '') {
+      try {
+        payload = JSON.parse(raw);
+      } catch (error) {
+        throw new Error('Checkout service returned an invalid response. Please try again.');
+      }
+    }
+
     if (!response.ok) {
-      throw new Error(firstErrorMessage(payload?.errors, 'Request failed.'));
+      const error = new Error(firstErrorMessage(payload?.errors, 'Request failed.'));
+      error.payload = payload;
+      throw error;
     }
 
     return payload?.data || {};
@@ -374,6 +393,9 @@
       }
     } catch (error) {
       checkoutError(error.message || 'Unable to create the shop order.');
+      if (error?.payload?.errors?.cart_sync) {
+        await loadCheckout();
+      }
     } finally {
       setSubmitState(false);
     }
@@ -437,6 +459,24 @@
   function itemLabel(count) {
     const total = Math.max(0, Number(count || 0));
     return `${total} item${total === 1 ? '' : 's'}`;
+  }
+
+  function checkoutSyncMessage(sync) {
+    const adjusted = Math.max(0, Number(sync?.adjusted_items || 0));
+    const removed = Math.max(0, Number(sync?.removed_items || 0));
+    if (adjusted <= 0 && removed <= 0) {
+      return '';
+    }
+
+    const parts = [];
+    if (adjusted > 0) {
+      parts.push(`${adjusted} item(s) were adjusted to match current stock or price.`);
+    }
+    if (removed > 0) {
+      parts.push(`${removed} unavailable item(s) were removed from checkout.`);
+    }
+
+    return parts.join(' ');
   }
 
   function formatCurrency(amount, currency) {
