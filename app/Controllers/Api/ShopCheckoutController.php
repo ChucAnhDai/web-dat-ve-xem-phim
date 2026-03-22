@@ -6,6 +6,8 @@ use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Response;
 use App\Services\ShopCheckoutService;
+use App\Services\UnifiedCheckoutService;
+use App\Support\TicketSessionManager;
 use Exception;
 
 class ShopCheckoutController
@@ -15,32 +17,18 @@ class ShopCheckoutController
 
     public function __construct(?ShopCheckoutService $service = null, ?Auth $auth = null)
     {
-        $this->service = $service ?? new ShopCheckoutService();
+        $this->service = $service ?? new UnifiedCheckoutService();
         $this->auth = $auth ?? new Auth();
     }
 
     public function getCheckout(Request $request, Response $response)
     {
-        return $this->respond($request, $response, $this->service->getCheckout(
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName())
-        ));
+        return $this->respond($request, $response, $this->getCheckoutResult($request));
     }
 
     public function createCheckout(Request $request, Response $response)
     {
-        $payload = $request->getBody();
-
-        return $this->respond($request, $response, $this->service->createCheckout(
-            $payload,
-            $this->resolveIdempotencyKey($payload),
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName()),
-            [
-                'base_url' => $this->baseUrl($request),
-                'client_ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
-            ]
-        ));
+        return $this->respond($request, $response, $this->createCheckoutResult($request));
     }
 
     private function respond(Request $request, Response $response, array $result)
@@ -59,21 +47,16 @@ class ShopCheckoutController
     {
         $token = $request->bearerToken();
         if (!is_string($token) || trim($token) === '') {
-            error_log('[ShopCheckout] bearerToken() returned empty - no Authorization header or auth cookie found');
             return null;
         }
 
         try {
             $payload = $this->auth->verifyToken($token);
         } catch (Exception $exception) {
-            error_log('[ShopCheckout] verifyToken failed: ' . $exception->getMessage());
             return null;
         }
 
         $userId = $payload['user_id'] ?? null;
-        if ($userId === null) {
-            error_log('[ShopCheckout] verifyToken OK but user_id is null in payload');
-        }
 
         return is_numeric($userId) ? (int) $userId : null;
     }
@@ -88,6 +71,53 @@ class ShopCheckoutController
         $bodyKey = trim((string) ($payload['idempotency_key'] ?? ''));
 
         return $bodyKey !== '' ? $bodyKey : null;
+    }
+
+    private function getCheckoutResult(Request $request): array
+    {
+        if ($this->service instanceof UnifiedCheckoutService) {
+            return $this->service->getCheckoutWithTickets(
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            );
+        }
+
+        return $this->service->getCheckout(
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName())
+        );
+    }
+
+    private function createCheckoutResult(Request $request): array
+    {
+        $payload = $request->getBody();
+        $idempotencyKey = $this->resolveIdempotencyKey($payload);
+        $requestContext = [
+            'base_url' => $this->baseUrl($request),
+            'client_ip' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+        ];
+
+        if ($this->service instanceof UnifiedCheckoutService) {
+            $requestContext['ticket_session_token'] = $request->cookie(TicketSessionManager::COOKIE_NAME);
+
+            return $this->service->createCheckoutWithTickets(
+                $payload,
+                $idempotencyKey,
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME),
+                $requestContext
+            );
+        }
+
+        return $this->service->createCheckout(
+            $payload,
+            $idempotencyKey,
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName()),
+            $requestContext
+        );
     }
 
     private function baseUrl(Request $request): string

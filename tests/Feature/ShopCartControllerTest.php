@@ -6,6 +6,8 @@ use App\Controllers\Api\ShopCartController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Services\ShopCartService;
+use App\Services\UnifiedCartService;
+use App\Support\TicketSessionManager;
 use PHPUnit\Framework\TestCase;
 
 class ShopCartControllerTest extends TestCase
@@ -78,6 +80,35 @@ class ShopCartControllerTest extends TestCase
         $this->assertSame('11', $service->lastPayload['product_id'] ?? null);
         $this->assertSame(str_repeat('c', 64), $service->lastSessionToken);
     }
+
+    public function testRemoveTicketSelectionPassesTicketSessionCookieWhenUsingUnifiedService(): void
+    {
+        $service = new FeatureFakeUnifiedShopCartService();
+        $service->result = [
+            'status' => 200,
+            'data' => [
+                'cart' => ['id' => 1, 'item_count' => 1, 'items' => []],
+                'ticket_selection' => ['is_empty' => true],
+                'summary' => ['item_count' => 1],
+            ],
+            'session_token' => str_repeat('d', 64),
+            'session_cookie_expires_at' => time() + 3600,
+        ];
+        $controller = new ShopCartController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'DELETE';
+        $_COOKIE = [
+            'cinemax_cart' => str_repeat('e', 64),
+            TicketSessionManager::COOKIE_NAME => str_repeat('b', 48),
+        ];
+        $response = new ShopCartCapturingResponse();
+
+        $controller->removeTicketSelection(new Request(), $response);
+
+        $this->assertSame(200, $response->statusCode);
+        $this->assertSame(str_repeat('b', 48), $service->lastTicketSessionToken);
+        $this->assertSame(str_repeat('e', 64), $service->lastSessionToken);
+    }
 }
 
 class FeatureFakeShopCartService extends ShopCartService
@@ -109,6 +140,38 @@ class FeatureFakeShopCartService extends ShopCartService
         $this->lastPayload = $payload;
         $this->lastUserId = $userId;
         $this->lastSessionToken = $sessionToken;
+
+        return $this->result;
+    }
+}
+
+class FeatureFakeUnifiedShopCartService extends UnifiedCartService
+{
+    public array $result = [];
+    public ?string $lastSessionToken = null;
+    public ?string $lastTicketSessionToken = null;
+
+    public function __construct()
+    {
+    }
+
+    public function cartCookieName(): string
+    {
+        return 'cinemax_cart';
+    }
+
+    public function getCart(?int $userId = null, ?string $sessionToken = null, ?string $ticketSessionToken = null): array
+    {
+        $this->lastSessionToken = $sessionToken;
+        $this->lastTicketSessionToken = $ticketSessionToken;
+
+        return $this->result;
+    }
+
+    public function removeTicketSelection(?int $userId = null, ?string $sessionToken = null, ?string $ticketSessionToken = null): array
+    {
+        $this->lastSessionToken = $sessionToken;
+        $this->lastTicketSessionToken = $ticketSessionToken;
 
         return $this->result;
     }

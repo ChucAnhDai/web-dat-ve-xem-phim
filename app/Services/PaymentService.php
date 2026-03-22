@@ -291,11 +291,12 @@ class PaymentService
 
             $resolved = $this->transactional(function () use ($payment, $data, $paymentTarget): array {
                 $paymentId = (int) ($payment['id'] ?? 0);
+                $ticketOrderId = (int) ($payment['ticket_order_id'] ?? 0);
+                $shopOrderId = (int) ($payment['shop_order_id'] ?? 0);
                 $now = date('Y-m-d H:i:s');
                 $callbackPayload = json_encode($data['raw_payload'] ?? [], JSON_UNESCAPED_UNICODE);
 
                 if ($paymentTarget === 'shop') {
-                    $orderId = (int) ($payment['shop_order_id'] ?? 0);
                     if ($this->validator->isSuccessfulVnpayResponse($data)) {
                         $this->payments->markPaymentSuccess($paymentId, [
                             'payment_status' => 'success',
@@ -306,7 +307,13 @@ class PaymentService
                             'completed_at' => $now,
                             'payment_date' => $now,
                         ]);
-                        $this->shopOrders->markOrdersConfirmed([$orderId], $now);
+                        if ($shopOrderId > 0) {
+                            $this->shopOrders->markOrdersConfirmed([$shopOrderId], $now);
+                        }
+                        if ($ticketOrderId > 0) {
+                            $this->orders->markOrdersPaid([$ticketOrderId], $now);
+                            $this->orders->markTicketDetailsStatusForOrderIds([$ticketOrderId], 'paid');
+                        }
                     } else {
                         $issue = $this->mapFailureState((string) ($data['response_code'] ?? ''));
                         $this->payments->markPaymentIssue($paymentId, [
@@ -317,13 +324,18 @@ class PaymentService
                             'callback_payload' => $callbackPayload,
                             'failed_at' => $now,
                         ]);
-                        $this->shopLifecycle->releaseInventoryAndMarkIssue($orderId, $issue['order_status'], $now);
+                        if ($shopOrderId > 0) {
+                            $this->shopLifecycle->releaseInventoryAndMarkIssue($shopOrderId, $issue['order_status'], $now);
+                        }
+                        if ($ticketOrderId > 0) {
+                            $this->orders->markOrdersIssue([$ticketOrderId], $issue['order_status'], $now);
+                            $this->orders->markTicketDetailsStatusForOrderIds([$ticketOrderId], $issue['ticket_status']);
+                        }
                     }
 
-                    return $this->payments->findShopPaymentByProviderOrderRef((string) ($payment['provider_order_ref'] ?? ''), 'vnpay') ?: $payment;
+                    return $this->payments->findLatestByOrderIds($ticketOrderId, $shopOrderId) ?: $payment;
                 }
 
-                $orderId = (int) ($payment['ticket_order_id'] ?? 0);
                 if ($this->validator->isSuccessfulVnpayResponse($data)) {
                     $this->payments->markPaymentSuccess($paymentId, [
                         'payment_status' => 'success',
@@ -334,8 +346,13 @@ class PaymentService
                         'completed_at' => $now,
                         'payment_date' => $now,
                     ]);
-                    $this->orders->markOrdersPaid([$orderId], $now);
-                    $this->orders->markTicketDetailsStatusForOrderIds([$orderId], 'paid');
+                    if ($ticketOrderId > 0) {
+                        $this->orders->markOrdersPaid([$ticketOrderId], $now);
+                        $this->orders->markTicketDetailsStatusForOrderIds([$ticketOrderId], 'paid');
+                    }
+                    if ($shopOrderId > 0) {
+                        $this->shopOrders->markOrdersConfirmed([$shopOrderId], $now);
+                    }
                 } else {
                     $issue = $this->mapFailureState((string) ($data['response_code'] ?? ''));
                     $this->payments->markPaymentIssue($paymentId, [
@@ -346,11 +363,16 @@ class PaymentService
                         'callback_payload' => $callbackPayload,
                         'failed_at' => $now,
                     ]);
-                    $this->orders->markOrdersIssue([$orderId], $issue['order_status'], $now);
-                    $this->orders->markTicketDetailsStatusForOrderIds([$orderId], $issue['ticket_status']);
+                    if ($ticketOrderId > 0) {
+                        $this->orders->markOrdersIssue([$ticketOrderId], $issue['order_status'], $now);
+                        $this->orders->markTicketDetailsStatusForOrderIds([$ticketOrderId], $issue['ticket_status']);
+                    }
+                    if ($shopOrderId > 0) {
+                        $this->shopLifecycle->releaseInventoryAndMarkIssue($shopOrderId, $issue['order_status'], $now);
+                    }
                 }
 
-                return $this->payments->findTicketPaymentByProviderOrderRef((string) ($payment['provider_order_ref'] ?? ''), 'vnpay') ?: $payment;
+                return $this->payments->findLatestByOrderIds($ticketOrderId, $shopOrderId) ?: $payment;
             });
         } catch (PaymentDomainException $exception) {
             $this->logger->info('VNPay callback rejected', [
@@ -552,7 +574,11 @@ class PaymentService
 
     private function paymentSuccessResponse(array $payment, string $source, string $ipnCode, string $ipnMessage): array
     {
-        $orderType = isset($payment['shop_order_id']) && (int) $payment['shop_order_id'] > 0 ? 'shop' : 'ticket';
+        $hasTicketOrder = isset($payment['ticket_order_id']) && (int) $payment['ticket_order_id'] > 0;
+        $hasShopOrder = isset($payment['shop_order_id']) && (int) $payment['shop_order_id'] > 0;
+        $orderType = $hasTicketOrder && $hasShopOrder
+            ? 'mixed'
+            : ($hasShopOrder ? 'shop' : 'ticket');
         $data = [
             'status' => strtolower((string) ($payment['payment_status'] ?? 'pending')) === 'success' ? 'success' : 'issue',
             'order_type' => $orderType,

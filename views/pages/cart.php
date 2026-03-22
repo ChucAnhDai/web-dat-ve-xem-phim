@@ -4,7 +4,7 @@
 </div>
 
 <div class="catalog-meta">
-  <div id="cartSyncNotice">Your cart is kept in sync across product pages and your account session.</div>
+  <div id="cartSyncNotice">Your cart is kept in sync across product pages, seat holds, and your account session.</div>
   <div class="catalog-request-status" id="cartRequestStatus">Connecting to cart</div>
 </div>
 
@@ -13,7 +13,7 @@
   <div>
     <div class="cart-table">
       <div class="cart-header-row">
-        <span>Product</span>
+        <span>Item</span>
         <span>Price</span>
         <span>Quantity</span>
         <span>Subtotal</span>
@@ -66,7 +66,7 @@
       </svg>
     </div>
     <h2 class="empty-title" id="cartEmptyTitle">Your cart is empty</h2>
-    <p class="empty-desc" id="cartEmptyDescription">Browse our shop to add items.</p>
+    <p class="empty-desc" id="cartEmptyDescription">Browse the shop or reserve movie tickets to add items.</p>
     <button class="btn btn-primary btn-lg empty-btn" onclick="navigateTo('shop')">Browse Shop</button>
   </div>
 </div>

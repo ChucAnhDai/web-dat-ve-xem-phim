@@ -6,6 +6,8 @@ use App\Controllers\Api\ShopCheckoutController;
 use App\Core\Request;
 use App\Core\Response;
 use App\Services\ShopCheckoutService;
+use App\Services\UnifiedCheckoutService;
+use App\Support\TicketSessionManager;
 use PHPUnit\Framework\TestCase;
 
 class ShopCheckoutControllerTest extends TestCase
@@ -115,6 +117,43 @@ class ShopCheckoutControllerTest extends TestCase
         $this->assertArrayNotHasKey('cinemax_cart', $_COOKIE);
         $this->assertSame([], $response->cookies);
     }
+
+    public function testCreateCheckoutPassesTicketSessionCookieWhenUsingUnifiedService(): void
+    {
+        $service = new FeatureFakeUnifiedShopCheckoutService();
+        $service->result = [
+            'status' => 201,
+            'data' => [
+                'order' => ['order_code' => 'ORD-MIXED-001'],
+                'payment' => ['payment_method' => 'vnpay'],
+                'redirect_url' => 'https://sandbox.vnpayment.vn',
+            ],
+            'session_token' => str_repeat('e', 64),
+            'session_cookie_expires_at' => time() + 3600,
+        ];
+        $controller = new ShopCheckoutController($service);
+
+        $_SERVER['REQUEST_METHOD'] = 'POST';
+        $_SERVER['HTTP_X_IDEMPOTENCY_KEY'] = 'mixed-idem-001';
+        $_POST = [
+            'contact_name' => 'Mixed Checkout',
+            'contact_email' => 'mixed@example.com',
+            'contact_phone' => '0901234567',
+            'fulfillment_method' => 'pickup',
+            'payment_method' => 'vnpay',
+        ];
+        $_COOKIE = [
+            'cinemax_cart' => str_repeat('f', 64),
+            TicketSessionManager::COOKIE_NAME => str_repeat('a', 48),
+        ];
+        $response = new ShopCheckoutCapturingResponse();
+
+        $controller->createCheckout(new Request(), $response);
+
+        $this->assertSame(201, $response->statusCode);
+        $this->assertSame(str_repeat('a', 48), $service->lastTicketSessionToken);
+        $this->assertSame(str_repeat('f', 64), $service->lastSessionToken);
+    }
 }
 
 class FeatureFakeShopCheckoutService extends ShopCheckoutService
@@ -148,6 +187,44 @@ class FeatureFakeShopCheckoutService extends ShopCheckoutService
         $this->lastIdempotencyKey = $idempotencyKey;
         $this->lastUserId = $userId;
         $this->lastSessionToken = $sessionToken;
+
+        return $this->result;
+    }
+}
+
+class FeatureFakeUnifiedShopCheckoutService extends UnifiedCheckoutService
+{
+    public array $result = [];
+    public ?string $lastSessionToken = null;
+    public ?string $lastTicketSessionToken = null;
+
+    public function __construct()
+    {
+    }
+
+    public function cartCookieName(): string
+    {
+        return 'cinemax_cart';
+    }
+
+    public function getCheckoutWithTickets(?int $userId = null, ?string $sessionToken = null, ?string $ticketSessionToken = null): array
+    {
+        $this->lastSessionToken = $sessionToken;
+        $this->lastTicketSessionToken = $ticketSessionToken;
+
+        return $this->result;
+    }
+
+    public function createCheckoutWithTickets(
+        array $payload,
+        ?string $idempotencyKey,
+        ?int $userId = null,
+        ?string $sessionToken = null,
+        ?string $ticketSessionToken = null,
+        array $requestContext = []
+    ): array {
+        $this->lastSessionToken = $sessionToken;
+        $this->lastTicketSessionToken = $ticketSessionToken;
 
         return $this->result;
     }

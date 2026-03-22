@@ -2,19 +2,19 @@
   <div class="detail-state-card">
     <div>
       <strong>Loading checkout...</strong>
-      <div style="margin-top:8px;">Preparing your shop checkout and validating the current cart snapshot.</div>
+      <div style="margin-top:8px;">Preparing your combined checkout and validating the current cart snapshot.</div>
     </div>
   </div>
 </div>
 
 <div id="shopCheckoutContent" hidden>
   <div class="page-header">
-    <h1 class="page-title">SHOP CHECKOUT</h1>
+    <h1 class="page-title">CHECKOUT</h1>
     <p class="page-subtitle" id="shopCheckoutSubtitle">Loading your checkout...</p>
   </div>
 
   <div class="catalog-meta">
-    <div id="shopCheckoutMeta">We verify cart lines, stock, totals, and payment availability on the server before creating any order.</div>
+    <div id="shopCheckoutMeta">We verify products, tickets, totals, and payment availability on the server before creating any order.</div>
     <div class="catalog-request-status" id="shopCheckoutRequestStatus">Connecting to checkout</div>
   </div>
 
@@ -44,7 +44,7 @@
       <div class="checkout-section-card">
         <div class="checkout-step-header">
           <div class="checkout-step-number">2</div>
-          <h3 class="checkout-step-title">Fulfillment</h3>
+          <h3 class="checkout-step-title">Delivery & Fulfillment</h3>
         </div>
         <div class="radio-group" id="shopCheckoutFulfillmentGroup"></div>
 
@@ -75,7 +75,7 @@
       </div>
 
       <div class="checkout-rules-box" id="shopCheckoutRuleBox">
-        Order totals are recalculated on the server, stock is reserved inside the checkout transaction, and pending shop orders expire after 5 minutes if they are not completed or confirmed in time.
+        Order totals are recalculated on the server, inventory and seat reservations are protected inside the checkout transaction, and pending payments expire automatically if they are not completed in time.
       </div>
     </div>
 
@@ -88,7 +88,7 @@
         <span id="shopCheckoutSubtotal">0 ₫</span>
       </div>
       <div class="summary-row">
-        <label>Shipping</label>
+        <label id="shopCheckoutShippingLabel">Shipping</label>
         <span id="shopCheckoutShipping">0 ₫</span>
       </div>
       <div class="summary-row total">

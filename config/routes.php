@@ -21,6 +21,7 @@ use App\Controllers\Api\UserTicketController;
 use App\Controllers\Api\Admin\AdminUserController;
 use App\Controllers\Api\Admin\AdminAddressController;
 use App\Controllers\Api\Admin\AdminRoleController;
+use App\Controllers\Api\CustomerOrderController;
 use App\Controllers\Api\Admin\DashboardApiController;
 use App\Controllers\Api\HomeApiController;
 use App\Middlewares\AdminMiddleware;
@@ -43,6 +44,7 @@ $app->router->get('/api/shop/cart', [ShopCartController::class, 'getCart']);
 $app->router->post('/api/shop/cart/items', [ShopCartController::class, 'addItem']);
 $app->router->put('/api/shop/cart/items/{productId}', [ShopCartController::class, 'updateItem']);
 $app->router->delete('/api/shop/cart/items/{productId}', [ShopCartController::class, 'removeItem']);
+$app->router->delete('/api/shop/cart/tickets/current', [ShopCartController::class, 'removeTicketSelection']);
 $app->router->delete('/api/shop/cart', [ShopCartController::class, 'clearCart']);
 $app->router->get('/api/shop/checkout', [ShopCheckoutController::class, 'getCheckout']);
 $app->router->post('/api/shop/checkout', [ShopCheckoutController::class, 'createCheckout']);
@@ -61,6 +63,7 @@ $app->router->get('/api/payments/vnpay/ipn', [PaymentController::class, 'handleV
 $app->router->get('/api/me/tickets', [UserTicketController::class, 'listMyTickets'], [AuthMiddleware::class]);
 $app->router->get('/api/me/ticket-orders', [UserTicketController::class, 'listMyOrders'], [AuthMiddleware::class]);
 $app->router->get('/api/me/shop-orders', [UserShopOrderController::class, 'listMyOrders'], [AuthMiddleware::class]);
+$app->router->get('/api/me/orders', [CustomerOrderController::class, 'listMyOrders'], [AuthMiddleware::class]);
 $app->router->get('/api/me/shop-orders/{id}', [UserShopOrderController::class, 'getMyOrder'], [AuthMiddleware::class]);
 $app->router->post('/api/me/shop-orders/{id}/cancel', [UserShopOrderController::class, 'cancelMyOrder'], [AuthMiddleware::class]);
 $app->router->get('/api/shop/orders/session', [UserShopOrderController::class, 'listSessionOrders']);
@@ -68,6 +71,7 @@ $app->router->get('/api/shop/orders/session/{id}', [UserShopOrderController::cla
 $app->router->post('/api/shop/orders/session/{id}/cancel', [UserShopOrderController::class, 'cancelSessionOrder']);
 $app->router->post('/api/shop/orders/lookup', [UserShopOrderController::class, 'lookupGuestOrder']);
 $app->router->post('/api/shop/orders/lookup/cancel', [UserShopOrderController::class, 'cancelGuestOrder']);
+$app->router->post('/api/orders/lookup', [CustomerOrderController::class, 'lookupOrder']);
 
 
 // admin

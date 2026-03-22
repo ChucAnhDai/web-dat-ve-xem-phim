@@ -292,21 +292,13 @@
       state.selectedSeatIds = [...state.requestedSeatIds];
       state.holdExpiresAt = String(hold.hold_expires_at || '').trim() || null;
 
-      const params = new URLSearchParams();
-      params.set('showtime_id', String(state.showtimeId));
-      params.set('seats', seatLabels.join(','));
-      params.set('seat_ids', state.requestedSeatIds.join(','));
-      if (state.showtime?.movie_slug || state.slug) {
-        params.set('slug', String(state.showtime?.movie_slug || state.slug));
-      }
-
       if (typeof showToast === 'function') {
         const expiryLabel = state.holdExpiresAt ? ` Held until ${formatDateTime(state.holdExpiresAt)}.` : '';
-        showToast('i', 'Seats Held', `${seatLabels.length} seat(s) secured.${expiryLabel}`);
+        showToast('i', 'Seats Added to Cart', `${seatLabels.length} seat(s) secured and added to your cart.${expiryLabel}`);
       }
 
       window.setTimeout(() => {
-        window.location.href = `${appUrl('/checkout')}?${params.toString()}`;
+        window.location.href = appUrl('/cart');
       }, 250);
     } catch (error) {
       if (/checkout waiting for payment/i.test(String(error.message || ''))) {
@@ -419,7 +411,7 @@
     }
 
     dom.checkoutBtn.disabled = state.isSubmittingHold;
-    dom.checkoutBtn.textContent = state.isSubmittingHold ? 'Holding Seats...' : 'Proceed to Checkout';
+    dom.checkoutBtn.textContent = state.isSubmittingHold ? 'Holding Seats...' : 'Add to Cart';
   }
 
   function surchargeForSeat(type) {
@@ -478,7 +470,7 @@
         showToast('i', 'Resume Checkout', 'Your previous checkout is still active. Restoring it now.');
       }
 
-      window.location.href = appUrl('/checkout');
+      window.location.href = appUrl('/shop/checkout');
       return true;
     } catch (error) {
       return false;

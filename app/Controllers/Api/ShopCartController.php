@@ -6,6 +6,8 @@ use App\Core\Auth;
 use App\Core\Request;
 use App\Core\Response;
 use App\Services\ShopCartService;
+use App\Services\UnifiedCartService;
+use App\Support\TicketSessionManager;
 use Exception;
 
 class ShopCartController
@@ -15,52 +17,49 @@ class ShopCartController
 
     public function __construct(?ShopCartService $service = null, ?Auth $auth = null)
     {
-        $this->service = $service ?? new ShopCartService();
+        $this->service = $service ?? new UnifiedCartService();
         $this->auth = $auth ?? new Auth();
     }
 
     public function getCart(Request $request, Response $response)
     {
-        return $this->respond($request, $response, $this->service->getCart(
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName())
-        ));
+        return $this->respond($request, $response, $this->getCartResult($request));
     }
 
     public function addItem(Request $request, Response $response)
     {
-        return $this->respond($request, $response, $this->service->addItem(
-            $request->getBody(),
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName())
-        ));
+        return $this->respond($request, $response, $this->addItemResult($request));
     }
 
     public function updateItem(Request $request, Response $response)
     {
-        return $this->respond($request, $response, $this->service->updateItemQuantity(
-            (int) $request->getRouteParam('productId'),
-            $request->getBody(),
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName())
-        ));
+        return $this->respond($request, $response, $this->updateItemResult($request));
     }
 
     public function removeItem(Request $request, Response $response)
     {
-        return $this->respond($request, $response, $this->service->removeItem(
-            (int) $request->getRouteParam('productId'),
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName())
-        ));
+        return $this->respond($request, $response, $this->removeItemResult($request));
+    }
+
+    public function removeTicketSelection(Request $request, Response $response)
+    {
+        $result = $this->service instanceof UnifiedCartService
+            ? $this->service->removeTicketSelection(
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            )
+            : $this->service->getCart(
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName())
+            );
+
+        return $this->respond($request, $response, $result);
     }
 
     public function clearCart(Request $request, Response $response)
     {
-        return $this->respond($request, $response, $this->service->clearCart(
-            $this->resolveUserId($request),
-            $request->cookie($this->service->cartCookieName())
-        ));
+        return $this->respond($request, $response, $this->clearCartResult($request));
     }
 
     private function respond(Request $request, Response $response, array $result)
@@ -91,6 +90,94 @@ class ShopCartController
         $userId = $payload['user_id'] ?? null;
 
         return is_numeric($userId) ? (int) $userId : null;
+    }
+
+    private function getCartResult(Request $request): array
+    {
+        if ($this->service instanceof UnifiedCartService) {
+            return $this->service->getCart(
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            );
+        }
+
+        return $this->service->getCart(
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName())
+        );
+    }
+
+    private function addItemResult(Request $request): array
+    {
+        if ($this->service instanceof UnifiedCartService) {
+            return $this->service->addItem(
+                $request->getBody(),
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            );
+        }
+
+        return $this->service->addItem(
+            $request->getBody(),
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName())
+        );
+    }
+
+    private function updateItemResult(Request $request): array
+    {
+        if ($this->service instanceof UnifiedCartService) {
+            return $this->service->updateItemQuantity(
+                (int) $request->getRouteParam('productId'),
+                $request->getBody(),
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            );
+        }
+
+        return $this->service->updateItemQuantity(
+            (int) $request->getRouteParam('productId'),
+            $request->getBody(),
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName())
+        );
+    }
+
+    private function removeItemResult(Request $request): array
+    {
+        if ($this->service instanceof UnifiedCartService) {
+            return $this->service->removeItem(
+                (int) $request->getRouteParam('productId'),
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            );
+        }
+
+        return $this->service->removeItem(
+            (int) $request->getRouteParam('productId'),
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName())
+        );
+    }
+
+    private function clearCartResult(Request $request): array
+    {
+        if ($this->service instanceof UnifiedCartService) {
+            return $this->service->clearCart(
+                $this->resolveUserId($request),
+                $request->cookie($this->service->cartCookieName()),
+                $request->cookie(TicketSessionManager::COOKIE_NAME)
+            );
+        }
+
+        return $this->service->clearCart(
+            $this->resolveUserId($request),
+            $request->cookie($this->service->cartCookieName())
+        );
     }
 
     private function applyCartCookie(Request $request, Response $response, array $result): void

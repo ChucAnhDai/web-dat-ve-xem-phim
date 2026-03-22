@@ -66,6 +66,36 @@ class PaymentControllerTest extends TestCase
         $this->assertSame('00', $response->payload['RspCode']);
         $this->assertSame('TKT-001', $service->payload['vnp_TxnRef']);
     }
+
+    public function testHandleVnpayReturnRedirectsMixedOrderToPaymentResultPage(): void
+    {
+        $service = new FeatureFakePaymentService();
+        $service->result = [
+            'status' => 200,
+            'data' => [
+                'status' => 'success',
+                'order_type' => 'mixed',
+                'order_code' => 'ORD-MIXED-001',
+                'payment_status' => 'success',
+                'message' => 'VNPay payment confirmed.',
+            ],
+        ];
+
+        $controller = new PaymentController(
+            $service,
+            new FeatureFakePaymentSessionManager(),
+            new FeatureFakePaymentAuth()
+        );
+        $_SERVER['REQUEST_METHOD'] = 'GET';
+        $response = new FeatureCapturingPaymentResponse();
+
+        $controller->handleVnpayReturn(new Request(), $response);
+
+        $this->assertSame(302, $response->statusCode);
+        $this->assertStringContainsString('/payment-result?', (string) $response->redirectPath);
+        $this->assertStringContainsString('order_type=mixed', (string) $response->redirectPath);
+        $this->assertStringContainsString('order_code=ORD-MIXED-001', (string) $response->redirectPath);
+    }
 }
 
 class FeatureFakePaymentService extends PaymentService

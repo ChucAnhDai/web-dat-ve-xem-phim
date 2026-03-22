@@ -23,13 +23,23 @@ if ($paymentResultOrderType === 'shop') {
     $paymentResultSubtitle = 'Use the order code below to review the latest shop order. Guest orders require manual lookup with the same checkout email and phone.';
 }
 
+if ($paymentResultOrderType === 'mixed') {
+    $paymentResultPrimaryHref = $paymentResultRouteBase . '/my-orders?lookup=1';
+    $paymentResultPrimaryLabel = 'Open Order Lookup';
+    $paymentResultSecondaryHref = $paymentResultRouteBase . '/shop';
+    $paymentResultSecondaryLabel = 'Back to Shop';
+    $paymentResultSubtitle = 'Use the order code below to review the latest combined ticket and shop order. Guest orders require manual lookup with the same checkout email and phone.';
+}
+
 if ($paymentResultStatus === 'success') {
     $paymentResultTitle = 'Payment completed successfully.';
     $paymentResultCopy = $paymentResultMessage !== ''
         ? $paymentResultMessage
-        : ($paymentResultOrderType === 'shop'
-            ? 'Your shop order has been confirmed.'
-            : 'Your ticket order has been confirmed.');
+        : ($paymentResultOrderType === 'mixed'
+            ? 'Your combined ticket and shop order has been confirmed.'
+            : ($paymentResultOrderType === 'shop'
+                ? 'Your shop order has been confirmed.'
+                : 'Your ticket order has been confirmed.'));
 }
 ?>
 

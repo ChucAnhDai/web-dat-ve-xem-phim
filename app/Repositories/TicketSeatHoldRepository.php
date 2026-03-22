@@ -115,6 +115,28 @@ class TicketSeatHoldRepository
         }, $stmt->fetchAll(PDO::FETCH_COLUMN) ?: []);
     }
 
+    public function findActiveShowtimeIdForSession(string $sessionToken): ?int
+    {
+        $stmt = $this->db->prepare('
+            SELECT showtime_id
+            FROM ticket_seat_holds
+            WHERE session_token = :session_token
+              AND hold_expires_at > CURRENT_TIMESTAMP
+            ORDER BY hold_expires_at ASC, id ASC
+            LIMIT 1
+        ');
+        $stmt->execute([
+            'session_token' => $sessionToken,
+        ]);
+
+        $value = $stmt->fetchColumn();
+        if ($value === false) {
+            return null;
+        }
+
+        return (int) $value > 0 ? (int) $value : null;
+    }
+
     public function listActiveRowsForSessionAndShowtime(int $showtimeId, string $sessionToken): array
     {
         $stmt = $this->db->prepare('

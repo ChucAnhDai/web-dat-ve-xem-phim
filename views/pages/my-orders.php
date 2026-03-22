@@ -1,13 +1,13 @@
 <div class="page-header">
   <h1 class="page-title">My Orders</h1>
-  <p class="page-subtitle" id="myOrdersSubtitle">Review signed-in orders or look up a guest order manually with the exact checkout contact details.</p>
+  <p class="page-subtitle" id="myOrdersSubtitle">Review ticket orders, shop orders, or mixed checkouts, or look up a guest order with the exact checkout contact details.</p>
 </div>
 
 <div class="card" style="margin-bottom:20px;">
   <div style="padding:20px;">
     <div style="font-weight:700;font-size:16px;">Order Access & Control</div>
     <div style="margin-top:6px;color:var(--text2);font-size:14px;line-height:1.6;">
-      Signed-in members see shop orders tied to their account. Guest browser-session access is disabled for security, so guest orders are only shown after a manual lookup using the order code together with the exact checkout email and phone number.
+      Signed-in members see ticket orders, shop orders, and combined checkouts tied to their account. Guest browser-session access is disabled for security, so guest orders are only shown after a manual lookup using the order code together with the exact checkout email and phone number.
     </div>
   </div>
 </div>
@@ -46,7 +46,7 @@
     <form id="guestOrderLookupForm" class="lookup-form-grid" autocomplete="off">
       <div>
         <label for="guestOrderCode" class="td-muted">Order Code</label>
-        <input id="guestOrderCode" class="form-control" type="text" placeholder="SHP-ABC12345" maxlength="40">
+        <input id="guestOrderCode" class="form-control" type="text" placeholder="ORD-ABC12345" maxlength="40">
       </div>
       <div class="lookup-inline-row">
         <div>
@@ -77,7 +77,7 @@
 <div class="orders-table">
   <div class="table-header">
     <span>Order</span>
-    <span>Items</span>
+    <span>Items / Tickets</span>
     <span>Placed</span>
     <span>Amount</span>
     <span>Status</span>

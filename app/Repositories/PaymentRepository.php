@@ -30,6 +30,14 @@ class PaymentRepository
         ]));
     }
 
+    public function createCombinedPayment(array $data): int
+    {
+        return $this->createPayment(array_merge($data, [
+            'ticket_order_id' => $data['ticket_order_id'] ?? null,
+            'shop_order_id' => $data['shop_order_id'] ?? null,
+        ]));
+    }
+
     public function findLatestTicketPaymentByOrderId(int $orderId): ?array
     {
         $stmt = $this->db->prepare('
@@ -240,6 +248,61 @@ class PaymentRepository
         return $row ?: null;
     }
 
+    public function findLatestByOrderIds(?int $ticketOrderId, ?int $shopOrderId): ?array
+    {
+        if (($ticketOrderId ?? 0) > 0 && ($shopOrderId ?? 0) > 0) {
+            $stmt = $this->db->prepare('
+                SELECT
+                    id,
+                    ticket_order_id,
+                    shop_order_id,
+                    payment_method,
+                    payment_status,
+                    amount,
+                    currency,
+                    transaction_code,
+                    provider_transaction_code,
+                    provider_order_ref,
+                    provider_response_code,
+                    provider_message,
+                    idempotency_key,
+                    checkout_url,
+                    request_payload,
+                    callback_payload,
+                    initiated_at,
+                    completed_at,
+                    failed_at,
+                    refunded_at,
+                    payment_date,
+                    created_at,
+                    updated_at
+                FROM payments
+                WHERE ticket_order_id = :ticket_order_id
+                  AND shop_order_id = :shop_order_id
+                ORDER BY id DESC
+                LIMIT 1
+            ');
+            $stmt->execute([
+                'ticket_order_id' => $ticketOrderId,
+                'shop_order_id' => $shopOrderId,
+            ]);
+            $row = $stmt->fetch();
+            if ($row !== false) {
+                return $row;
+            }
+        }
+
+        if (($ticketOrderId ?? 0) > 0) {
+            return $this->findLatestTicketPaymentByOrderId((int) $ticketOrderId);
+        }
+
+        if (($shopOrderId ?? 0) > 0) {
+            return $this->findLatestShopPaymentByOrderId((int) $shopOrderId);
+        }
+
+        return null;
+    }
+
     public function updateGatewayCheckout(int $paymentId, array $data): void
     {
         $stmt = $this->db->prepare('
@@ -413,7 +476,11 @@ class PaymentRepository
                 p.payment_date,
                 p.created_at,
                 p.updated_at,
-                CASE WHEN p.ticket_order_id IS NOT NULL THEN 'ticket' ELSE 'shop' END AS order_scope,
+                CASE
+                    WHEN p.ticket_order_id IS NOT NULL AND p.shop_order_id IS NOT NULL THEN 'mixed'
+                    WHEN p.ticket_order_id IS NOT NULL THEN 'ticket'
+                    ELSE 'shop'
+                END AS order_scope,
                 COALESCE(t.order_code, s.order_code, p.provider_order_ref) AS order_code,
                 COALESCE(t.status, s.status) AS order_status,
                 COALESCE(t.contact_name, s.contact_name, tu.name, su.name, 'Guest') AS customer_name,
@@ -507,7 +574,11 @@ class PaymentRepository
                 p.payment_date,
                 p.created_at,
                 p.updated_at,
-                CASE WHEN p.ticket_order_id IS NOT NULL THEN 'ticket' ELSE 'shop' END AS order_scope,
+                CASE
+                    WHEN p.ticket_order_id IS NOT NULL AND p.shop_order_id IS NOT NULL THEN 'mixed'
+                    WHEN p.ticket_order_id IS NOT NULL THEN 'ticket'
+                    ELSE 'shop'
+                END AS order_scope,
                 COALESCE(t.order_code, s.order_code, p.provider_order_ref) AS order_code,
                 COALESCE(t.status, s.status) AS order_status,
                 COALESCE(t.contact_name, s.contact_name, tu.name, su.name, 'Guest') AS customer_name,
